@@ -434,36 +434,105 @@ function ComparisonChart({ indicator, year }: { indicator: Indicator; year: numb
 
 /* ======================== PARTICIPATION CITOYENNE ======================== */
 function CitoyenPane() {
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["citizen-survey"],
     queryFn: () => fetchCitizenSurvey(),
     staleTime: 5 * 60 * 1000,
   });
 
+  const [scope, setScope] = useState<string>("__ALL__");
+
+  // Quand les données arrivent, on garde le scope choisi (ou __ALL__ par défaut)
+  const current = useMemo(() => {
+    if (!data) return null;
+    if (scope === "__ALL__") {
+      return {
+        label: "Ensemble des QPV",
+        responses: data.totalResponses,
+        evolution: data.evolution,
+        securite: aggregateSecurite(data.securite),
+        jugements: data.jugements,
+        priorites: data.priorites,
+        verbatims: data.verbatims.map((v) => v.quote),
+      };
+    }
+    const q = data.quartiers.find((x) => x.quartier === scope);
+    if (!q) return null;
+    return {
+      label: q.quartier,
+      responses: q.responses,
+      evolution: q.evolution,
+      securite: q.securite,
+      jugements: q.jugements,
+      priorites: q.priorites,
+      verbatims: q.verbatims,
+    };
+  }, [data, scope]);
+
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h3 className="text-xl font-semibold">Enquête habitants 2023</h3>
+            <div className="inline-flex rounded-full bg-citizen/15 px-2 py-0.5 text-[10px] font-semibold text-citizen">
+              Vague {data?.yearLabel ?? "2023"} · Google Sheets en direct
+            </div>
+            <h3 className="mt-2 text-xl font-semibold">Enquête habitants</h3>
             <p className="text-sm text-muted-foreground">
-              Données issues du questionnaire Google Forms (mise à jour en direct).
-              Prochaines vagues prévues : 2026 et 2029.
+              Réponses récupérées en direct depuis le formulaire de participation citoyenne.
+              Prochaines vagues : 2026 et 2029.
             </p>
+            {data && (
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Dernière synchronisation : {new Date(data.fetchedAt).toLocaleString("fr-FR")}
+              </p>
+            )}
           </div>
-          <button
-            onClick={() => refetch()}
-            className="rounded-full border border-border bg-background px-4 py-2 text-sm hover:bg-accent"
-          >
-            ↻ Rafraîchir
-          </button>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+            {data && (
+              <div className="flex flex-col">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Périmètre
+                </label>
+                <select
+                  value={scope}
+                  onChange={(e) => setScope(e.target.value)}
+                  className="min-w-[220px] rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                >
+                  <option value="__ALL__">Tous les quartiers</option>
+                  {data.quartiers.map((q) => (
+                    <option key={q.quartier} value={q.quartier}>
+                      {q.quartier} ({q.responses})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <button
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="rounded-full border border-border bg-background px-4 py-2 text-sm hover:bg-accent disabled:opacity-50"
+            >
+              {isFetching ? "…" : "↻"} Rafraîchir
+            </button>
+          </div>
         </div>
-        {data && (
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Stat label="Répondants" value={data.totalResponses.toString()} />
-            <Stat label="Quartiers couverts" value={Object.keys(data.byQuartier).length.toString()} />
-            <Stat label="Sentiment d'amélioration" value={`${pct(data.evolution.ameliore, data.evolution.total)}%`} positive />
-            <Stat label="Sentiment de dégradation" value={`${pct(data.evolution.degrade, data.evolution.total)}%`} negative />
+
+        {current && (
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Répondants" value={current.responses.toString()} />
+            <Stat label="Périmètre" value={current.label} />
+            <Stat
+              label="Sentiment d'amélioration"
+              value={`${pct(current.evolution.ameliore, current.evolution.total)}%`}
+              positive
+            />
+            <Stat
+              label="Sentiment de dégradation"
+              value={`${pct(current.evolution.degrade, current.evolution.total)}%`}
+              negative
+            />
           </div>
         )}
       </div>
@@ -472,36 +541,51 @@ function CitoyenPane() {
       {isError && (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
           Impossible de récupérer la feuille publique : {(error as Error).message}.
-          Vérifiez que le Google Sheets est partagé en lecture publique.
+          Vérifiez que le partage du Google Sheets est en lecture publique.
         </div>
       )}
 
-      {data && (
+      {data && current && (
         <>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <h4 className="mb-4 font-semibold">Répartition des répondants par quartier</h4>
+              <h4 className="mb-1 font-semibold">Répartition des répondants</h4>
+              <p className="mb-4 text-xs text-muted-foreground">par quartier (ensemble du panel 2023)</p>
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={Object.entries(data.byQuartier).map(([q, c]) => ({ q, c }))} layout="vertical" margin={{ left: 30 }}>
+                <BarChart
+                  data={data.quartiers.map((q) => ({ q: q.quartier, c: q.responses }))}
+                  layout="vertical"
+                  margin={{ left: 30 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis type="number" stroke="var(--muted-foreground)" />
-                  <YAxis dataKey="q" type="category" stroke="var(--muted-foreground)" width={140} />
+                  <YAxis dataKey="q" type="category" stroke="var(--muted-foreground)" width={140} tick={{ fontSize: 11 }} />
                   <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }} />
-                  <Bar dataKey="c" fill="var(--citizen)" radius={[0, 6, 6, 0]} />
+                  <Bar dataKey="c" radius={[0, 6, 6, 0]}>
+                    {data.quartiers.map((q, i) => (
+                      <Cell
+                        key={i}
+                        fill={scope !== "__ALL__" && q.quartier === scope ? "var(--primary)" : "var(--citizen)"}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
             <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <h4 className="mb-4 font-semibold">Sentiment de sécurité par quartier</h4>
+              <h4 className="mb-1 font-semibold">Sentiment de sécurité</h4>
+              <p className="mb-4 text-xs text-muted-foreground">par quartier · % "oui je me sens en sécurité"</p>
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={data.securite.map((s) => ({
-                  q: s.quartier,
-                  Oui: pct(s.oui, s.total),
-                  Non: pct(s.non, s.total),
-                }))}>
+                <BarChart
+                  data={data.securite.map((s) => ({
+                    q: s.quartier,
+                    Oui: pct(s.oui, s.total),
+                    Non: pct(s.non, s.total),
+                  }))}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="q" stroke="var(--muted-foreground)" />
+                  <XAxis dataKey="q" stroke="var(--muted-foreground)" tick={{ fontSize: 10 }} />
                   <YAxis stroke="var(--muted-foreground)" unit="%" />
                   <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }} />
                   <Legend />
@@ -513,9 +597,12 @@ function CitoyenPane() {
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <h4 className="mb-4 font-semibold">Top priorités citoyennes (CV10)</h4>
-            <ResponsiveContainer width="100%" height={Math.max(220, data.priorites.length * 26)}>
-              <BarChart data={data.priorites.slice(0, 16)} layout="vertical" margin={{ left: 50 }}>
+            <header className="mb-4 flex items-baseline justify-between">
+              <h4 className="font-semibold">Top priorités citoyennes (CV10)</h4>
+              <span className="text-xs text-muted-foreground">{current.label}</span>
+            </header>
+            <ResponsiveContainer width="100%" height={Math.max(260, Math.min(current.priorites.length, 16) * 28)}>
+              <BarChart data={current.priorites.slice(0, 16)} layout="vertical" margin={{ left: 50 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis type="number" stroke="var(--muted-foreground)" />
                 <YAxis dataKey="theme" type="category" stroke="var(--muted-foreground)" width={260} tick={{ fontSize: 11 }} />
@@ -526,12 +613,15 @@ function CitoyenPane() {
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <h4 className="mb-4 font-semibold">Jugement sur les 5 dernières années (CV3)</h4>
-            <div className="space-y-3">
-              {data.jugements.slice(0, 12).map((j) => (
+            <header className="mb-4 flex items-baseline justify-between">
+              <h4 className="font-semibold">Jugement sur les 5 dernières années (CV3)</h4>
+              <span className="text-xs text-muted-foreground">{current.label}</span>
+            </header>
+            <div className="space-y-2">
+              {current.jugements.map((j) => (
                 <div key={j.theme} className="grid grid-cols-12 items-center gap-3">
-                  <div className="col-span-4 text-xs">{j.theme}</div>
-                  <div className="col-span-7 flex h-3 overflow-hidden rounded-full bg-muted">
+                  <div className="col-span-5 text-xs">{j.theme}</div>
+                  <div className="col-span-6 flex h-3 overflow-hidden rounded-full bg-muted" title={`+${j.ameliore} / =${j.stable} / -${j.degrade}`}>
                     <div className="bg-success" style={{ width: `${pct(j.ameliore, j.total)}%` }} />
                     <div className="bg-muted-foreground/40" style={{ width: `${pct(j.stable, j.total)}%` }} />
                     <div className="bg-destructive" style={{ width: `${pct(j.degrade, j.total)}%` }} />
@@ -540,26 +630,44 @@ function CitoyenPane() {
                 </div>
               ))}
             </div>
+            <div className="mt-4 flex flex-wrap gap-3 text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1"><span className="h-2 w-3 rounded-sm bg-success" /> Satisfait / amélioré</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2 w-3 rounded-sm bg-muted-foreground/40" /> Stable</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2 w-3 rounded-sm bg-destructive" /> Insatisfait / dégradé</span>
+            </div>
           </div>
 
           <div>
             <h4 className="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-              Verbatims — paroles d'habitants
+              Verbatims — paroles d'habitants ({current.label})
             </h4>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {data.verbatims.slice(0, 9).map((v, i) => (
-                <div key={i} className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <div className="mb-2 inline-flex rounded-full bg-citizen/15 px-2 py-0.5 text-[10px] font-semibold text-citizen">
-                    {v.quartier}
+            {current.verbatims.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
+                Aucun verbatim sur ce périmètre.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {current.verbatims.slice(0, 12).map((v, i) => (
+                  <div key={i} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                    <div className="mb-2 inline-flex rounded-full bg-citizen/15 px-2 py-0.5 text-[10px] font-semibold text-citizen">
+                      {current.label}
+                    </div>
+                    <p className="text-sm italic text-foreground">« {v} »</p>
                   </div>
-                  <p className="text-sm italic text-foreground">« {v.quote} »</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </>
       )}
     </div>
+  );
+}
+
+function aggregateSecurite(rows: { quartier: string; oui: number; non: number; total: number }[]) {
+  return rows.reduce(
+    (acc, r) => ({ oui: acc.oui + r.oui, non: acc.non + r.non, total: acc.total + r.total }),
+    { oui: 0, non: 0, total: 0 },
   );
 }
 
