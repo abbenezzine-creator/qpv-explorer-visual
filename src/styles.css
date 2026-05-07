@@ -79,9 +79,16 @@
   --warning-foreground: oklch(0.2 0 0);
 
   /* Data category colors */
-  --cold: oklch(0.55 0.13 230);     /* données froides - bleu */
-  --hot: oklch(0.62 0.2 35);        /* données chaudes - rouge/orange */
-  --citizen: oklch(0.55 0.15 155);  /* données citoyennes - vert */
+  --cold: oklch(0.55 0.13 230);
+  --hot: oklch(0.62 0.2 35);
+  --citizen: oklch(0.55 0.15 155);
+
+  /* 5 axes du Contrat de ville */
+  --axis-emancipation: oklch(0.55 0.18 295);  /* violet */
+  --axis-sante: oklch(0.62 0.18 15);          /* rouge corail */
+  --axis-emploi: oklch(0.6 0.16 195);         /* cyan */
+  --axis-transition: oklch(0.6 0.17 145);     /* vert */
+  --axis-tranquillite: oklch(0.6 0.17 65);    /* ambre */
 
   --border: oklch(0.9 0.01 250);
   --input: oklch(0.9 0.01 250);
