@@ -139,7 +139,7 @@ function Tabs({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
     { key: "citoyen", label: "Participation citoyenne" },
   ];
   return (
-    <nav className="flex flex-wrap gap-2 border-b border-border pb-px">
+    <nav className="flex flex-wrap gap-2 rounded-2xl border border-border bg-card/60 p-1.5 shadow-sm backdrop-blur">
       {items.map((it) => {
         const active = tab === it.key;
         return (
@@ -147,19 +147,27 @@ function Tabs({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
             key={it.key}
             onClick={() => onChange(it.key)}
             className={cn(
-              "relative rounded-t-lg border-b-2 px-4 py-2.5 text-sm font-medium transition",
+              "group relative inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all",
               active
-                ? "border-transparent bg-card text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
+                ? "text-white shadow-md"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
-            style={active && it.color ? { borderColor: it.color, color: it.color } : undefined}
+            style={active ? { background: it.color ?? "var(--primary)" } : undefined}
           >
+            <span
+              className="h-2 w-2 rounded-full transition-all"
+              style={{
+                background: active ? "rgba(255,255,255,0.95)" : (it.color ?? "var(--primary)"),
+                boxShadow: active ? "0 0 0 3px rgba(255,255,255,0.25)" : "none",
+              }}
+            />
             {it.label}
           </button>
         );
       })}
     </nav>
   );
+
 }
 
 /* ======================== SYNTHÈSE ======================== */
