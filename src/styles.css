@@ -35,6 +35,11 @@
   --color-cold: var(--cold);
   --color-hot: var(--hot);
   --color-citizen: var(--citizen);
+  --color-axis-emancipation: var(--axis-emancipation);
+  --color-axis-sante: var(--axis-sante);
+  --color-axis-emploi: var(--axis-emploi);
+  --color-axis-transition: var(--axis-transition);
+  --color-axis-tranquillite: var(--axis-tranquillite);
   --font-display: "Marianne", "Inter", system-ui, sans-serif;
 }
 
