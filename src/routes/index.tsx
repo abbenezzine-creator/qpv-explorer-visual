@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine,
   ResponsiveContainer, Tooltip, XAxis, YAxis, Cell,
+  PieChart, Pie, RadialBarChart, RadialBar, PolarAngleAxis,
 } from "recharts";
 import {
   AXES, INDICATORS, QPVS, SOURCES, YEARS,
