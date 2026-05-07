@@ -12,7 +12,8 @@ function mapToQuartier(raw: string): string {
   if (v.includes("blossier")) return "Les Blossières";
   if (v.includes("bordeau") || v.includes("saint-jean")) return "Pont-Bordeau";
   if (v.includes("orme") || v.includes("fleury")) return "Orme-Mortier";
-  return raw.trim() || "Autre";
+  if (!raw.trim()) return "Non renseigné";
+  return raw.trim();
 }
 
 function parseCsv(text: string): string[][] {
@@ -36,20 +37,44 @@ function parseCsv(text: string): string[][] {
   return rows;
 }
 
+export interface QuartierAggregate {
+  quartier: string;
+  responses: number;
+  evolution: { ameliore: number; stable: number; degrade: number; total: number };
+  securite: { oui: number; non: number; total: number };
+  jugements: { theme: string; ameliore: number; stable: number; degrade: number; total: number }[];
+  priorites: { theme: string; count: number }[];
+  verbatims: string[];
+}
+
 export interface CitizenSurveyData {
   fetchedAt: string;
+  yearLabel: string;
   totalResponses: number;
+  quartiers: QuartierAggregate[]; // détail par quartier
+  // Agrégats globaux (utiles pour la vue d'ensemble)
   byQuartier: Record<string, number>;
-  // CV3 — jugements par thème
-  jugements: { theme: string; ameliore: number; stable: number; degrade: number; total: number }[];
-  // CV4 — sentiment de sécurité par quartier
-  securite: { quartier: string; oui: number; non: number; total: number }[];
-  // CV10 — top priorités
-  priorites: { theme: string; count: number }[];
-  // ID3 — évolution ressentie globale
   evolution: { ameliore: number; stable: number; degrade: number; total: number };
-  // Verbatims
+  jugements: { theme: string; ameliore: number; stable: number; degrade: number; total: number }[];
+  securite: { quartier: string; oui: number; non: number; total: number }[];
+  priorites: { theme: string; count: number }[];
   verbatims: { quartier: string; quote: string }[];
+}
+
+function classifyEvolution(v: string): "ameliore" | "stable" | "degrade" | null {
+  const s = v.toLowerCase();
+  if (!s.trim()) return null;
+  if (s.includes("amélior") || s.includes("ameliore")) return "ameliore";
+  if (s.includes("dégrad") || s.includes("degrad")) return "degrade";
+  return "stable";
+}
+
+function classifyJugement(v: string): "ameliore" | "stable" | "degrade" | null {
+  const s = v.toLowerCase().trim();
+  if (!s) return null;
+  if (s.includes("très satisf") || s.includes("amélior")) return "ameliore";
+  if (s.includes("insatisf") || s.includes("dégrad") || s.includes("pas satisf")) return "degrade";
+  return "stable";
 }
 
 export const fetchCitizenSurvey = createServerFn({ method: "GET" }).handler(
@@ -62,91 +87,111 @@ export const fetchCitizenSurvey = createServerFn({ method: "GET" }).handler(
     const data = rows.slice(1).filter((r) => r.length > 1 && r.some((c) => c.trim()));
 
     const idx = (needle: string) => headers.findIndex((h) => h.toLowerCase().includes(needle.toLowerCase()));
-
     const iQuartier = idx("Dans quel quartier");
     const iEvol = idx("ID3");
     const iSecu = idx("CV4");
     const iVerbatim = idx("VP1");
 
-    const byQuartier: Record<string, number> = {};
-    const evolution = { ameliore: 0, stable: 0, degrade: 0, total: 0 };
-    const securiteMap: Record<string, { oui: number; non: number; total: number }> = {};
-    const verbatims: { quartier: string; quote: string }[] = [];
-
-    // Thèmes CV3 (jugements 5 dernières années)
-    const cv3Themes: { col: number; label: string }[] = [];
+    // Colonnes thématiques CV3 (jugements 5 dernières années)
+    const cv3Cols: { col: number; label: string }[] = [];
     headers.forEach((h, i) => {
       const m = h.match(/CV3.*\[(.+)\]/);
       if (m && !h.includes("Bis") && !h.includes("ter")) {
-        cv3Themes.push({ col: i, label: m[1].trim() });
+        cv3Cols.push({ col: i, label: m[1].trim() });
       }
     });
-    const jugementsAcc = cv3Themes.map((t) => ({
-      theme: t.label, col: t.col, ameliore: 0, stable: 0, degrade: 0, total: 0,
-    }));
 
-    // Priorités CV10
-    const cv10Themes: { col: number; label: string }[] = [];
+    // Colonnes priorités CV10
+    const cv10Cols: { col: number; label: string }[] = [];
     headers.forEach((h, i) => {
       const m = h.match(/CV10.*\[(.+)\]/);
-      if (m) cv10Themes.push({ col: i, label: m[1].trim() });
+      if (m) cv10Cols.push({ col: i, label: m[1].trim() });
     });
-    const prioritesAcc = cv10Themes.map((t) => ({ theme: t.label, col: t.col, count: 0 }));
+
+    // Init agrégats par quartier
+    const perQuartier: Record<string, QuartierAggregate> = {};
+    function ensure(q: string): QuartierAggregate {
+      if (!perQuartier[q]) {
+        perQuartier[q] = {
+          quartier: q,
+          responses: 0,
+          evolution: { ameliore: 0, stable: 0, degrade: 0, total: 0 },
+          securite: { oui: 0, non: 0, total: 0 },
+          jugements: cv3Cols.map((c) => ({ theme: c.label, ameliore: 0, stable: 0, degrade: 0, total: 0 })),
+          priorites: cv10Cols.map((c) => ({ theme: c.label, count: 0 })),
+          verbatims: [],
+        };
+      }
+      return perQuartier[q];
+    }
+
+    // Globaux
+    const evolutionG = { ameliore: 0, stable: 0, degrade: 0, total: 0 };
+    const jugementsG = cv3Cols.map((c) => ({ theme: c.label, ameliore: 0, stable: 0, degrade: 0, total: 0 }));
+    const prioritesG = cv10Cols.map((c) => ({ theme: c.label, count: 0 }));
+    const verbatimsG: { quartier: string; quote: string }[] = [];
 
     for (const r of data) {
       const q = mapToQuartier(r[iQuartier] ?? "");
-      byQuartier[q] = (byQuartier[q] ?? 0) + 1;
+      const agg = ensure(q);
+      agg.responses++;
 
-      // Evolution ID3
-      const ev = (r[iEvol] ?? "").toLowerCase();
+      // ID3 — évolution ressentie
+      const ev = classifyEvolution(r[iEvol] ?? "");
       if (ev) {
-        evolution.total++;
-        if (ev.includes("amélior") || ev.includes("ameliore")) evolution.ameliore++;
-        else if (ev.includes("dégrad") || ev.includes("degrad")) evolution.degrade++;
-        else evolution.stable++;
+        agg.evolution[ev]++; agg.evolution.total++;
+        evolutionG[ev]++; evolutionG.total++;
       }
 
-      // Sécurité CV4
+      // CV4 — sécurité
       const sec = (r[iSecu] ?? "").toLowerCase().trim();
       if (sec) {
-        if (!securiteMap[q]) securiteMap[q] = { oui: 0, non: 0, total: 0 };
-        securiteMap[q].total++;
-        if (sec.startsWith("oui")) securiteMap[q].oui++;
-        else if (sec.startsWith("non")) securiteMap[q].non++;
+        agg.securite.total++;
+        if (sec.startsWith("oui")) agg.securite.oui++;
+        else if (sec.startsWith("non")) agg.securite.non++;
       }
 
-      // Jugements CV3
-      for (const j of jugementsAcc) {
-        const v = (r[j.col] ?? "").toLowerCase();
-        if (!v.trim()) continue;
-        j.total++;
-        if (v.includes("très satisf") || v.includes("amélior")) j.ameliore++;
-        else if (v.includes("insatisf") || v.includes("dégrad")) j.degrade++;
-        else j.stable++;
-      }
+      // CV3 — jugements
+      cv3Cols.forEach((c, idx2) => {
+        const cls = classifyJugement(r[c.col] ?? "");
+        if (!cls) return;
+        agg.jugements[idx2][cls]++; agg.jugements[idx2].total++;
+        jugementsG[idx2][cls]++; jugementsG[idx2].total++;
+      });
 
-      // Priorités CV10 (case cochée = libellé non vide et != "")
-      for (const p of prioritesAcc) {
-        const v = (r[p.col] ?? "").trim();
-        if (v && v.toLowerCase() !== "non concerné(e)") p.count++;
-      }
+      // CV10 — priorités cochées
+      cv10Cols.forEach((c, idx2) => {
+        const v = (r[c.col] ?? "").trim();
+        if (v && v.toLowerCase() !== "non concerné(e)" && v.toLowerCase() !== "non concerne(e)") {
+          agg.priorites[idx2].count++;
+          prioritesG[idx2].count++;
+        }
+      });
 
-      // Verbatim
+      // Verbatim VP1
       const vb = (r[iVerbatim] ?? "").trim();
-      if (vb && vb.length > 8 && verbatims.length < 30) verbatims.push({ quartier: q, quote: vb });
+      if (vb && vb.length > 6) {
+        if (agg.verbatims.length < 12) agg.verbatims.push(vb);
+        if (verbatimsG.length < 40) verbatimsG.push({ quartier: q, quote: vb });
+      }
     }
+
+    // Tri priorités par quartier (desc)
+    const quartiers = Object.values(perQuartier)
+      .map((q) => ({ ...q, priorites: [...q.priorites].sort((a, b) => b.count - a.count) }))
+      .sort((a, b) => b.responses - a.responses);
 
     return {
       fetchedAt: new Date().toISOString(),
+      yearLabel: "2023",
       totalResponses: data.length,
-      byQuartier,
-      jugements: jugementsAcc.map(({ col: _c, ...rest }) => rest),
-      securite: Object.entries(securiteMap).map(([quartier, v]) => ({ quartier, ...v })),
-      priorites: prioritesAcc
-        .map(({ col: _c, ...rest }) => rest)
-        .sort((a, b) => b.count - a.count),
-      evolution,
-      verbatims,
+      quartiers,
+      byQuartier: Object.fromEntries(quartiers.map((q) => [q.quartier, q.responses])),
+      evolution: evolutionG,
+      jugements: jugementsG,
+      securite: quartiers.map((q) => ({ quartier: q.quartier, ...q.securite })),
+      priorites: [...prioritesG].sort((a, b) => b.count - a.count),
+      verbatims: verbatimsG,
     };
   },
 );
