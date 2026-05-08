@@ -761,6 +761,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <p style="font-size:11px;color:var(--muted-fore);margin-top:7px">Publication du Sheet : Fichier → Partager → Publier sur le Web → Format CSV. Coller le lien ici.</p>
   </div>
 </div></div>
+<div class="card" style="margin-top:16px"><div class="card-hdr"><div class="card-title">Importer des fiches actions (Excel)</div></div><div class="card-body">
+  <div style="font-size:12px;color:var(--muted-fore);margin-bottom:10px">Importez un classeur Excel contenant les onglets <b>Tableau</b> (fiches actions), <b>publipostage</b> (informations financeurs synthétiques) et <b>Decision 2026</b> (montants attribués par financeur). Les associations manquantes seront créées automatiquement et les actions seront ajoutées ou mises à jour selon la référence (Ref).</div>
+  <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+    <input type="file" id="importXlsxFile" accept=".xlsx,.xls" class="form-inp" style="flex:1;min-width:240px"/>
+    <button class="btn btn-primary" onclick="importActionsXlsx()">Importer</button>
+  </div>
+  <div id="importXlsxStatus" style="margin-top:10px;font-size:12px;color:var(--muted-fore)"></div>
+</div></div>
     </div>
   <!-- DIAGNOSTIC TERRITORIAL -->
     <div class="page" id="page-diagnostic">
