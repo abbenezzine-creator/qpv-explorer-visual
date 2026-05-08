@@ -63,7 +63,7 @@ export function AppSidebar() {
 
   const renderGroup = (label: string, items: NavItem[]) => (
     <SidebarGroup>
-      <SidebarGroupLabel>{label}</SidebarGroupLabel>
+      <SidebarGroupLabel className="font-bold uppercase tracking-wider text-xs">{label}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((it) => (
