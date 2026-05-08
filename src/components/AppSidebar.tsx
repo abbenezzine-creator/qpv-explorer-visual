@@ -44,7 +44,6 @@ const territoire: NavItem[] = [
 ];
 
 const principal: NavItem[] = [
-  { title: "Questionnaire thématique", to: "/app", search: { page: "questionnaire-thematique" }, icon: ListChecks },
   { title: "Tableau de bord", to: "/app", search: { page: "dashboard" }, icon: LayoutDashboard },
   { title: "Actions", to: "/app", search: { page: "agenda" }, icon: CalendarDays },
 ];
@@ -62,6 +61,7 @@ const ressources: NavItem[] = [
 
 const admin: NavItem[] = [
   { title: "Paramètres", to: "/app", search: { page: "parametres" }, icon: Settings },
+  { title: "Questionnaire thématique", to: "/app", search: { page: "questionnaire-thematique" }, icon: ListChecks },
 ];
 
 const ALL_LABEL = "Toutes les associations";
