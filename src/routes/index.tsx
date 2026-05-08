@@ -16,6 +16,30 @@ import { fetchCitizenSurvey } from "@/lib/citizen-survey.functions";
 import { QPVSelector } from "@/components/dashboard/QPVSelector";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard, GraduationCap, HeartPulse, Briefcase, Leaf, ShieldCheck, Users,
+  type LucideIcon,
+} from "lucide-react";
+
+const TAB_ICONS: Record<string, LucideIcon> = {
+  synthese: LayoutDashboard,
+  emancipation: GraduationCap,
+  sante: HeartPulse,
+  emploi: Briefcase,
+  transition: Leaf,
+  tranquillite: ShieldCheck,
+  citoyen: Users,
+};
+
+const TAB_HINTS: Record<string, string> = {
+  synthese: "Vue d'ensemble",
+  emancipation: "Éducation · Culture",
+  sante: "Soins · Vieillissement",
+  emploi: "Insertion · Formation",
+  transition: "Énergie · Mobilité",
+  tranquillite: "Sécurité · Médiation",
+  citoyen: "Voix des habitants",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
