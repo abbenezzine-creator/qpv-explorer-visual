@@ -4465,11 +4465,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       if(page && util && !document.getElementById('mergedUtiliteWrap')){
         const wrap = document.createElement('div');
         wrap.id = 'mergedUtiliteWrap';
-        wrap.style.marginTop = '24px';
+        wrap.style.margin = '0 0 24px';
         wrap.innerHTML = `<div style="font-family:Lexend,sans-serif;font-size:18px;font-weight:800;margin:6px 0 12px">Utilité sociale</div>`;
         const inner = util.querySelectorAll(':scope > *:not(.page-hdr)');
         inner.forEach(n=>wrap.appendChild(n));
-        page.appendChild(wrap);
+        const hdr = page.querySelector(':scope > .page-hdr');
+        if(hdr && hdr.nextSibling) page.insertBefore(wrap, hdr.nextSibling);
+        else if(hdr) page.appendChild(wrap);
+        else page.insertBefore(wrap, page.firstChild);
       }
     }
     return r;
