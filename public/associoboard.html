@@ -2005,11 +2005,16 @@ function addEvaluator(){
   showToast('Évaluateur ajouté — vous pouvez noter');
 }
 function rateRef(axId,critId,val){
-  if(!currentEvalKey){showToast('Sélectionnez action + partenaire d\'abord');return;}
+  if(!currentEvalKey){
+    // fallback: anonymous evaluator on selected action
+    const aid=document.getElementById('qualActionSel')?.value;
+    if(!aid){showToast('Sélectionnez une action');return;}
+    currentEvalKey = `${aid}_anon`;
+  }
   if(!QUAL_EVALS[currentEvalKey]) QUAL_EVALS[currentEvalKey]={};
   QUAL_EVALS[currentEvalKey][critId]=val;
   paintStars(critId,val);
-  updateAxeScore(axId); updateQualGlobalScore();
+  updateAxeScore(axId); updateQualGlobalScore(); updateEvalTabs();
 }
 function updateAxeScore(axId){
   const ax=QUALITE_AXES.find(a=>a.id===axId); if(!ax) return;
