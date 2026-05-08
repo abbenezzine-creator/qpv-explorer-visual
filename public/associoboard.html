@@ -1596,8 +1596,6 @@ function renderActionsList(cid,actions,limit){
   if(!list.length){el.innerHTML='<p style="color:var(--muted-fore);font-size:12px;padding:9px 0">Aucune action</p>';return;}
   el.innerHTML=list.map(a=>{
     const bc=TCOL[a.type]||'purple';
-    const sr=a.surveyResult;
-    const surveyPill=sr?`<div class="result-pill"><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="1 6 4 9 11 3"/></svg>Obj. ${Math.round((sr.obj||3)/5*100)}% · Sat. ${Math.round((sr.qac||8)/10*100)}%</div>`:'';
     return `<div class="action-card" style="position:relative" onclick="openActionQualite(${a.id})">
       <button type="button" class="btn btn-ghost btn-sm" style="position:absolute;top:8px;right:8px;font-size:10px;padding:3px 7px;z-index:2" onclick="event.stopPropagation();openActionDetail(${a.id})">Détail</button>
       <div class="ac-bar" style="background:${a.gradient}"></div>
@@ -1610,14 +1608,9 @@ function renderActionsList(cid,actions,limit){
         ${(a.quartiers||[]).map(q=>`<span class="badge badge-gray">${q}</span>`).join('')}
         ${(a.ages||[]).map(ag=>`<span class="badge badge-blue">${ag}</span>`).join('')}
       </div>
-      ${surveyPill}
-      ${(() => {
-        const inds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
-        const vals = inds.map(id => (typeof _qualScore==='function' ? _qualScore(a.id,id) : 75));
-        const avg = Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
-        return `<div class="result-pill" style="background:oklch(0.96 0.04 285);color:var(--primary);border-color:oklch(0.85 0.08 285)"><svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>Moyenne qualité · ${avg}%</div>`;
-      })()}
-      <div class="ac-footer">
+      ${typeof renderEvalBlock==='function'?renderEvalBlock(a):''}
+      ${typeof renderBenefBtn==='function'?renderBenefBtn(a):''}
+      <div class="ac-footer" style="margin-top:8px">
         <span>${a.date.split('-').reverse().join('/')} · ${a.heure}</span>
         <span>${a.nb} participants · ${getBudgetTotal(a)} €</span>
       </div>
@@ -4185,6 +4178,27 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     .ac-det-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
     .benef-q-btn{flex:1;min-width:36px;padding:6px;border:1px solid var(--border);background:var(--background);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--foreground)}
     .benef-q-btn.active{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+    /* Eval status block on action cards */
+    .eval-block{margin-top:10px;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);background:var(--muted)}
+    .eval-block .eval-icn{flex-shrink:0;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);color:var(--muted-fore)}
+    .eval-block .eval-txt{flex:1;min-width:0}
+    .eval-block .eval-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore);margin-bottom:3px}
+    .eval-block .eval-val{font-size:13px;font-weight:700;color:var(--foreground)}
+    .eval-block.is-pending{background:linear-gradient(135deg,oklch(0.97 0.04 75),oklch(0.96 0.05 60));border-color:oklch(0.85 0.1 75)}
+    .eval-block.is-pending .eval-icn{color:oklch(0.55 0.18 60);animation:evalPendPulse 2s ease-in-out infinite}
+    .eval-block.is-pending .eval-val{color:oklch(0.45 0.18 55)}
+    .eval-block.is-done{background:linear-gradient(135deg,oklch(0.96 0.05 150),oklch(0.95 0.06 175));border-color:oklch(0.78 0.13 155)}
+    .eval-block.is-done .eval-icn{color:oklch(0.5 0.16 155);background:oklch(0.96 0.06 155)}
+    .eval-bar{height:6px;border-radius:99px;background:oklch(0.92 0.02 285);overflow:hidden;margin-top:6px}
+    .eval-bar > span{display:block;height:100%;background:linear-gradient(90deg,oklch(0.55 0.18 155),oklch(0.62 0.18 175));border-radius:99px;transition:width .4s ease}
+    @keyframes evalPendPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.7}}
+    /* Beneficiary evaluation button */
+    .btn-benef{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:8px 12px;width:100%;justify-content:center;font-family:inherit;font-size:12px;font-weight:600;border-radius:9px;cursor:pointer;border:1px solid var(--primary);background:var(--card);color:var(--primary);transition:all .18s;animation:benefSoftPulse 2.4s ease-in-out infinite}
+    .btn-benef:hover{background:var(--primary);color:var(--primary-foreground);transform:translateY(-1px)}
+    .btn-benef.is-urgent{border-color:oklch(0.62 0.24 25);background:oklch(0.62 0.24 25);color:#fff;animation:benefRedBlink 1s ease-in-out infinite;box-shadow:0 0 0 0 oklch(0.62 0.24 25 / .55)}
+    .btn-benef.is-urgent:hover{background:oklch(0.55 0.24 25);border-color:oklch(0.55 0.24 25);color:#fff}
+    @keyframes benefSoftPulse{0%,100%{box-shadow:0 0 0 0 color-mix(in oklab,var(--primary) 35%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in oklab,var(--primary) 0%,transparent)}}
+    @keyframes benefRedBlink{0%,100%{background:oklch(0.62 0.24 25);box-shadow:0 0 0 0 oklch(0.62 0.24 25 / .6)}50%{background:oklch(0.5 0.24 25);box-shadow:0 0 0 8px oklch(0.62 0.24 25 / 0)}}
   `;
   document.head.appendChild(st);
 
@@ -4222,26 +4236,57 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     if(typeof QUAL_EVALS==='undefined') return false;
     return Object.keys(QUAL_EVALS).some(k=>k.startsWith(actionId+'_'));
   }
+  function evalAvgPercent(actionId){
+    try{
+      if(typeof QUALITE_AXES==='undefined' || typeof _qualScore!=='function') return 0;
+      const inds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
+      const vals = inds.map(id=>_qualScore(actionId, id));
+      if(!vals.length) return 0;
+      return Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
+    }catch(e){ return 0; }
+  }
+  function hasBenefSurvey(a){ return !!(a && a.surveyResult && Object.keys(a.surveyResult).length); }
+  window.renderEvalBlock = function(a){
+    const done = evalStatus(a.id);
+    if(done){
+      const pct = evalAvgPercent(a.id);
+      return `<div class="eval-block is-done">
+        <div class="eval-icn"><svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg></div>
+        <div class="eval-txt"><div class="eval-lbl">Évaluation partenaire</div><div class="eval-val">Référentiel évalué · ${pct}%</div><div class="eval-bar"><span style="width:${pct}%"></span></div></div>
+      </div>`;
+    }
+    return `<div class="eval-block is-pending">
+      <div class="eval-icn"><svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3.5l2 1.2"/></svg></div>
+      <div class="eval-txt"><div class="eval-lbl">Évaluation partenaire</div><div class="eval-val">En attente d'évaluation</div></div>
+    </div>`;
+  };
+  window.renderBenefBtn = function(a){
+    const urgent = !hasBenefSurvey(a);
+    const lbl = urgent ? 'Évaluer les bénéficiaires' : 'Mettre à jour l\'évaluation bénéficiaires';
+    return `<button type="button" class="btn-benef${urgent?' is-urgent':''}" onclick="event.stopPropagation();evalBeneficiaire(${a.id},event)">
+      <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="5" r="2.3"/><path d="M2.5 12.5c0-2.3 2-4 4.5-4s4.5 1.7 4.5 4"/></svg>
+      <span>${lbl}</span>
+    </button>`;
+  };
+
 
   function renderActionCard(a){
     const bc = (typeof TCOL!=='undefined' && TCOL[a.type]) || 'purple';
-    const evaluated = evalStatus(a.id);
-    const evalBadge = evaluated
-      ? '<div class="done-eval"><svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 6 4 9 11 3"/></svg>Référentiel évalué</div>'
-      : '<div class="pending-eval"><svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6" cy="6" r="5"/><line x1="6" y1="3.5" x2="6" y2="6.5"/><circle cx="6" cy="8" r="0.5" fill="currentColor"/></svg>En attente d\'évaluation</div>';
     const dateStr = a.date ? a.date.split('-').reverse().join('/') : '';
-    return `<div class="action-card">
+    return `<div class="action-card" style="position:relative" onclick="openActionQualite(${a.id})">
+      <button type="button" class="btn btn-ghost btn-sm" style="position:absolute;top:8px;right:8px;font-size:10px;padding:3px 7px;z-index:2" onclick="event.stopPropagation();openActionDetail(${a.id})">Détail</button>
       <div class="ac-bar" style="background:${a.gradient}"></div>
       <div class="ac-ref">
         <span>${getAssocName(a.assocId).toUpperCase()}</span>
         <span class="badge badge-${bc}">${a.statut}</span>
       </div>
-      <div class="ac-title" style="cursor:pointer" onclick="openActionDetail(${a.id})">${a.titre}</div>
+      <div class="ac-title">${a.titre}</div>
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
         ${(a.quartiers||[]).map(q=>`<span class="badge badge-gray">${q}</span>`).join('')}
         ${(a.ages||[]).map(ag=>`<span class="badge badge-blue">${ag}</span>`).join('')}
       </div>
-      ${evalBadge}
+      ${renderEvalBlock(a)}
+      ${renderBenefBtn(a)}
       <div class="ac-footer" style="margin-top:8px">
         <span><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="vertical-align:-1px;margin-right:3px"><rect x="1.5" y="2.5" width="9" height="8" rx="1"/><line x1="1.5" y1="5" x2="10.5" y2="5"/></svg>${dateStr} · ${a.heure||''}</span>
         <span>${a.nb||0} part. · ${getBudgetTotal(a)} €</span>
