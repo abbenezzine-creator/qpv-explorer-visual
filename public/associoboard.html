@@ -1458,50 +1458,75 @@ function renderDashboard(){
     <div class="tl-item"><div class="tl-dot" style="background:var(--accent-rose)"></div><div class="tl-date">02 mai — 09:00</div><div class="tl-txt"><strong>Accompagnement logement</strong> — Score qualité mis à jour : 87/100</div></div>`;
 }
 
-// ========== QUALITY PROGRESS IN DASHBOARD — collapsible with criteria gauges ==========
+// ========== QUALITY PROGRESS IN DASHBOARD — scoped by user / association ==========
+// Deterministic pseudo-score per (actionId, indicatorId) so the demo data feels stable.
+function _qualScore(actionId, indId){
+  const s = String(actionId)+'|'+String(indId);
+  let h=0; for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; }
+  return 55 + (h % 41); // 55..95
+}
+function _scopedActionsForQual(){
+  const isAdmin = currentUser?.role==='superadmin';
+  const aid = isAdmin ? currentAssocId : currentUser?.assocId;
+  return ACTIONS.filter(a => aid ? a.assocId===aid : true);
+}
 function renderQualiteProgressDash(){
   const el=document.getElementById('dashQualite'); if(!el) return;
-  // Per-criterion scores (realistic demo values)
-  const critScores=[
-    [88,82,75],    // C1
-    [82,90,74],    // C2
-    [91,85,88,94], // C3 (4 critères)
-    [79,85,73],    // C4
-    [85,78,62],    // C5
-    [88,82,90],    // C6
-    [80,75,88],    // C7
-  ];
-  // Axe average = mean of its criteria
-  const axeAvg=critScores.map(cs=>Math.round(cs.reduce((s,v)=>s+v,0)/cs.length));
-  el.innerHTML=QUALITE_AXES.map((ax,i)=>`
-    <div class="qual-axe" style="border-radius:calc(var(--radius))">
-      <div class="qual-axe-hdr" onclick="toggleAxe('qaxe${i}')">
-        <div class="qual-axe-name" style="color:${ax.color};font-size:12px">
-          <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="${ax.color}" stroke-width="1.5" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>
-          ${ax.name}
+  const sel=document.getElementById('dashQualCrit');
+  if(sel && !sel.options.length){
+    sel.innerHTML = '<option value="ALL">Tous les critères</option>' +
+      QUALITE_AXES.map(ax=>`<option value="${ax.id}">${ax.name}</option>`).join('');
+  }
+  const critId = sel?.value || 'ALL';
+  const acts = _scopedActionsForQual();
+  const allInds = QUALITE_AXES.flatMap(ax => ax.criteria.map(c => ({axId:ax.id, color:ax.color, id:c.id, text:c.text})));
+  const indsForCrit = critId==='ALL' ? allInds : allInds.filter(i=>i.axId===critId);
+
+  // Average per action across selected scope of indicators
+  const perAction = acts.map(a=>{
+    const vals = indsForCrit.map(i=>_qualScore(a.id, i.id));
+    const avg = vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
+    return {a, avg};
+  }).sort((x,y)=>y.avg-x.avg);
+
+  // Average per indicator across scope of actions
+  const perInd = indsForCrit.map(i=>{
+    const vals = acts.map(a=>_qualScore(a.id, i.id));
+    const avg = vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
+    return {...i, avg};
+  });
+
+  const globalAvg = perAction.length ? Math.round(perAction.reduce((s,x)=>s+x.avg,0)/perAction.length) : 0;
+  const isAdmin = currentUser?.role==='superadmin';
+  const scopeName = isAdmin ? (currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Toutes les associations') : (ASSOCS.find(x=>x.id===currentUser?.assocId)?.nom||'');
+  const critLabel = critId==='ALL' ? 'Tous critères' : (QUALITE_AXES.find(a=>a.id===critId)?.name||critId);
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px;border-bottom:1px dashed var(--border);margin-bottom:8px">
+      <div style="font-size:11px;color:var(--muted-fore)">${scopeName} · <strong>${critLabel}</strong></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg}%</div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Moyenne par action</div>
+    ${perAction.length ? perAction.map(({a,avg})=>`
+      <div class="qual-crit-item">
+        <span class="qual-crit-id" style="min-width:90px;color:var(--primary);font-size:10px">${getAssocName(a.assocId)}</span>
+        <span class="qual-crit-txt" style="font-size:12px">${a.titre}</span>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <div class="qual-crit-bar" style="width:60px"><div class="qual-crit-bar-fill" style="width:${avg}%;background:var(--primary)"></div></div>
+          <span class="qual-crit-pct" style="color:var(--primary);min-width:32px;text-align:right">${avg}%</span>
         </div>
-        <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
-          <div style="width:70px;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${axeAvg[i]}%;height:100%;background:${ax.color};border-radius:3px;transition:width .7s"></div></div>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${ax.color};min-width:34px">${axeAvg[i]}%</span>
+      </div>`).join('') : '<p style="color:var(--muted-fore);font-size:12px;padding:6px 0">Aucune action dans le périmètre</p>'}
+    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;border-top:1px dashed var(--border);padding-top:8px">Indicateurs (${critLabel})</div>
+    ${perInd.map(i=>`
+      <div class="qual-crit-item">
+        <span class="qual-crit-id" style="color:${i.color};min-width:26px">${i.id}</span>
+        <span class="qual-crit-txt" style="font-size:11.5px">${i.text}</span>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <div class="qual-crit-bar" style="width:60px"><div class="qual-crit-bar-fill" style="width:${i.avg}%;background:${i.color}"></div></div>
+          <span class="qual-crit-pct" style="color:${i.color};min-width:32px;text-align:right">${i.avg}%</span>
         </div>
-        <div class="qual-axe-chevron" id="chev${i}">▼</div>
-      </div>
-      <div class="qual-crit-list" id="qaxe${i}">
-        ${ax.criteria.map((c,ci)=>`
-          <div class="qual-crit-item">
-            <span class="qual-crit-id" style="color:${ax.color};min-width:26px">${c.id}</span>
-            <span class="qual-crit-txt">${c.text}</span>
-            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-              <div class="qual-crit-bar" style="width:60px"><div class="qual-crit-bar-fill" style="width:${critScores[i][ci]||75}%;background:${ax.color}"></div></div>
-              <span class="qual-crit-pct" style="color:${ax.color}">${critScores[i][ci]||75}%</span>
-            </div>
-          </div>`).join('')}
-        <div style="padding:6px 0 2px;font-size:11px;color:var(--muted-fore);display:flex;align-items:center;gap:6px;border-top:1px dashed var(--border);margin-top:4px">
-          <span>Moyenne ${ax.name.split('—')[0].trim()} :</span>
-          <strong style="color:${ax.color}">${axeAvg[i]}%</strong>
-        </div>
-      </div>
-    </div>`).join('');
+      </div>`).join('')}
+  `;
 }
 function toggleAxe(id){
   const el=document.getElementById(id);
