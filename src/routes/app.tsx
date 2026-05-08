@@ -1,36 +1,54 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
+import { getUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/app")({
+  beforeLoad: () => {
+    if (typeof window !== "undefined" && !getUser()) {
+      throw redirect({ to: "/login" });
+    }
+  },
   component: AppPage,
   validateSearch: (s: Record<string, unknown>) => ({
     page: typeof s.page === "string" ? s.page : "dashboard",
   }),
 });
 
+type IframeWin = Window & {
+  nav?: (id: string) => void;
+  autoLogin?: (login: string) => boolean;
+};
+
 function AppPage() {
   const { page } = Route.useSearch();
   const ref = useRef<HTMLIFrameElement>(null);
+  const u = getUser();
+
+  // Auto-login the iframe once it loads
+  useEffect(() => {
+    const f = ref.current;
+    if (!f || !u) return;
+    const onLoad = () => {
+      try {
+        const win = f.contentWindow as IframeWin | null;
+        if (win?.autoLogin) win.autoLogin(u.login);
+        if (win?.nav) win.nav(page);
+      } catch { /* noop */ }
+    };
+    f.addEventListener("load", onLoad);
+    // Try immediately too in case already loaded
+    onLoad();
+    return () => f.removeEventListener("load", onLoad);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [u?.login]);
 
   useEffect(() => {
     const f = ref.current;
     if (!f) return;
     try {
-      const win = f.contentWindow as (Window & { nav?: (id: string) => void }) | null;
-      if (win && typeof win.nav === "function") {
-        win.nav(page);
-        return;
-      }
-    } catch {
-      /* cross-origin not expected */
-    }
-    // Fallback: update src hash
-    const url = `/associoboard.html#page=${encodeURIComponent(page)}`;
-    if (f.src.indexOf("/associoboard.html") === -1) {
-      f.src = url;
-    } else {
-      f.contentWindow?.location.replace(url);
-    }
+      const win = f.contentWindow as IframeWin | null;
+      if (win?.nav) win.nav(page);
+    } catch { /* noop */ }
   }, [page]);
 
   return (
