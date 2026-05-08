@@ -2986,7 +2986,7 @@ async function importActionsXlsx(){
     if(tabRows.length<2){ if(status) status.textContent='Onglet Tableau vide'; return; }
     const head=tabRows[0];
     const cRef=_xlsxFindCol(head,['ref']);
-    const cAsso=_xlsxFindCol(head,['libellé - demandeur','demandeur']);
+    const cAsso=_xlsxFindCol(head,['libellé - demandeur','libelle - demandeur','libellé demandeur','libelle demandeur','libellé']);
     const cTit=_xlsxFindCol(head,['intitulé - demande','intitule']);
     const cThe=_xlsxFindCol(head,['thématique','thematique','dispositif']);
     const cDes=_xlsxFindCol(head,['description']);
