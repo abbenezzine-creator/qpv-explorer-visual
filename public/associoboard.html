@@ -1465,24 +1465,25 @@ function renderDashboard(){
   const isAdmin=currentUser?.role==='superadmin';
   const allActsYear=ACTIONS.filter(a=>!a.annee||a.annee===currentYear);
   const totalActions=isAdmin?allActsYear.length:acts.length;
-  const totalBenef=isAdmin?allActsYear.reduce((s,a)=>s+(a.nb||0),0):acts.reduce((s,a)=>s+(a.nb||0),0);
-  const filteredBenef=acts.reduce((s,a)=>s+(a.nb||0),0);
+  const _avgBenef = (arr)=> arr.length ? Math.round(arr.reduce((s,a)=>s+(a.nb||0),0)/arr.length) : 0;
+  const totalBenef = isAdmin ? _avgBenef(allActsYear) : _avgBenef(acts);
+  const filteredBenef = _avgBenef(acts);
   // Score qualité scoped to current association (or moyenne globale si superadmin sans sélection)
   const scopedActs = (typeof _scopedActionsForQual==='function') ? _scopedActionsForQual() : acts;
   const allInds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
   let qualScorePct = 0;
   if (scopedActs.length && allInds.length) {
     const perActAvg = scopedActs.map(a => {
-      const vals = allInds.map(id => _qualScore(a.id, id));
-      return vals.reduce((s,v)=>s+v,0)/vals.length;
-    });
-    qualScorePct = Math.round(perActAvg.reduce((s,v)=>s+v,0)/perActAvg.length);
+      const vals = allInds.map(id => _qualScore(a.id, id)).filter(v=>v!=null);
+      return vals.length ? vals.reduce((s,v)=>s+v,0)/vals.length : null;
+    }).filter(v=>v!=null);
+    qualScorePct = perActAvg.length ? Math.round(perActAvg.reduce((s,v)=>s+v,0)/perActAvg.length) : 0;
   }
   const qualScopeLbl = isAdmin ? (currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Moy. toutes associations') : 'Moy. '+(ASSOCS.find(x=>x.id===currentUser?.assocId)?.nom||'');
   const el=document.getElementById('dashStats');
   if(el) el.innerHTML=`
     <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Actions ${currentYear}${isAdmin?' — Total':''}</div><div class="stat-val" style="color:var(--primary)">${totalActions}</div><div class="stat-trend">${isAdmin&&currentAssocId?'Sélection : '+acts.length:isAdmin?ASSOCS.length+' associations':acts.length+' en cours'}</div></div>
-    <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Bénéficiaires${isAdmin?' — Total':''}</div><div class="stat-val" style="color:oklch(0.6 0.17 60)">${totalBenef}</div><div class="stat-trend">${isAdmin&&currentAssocId?'Sélection : '+filteredBenef:isAdmin?'Toutes associations':'Personnes touchées'}</div></div>
+    <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Bénéficiaires — Moyenne</div><div class="stat-val" style="color:oklch(0.6 0.17 60)">${totalBenef}</div><div class="stat-trend">${isAdmin&&currentAssocId?'Sélection : '+filteredBenef+' / action':'Moyenne par action'}</div></div>
     <div class="stat-card"><div class="stat-blob" style="background:var(--accent-rose)"></div><div class="stat-lbl">Score Qualité</div><div class="stat-val" style="color:var(--accent-rose)">${qualScorePct||'—'}${qualScorePct?'%':''}</div><div class="stat-trend">${qualScopeLbl}</div></div>
     <div class="stat-card"><div class="stat-blob" style="background:var(--info)"></div><div class="stat-lbl">Satisfaction</div><div class="stat-val" style="color:var(--info)">4.3<span style="font-size:14px">/5</span></div><div class="stat-trend">↑ +0.2</div></div>`;
   renderActionsList('dashActions',acts,4);
@@ -1497,9 +1498,18 @@ function renderDashboard(){
 // ========== QUALITY PROGRESS IN DASHBOARD — scoped by user / association ==========
 // Deterministic pseudo-score per (actionId, indicatorId) so the demo data feels stable.
 function _qualScore(actionId, indId){
-  const s = String(actionId)+'|'+String(indId);
-  let h=0; for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; }
-  return 55 + (h % 41); // 55..95
+  // Real partner evaluations: average of all evaluators who rated this indicator (1-5 → 0-100)
+  if (typeof QUAL_EVALS !== 'undefined') {
+    const prefix = String(actionId)+'_';
+    const vals = [];
+    Object.keys(QUAL_EVALS).forEach(k=>{
+      if(!k.startsWith(prefix)) return;
+      const r = QUAL_EVALS[k] && QUAL_EVALS[k][indId];
+      if(typeof r === 'number' && r>0) vals.push(r);
+    });
+    if(vals.length) return Math.round(vals.reduce((s,v)=>s+v,0)/vals.length/5*100);
+  }
+  return null; // not evaluated yet
 }
 function _scopedActionsForQual(){
   const isAdmin = currentUser?.role==='superadmin';
@@ -1518,21 +1528,23 @@ function renderQualiteProgressDash(){
   const allInds = QUALITE_AXES.flatMap(ax => ax.criteria.map(c => ({axId:ax.id, color:ax.color, id:c.id, text:c.text})));
   const indsForCrit = critId==='ALL' ? allInds : allInds.filter(i=>i.axId===critId);
 
-  // Average per action across selected scope of indicators
+  // Average per action across selected scope of indicators (real evals only)
   const perAction = acts.map(a=>{
-    const vals = indsForCrit.map(i=>_qualScore(a.id, i.id));
-    const avg = vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
-    return {a, avg};
+    const vals = indsForCrit.map(i=>_qualScore(a.id, i.id)).filter(v=>v!=null);
+    const has = vals.length>0;
+    const avg = has ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
+    return {a, avg, has};
   }).sort((x,y)=>y.avg-x.avg);
 
-  // Average per indicator across scope of actions
+  // Average per indicator across scope of actions (real evals only)
   const perInd = indsForCrit.map(i=>{
-    const vals = acts.map(a=>_qualScore(a.id, i.id));
-    const avg = vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
+    const vals = acts.map(a=>_qualScore(a.id, i.id)).filter(v=>v!=null);
+    const avg = vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : null;
     return {...i, avg};
   });
 
-  const globalAvg = perAction.length ? Math.round(perAction.reduce((s,x)=>s+x.avg,0)/perAction.length) : 0;
+  const evaluated = perAction.filter(x=>x.has);
+  const globalAvg = evaluated.length ? Math.round(evaluated.reduce((s,x)=>s+x.avg,0)/evaluated.length) : 0;
   const isAdmin = currentUser?.role==='superadmin';
   const scopeName = isAdmin ? (currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Toutes les associations') : (ASSOCS.find(x=>x.id===currentUser?.assocId)?.nom||'');
   const critLabel = critId==='ALL' ? 'Tous critères' : (QUALITE_AXES.find(a=>a.id===critId)?.name||critId);
@@ -1540,12 +1552,12 @@ function renderQualiteProgressDash(){
   el.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px;border-bottom:1px dashed var(--border);margin-bottom:8px">
       <div style="font-size:11px;color:var(--muted-fore)">${scopeName} · <strong>${critLabel}</strong></div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg}%</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg||'—'}${globalAvg?'%':''}</div>
     </div>
     <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Moyenne par association</div>
     ${(() => {
       const byAssoc = {};
-      perAction.forEach(({a,avg})=>{ (byAssoc[a.assocId] ||= []).push(avg); });
+      perAction.forEach(({a,avg,has})=>{ if(!has) return; (byAssoc[a.assocId] ||= []).push(avg); });
       const rows = Object.keys(byAssoc).map(aid=>{
         const list=byAssoc[aid]; const m=Math.round(list.reduce((s,v)=>s+v,0)/list.length);
         return {aid:+aid, nom:getAssocName(+aid), avg:m, n:list.length};
@@ -4645,7 +4657,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     try{
       if(typeof QUALITE_AXES==='undefined' || typeof _qualScore!=='function') return 0;
       const inds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
-      const vals = inds.map(id=>_qualScore(actionId, id));
+      const vals = inds.map(id=>_qualScore(actionId, id)).filter(v=>v!=null);
       if(!vals.length) return 0;
       return Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
     }catch(e){ return 0; }
