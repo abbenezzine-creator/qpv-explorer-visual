@@ -3486,7 +3486,7 @@ function renderCitizenEval() {
 
   const dataKey = QPV_KEY_MAP[qpvSel] || null;
   const data = dataKey ? CITIZEN_2023[dataKey] : aggregateCitizenData();
-  const qpvLabel = qpvSel ? document.getElementById('citizenQPVSel')?.options[document.getElementById('citizenQPVSel').selectedIndex]?.text : 'Tous les quartiers';
+  const qpvLabel = qpvSel ? document.getElementById('citizenQPVSel')?.options[document.getElementById('citizenQPVSel').selectedIndex]?.text : "Les 4 QPV d'Orléans";
 
   renderCitizenStats(data, qpvLabel, yearSel);
   renderCitizenCharts(data, yearSel);
@@ -3499,7 +3499,7 @@ function renderCitizenEval() {
 }
 
 function aggregateCitizenData() {
-  const keys = ['Argonne','Source','Dauphine','Fleury','SJR','SJB'];
+  const keys = ['Argonne','Source','Dauphine'];
   const total = keys.reduce((s,k) => s + CITIZEN_2023[k].n, 0);
   const wavg = (field) => Math.round(keys.reduce((s,k) => s + CITIZEN_2023[k][field] * CITIZEN_2023[k].n, 0) / total);
   const avgSat = (ind) => {
@@ -3557,7 +3557,7 @@ function aggregateMap(field, keys, total) {
 
 // recompute aggregate implication/oui correctly
 function aggregateCitizenDataFixed() {
-  const keys = ['Argonne','Source','Dauphine','Fleury','SJR','SJB'];
+  const keys = ['Argonne','Source','Dauphine'];
   const total = keys.reduce((s,k) => s + CITIZEN_2023[k].n, 0);
   const oui = Math.round(keys.reduce((s,k) => s + CITIZEN_2023[k].implication.oui * CITIZEN_2023[k].n, 0) / total);
   return {oui:oui, non:100-oui};
