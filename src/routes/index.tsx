@@ -541,7 +541,7 @@ function CitoyenPane() {
     if (!data) return null;
     if (scope === "__ALL__") {
       return {
-        label: "Ensemble des QPV",
+        label: "Les 4 QPV d'Orléans",
         responses: data.totalResponses,
         evolution: data.evolution,
         securite: aggregateSecurite(data.securite),
@@ -598,7 +598,7 @@ function CitoyenPane() {
                   onChange={(e) => setScope(e.target.value)}
                   className="min-w-[240px] rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none"
                 >
-                  <option value="__ALL__">Tous les quartiers ({data.totalResponses})</option>
+                  <option value="__ALL__">Les 4 QPV d'Orléans ({data.totalResponses})</option>
                   {data.quartiers.map((q) => (
                     <option key={q.quartier} value={q.quartier}>
                       {q.quartier} ({q.responses})

@@ -20,6 +20,8 @@ function mapToQuartier(raw: string): string {
   return raw.trim();
 }
 
+const ORLEANS_QPV = new Set(["L'Argonne", "La Source", "Dauphine", "Les Blossières"]);
+
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let cur = "", row: string[] = [], inQ = false;
@@ -207,6 +209,7 @@ export const fetchCitizenSurvey = createServerFn({ method: "GET" }).handler(
 
     for (const r of data) {
       const q = mapToQuartier(r[iQuartier] ?? "");
+      if (!ORLEANS_QPV.has(q)) continue;
       const agg = ensure(q);
       agg.responses++;
 
@@ -282,11 +285,12 @@ export const fetchCitizenSurvey = createServerFn({ method: "GET" }).handler(
         difficultes: [...q.difficultes].sort((a, b) => b.count - a.count),
       }))
       .sort((a, b) => b.responses - a.responses);
+    const totalResponses = quartiers.reduce((sum, q) => sum + q.responses, 0);
 
     return {
       fetchedAt: new Date().toISOString(),
       yearLabel: "2023",
-      totalResponses: data.length,
+      totalResponses,
       quartiers,
       byQuartier: Object.fromEntries(quartiers.map((q) => [q.quartier, q.responses])),
       evolution: evolutionG,
