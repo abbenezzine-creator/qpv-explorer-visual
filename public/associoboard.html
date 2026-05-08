@@ -3675,6 +3675,24 @@ function renderGuide() {
     });
   });
   html += '</tbody></table></div>';
+
+  // === 4. NOTATION ===
+  html += sectionHdr('gc-notation','4.','Système de notation','oklch(0.6 0.17 240)');
+  const NOTATIONS = [
+    {code:'C',label:'CONFORME',color:'var(--success)',desc:'L\'indicateur est satisfait. L\'organisme répond au niveau attendu. Aucune action corrective requise.'},
+    {code:'NCMA',label:'NON-CONFORMITÉ MAJEURE',color:'var(--destructive)',desc:'Plan d\'action obligatoire sous 3 mois avec échéancier. Condition au renouvellement du financement. Si non corrigé : suspension possible de la subvention.'},
+    {code:'NCMI',label:'NON-CONFORMITÉ MINEURE',color:'oklch(0.6 0.17 60)',desc:'Indicateur partiellement satisfait. Recommandation d\'amélioration formulée. Suivi au prochain cycle. Ne conditionne pas le financement mais impacte le score global.'},
+    {code:'NCO',label:'NON CONCERNÉ',color:'var(--muted-fore)',desc:'L\'indicateur n\'est pas applicable au type de projet ou d\'organisme. Justification à fournir par l\'évaluateur.'},
+  ];
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">';
+  NOTATIONS.forEach(function(n) {
+    html += '<div style="background:var(--card);border:1.5px solid var(--border);border-top:3px solid '+n.color+';border-radius:calc(var(--radius)+4px);padding:16px;box-shadow:var(--shadow-soft)">'
+      +'<div style="font-family:JetBrains Mono,monospace;font-size:14px;font-weight:800;color:'+n.color+';margin-bottom:6px">'+n.code+'</div>'
+      +'<div style="font-size:12px;font-weight:700;margin-bottom:8px">'+n.label+'</div>'
+      +'<div style="font-size:12px;color:var(--muted-fore);line-height:1.6">'+n.desc+'</div></div>';
+  });
+  html += '</div>';
+
   const FICHES_DATA = [
     {id:'gc-c1',n:'C1',name:'Communication',color:C[0],inds:[
       {num:1,nc:'MINEURE',title:'Diffusion d\'une information accessible au public, détaillée et vérifiable sur les actions proposées',
