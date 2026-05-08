@@ -1969,8 +1969,8 @@ function updateEvalTabs(){
   const tabs=document.getElementById('evalTabs');
   if(!keys.length){tabs.innerHTML='<span style="font-size:12px;color:var(--muted-fore)">Aucune évaluation pour cette action</span>';return;}
   tabs.innerHTML=keys.map(k=>{
-    const pid=parseInt(k.split('_')[1]);
-    const pName=PARTNERS.find(p=>p.id===pid)?.nom||`Partenaire ${pid}`;
+    const pidStr=k.split('_')[1];
+    const pName = pidStr==='anon' ? 'Anonyme' : (PARTNERS.find(p=>p.id===parseInt(pidStr))?.nom || `Partenaire ${pidStr}`);
     const sc=computeEvalScore(QUAL_EVALS[k]);
     return `<button class="eval-tab${currentEvalKey===k?' active':''}" onclick="loadEvalForKey('${k}')">${pName} — ${sc}%</button>`;
   }).join('');
