@@ -33,6 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useEffect, useState } from "react";
+import { getUser, logout as authLogout, type AbUser } from "@/lib/auth";
 
 type NavItem = { title: string; to: string; search?: Record<string, string>; icon: React.ComponentType<{ className?: string }> };
 
@@ -80,16 +82,25 @@ export function AppSidebar() {
     return search?.page === it.search.page;
   };
 
+  const [user, setUserState] = useState<AbUser | null>(() => getUser());
+  useEffect(() => {
+    const sync = () => setUserState(getUser());
+    window.addEventListener("ab-auth-change", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("ab-auth-change", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
   const handleLogout = () => {
     try {
       const f = document.querySelector<HTMLIFrameElement>("iframe[title='AssocioBoard']");
-      const w = f?.contentWindow as (Window & { logout?: () => void; currentUser?: unknown }) | null;
-      if (w?.logout) w.logout();
-      else if (w) w.location.reload();
-    } catch {
-      /* noop */
-    }
-    navigate({ to: "/" });
+      const w = f?.contentWindow as (Window & { doLogout?: () => void }) | null;
+      w?.doLogout?.();
+    } catch { /* noop */ }
+    authLogout();
+    navigate({ to: "/login" });
   };
 
   const renderGroup = (label: string, items: NavItem[], extra?: React.ReactNode) => (
@@ -127,7 +138,8 @@ export function AppSidebar() {
     }
   };
 
-  const associationsSelector = !collapsed ? (
+  const isSuperAdmin = user?.role === "superadmin";
+  const associationsSelector = !collapsed && isSuperAdmin ? (
     <div className="px-2 pb-2">
       <Select defaultValue="Toutes les associations" onValueChange={handleAssocChange}>
         <SelectTrigger className="h-8 text-xs">

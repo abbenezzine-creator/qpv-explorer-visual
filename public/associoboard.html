@@ -4292,6 +4292,20 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     }
   }
 
+  // Auto-login from React parent (bypasses HTML login screen)
+  window.autoLogin = function(loginId){
+    if(!loginId || typeof ACCOUNTS==='undefined') return false;
+    const acc = ACCOUNTS[loginId];
+    if(!acc) return false;
+    currentUser = {...acc, login: loginId};
+    try { document.getElementById('loginPage')?.classList.remove('show'); } catch(e){}
+    try { document.getElementById('appWrapper')?.classList.add('show'); } catch(e){}
+    try { setupUserCtx(); } catch(e){}
+    try { init(); } catch(e){}
+    return true;
+  };
+  window.doLogout = function(){ try { doLogout(); } catch(e){} };
+
   // Sidebar association filter (called from parent React sidebar)
   window.setAssocFilter = function(name){
     if(typeof ASSOCS==='undefined') return;
@@ -4301,9 +4315,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       const a = ASSOCS.find(x=>x.nom.toUpperCase().indexOf(name.toUpperCase())>=0);
       if(a) currentAssocId = a.id;
     }
+    try{ const el=document.getElementById('dashAssocName'); if(el) el.textContent = currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Toutes les associations'; }catch(e){}
     try{ renderAllActions(); }catch(e){}
+    try{ renderCalendar(); }catch(e){}
     try{ updateBadge(); }catch(e){}
     try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
+    try{ if(typeof renderQualite==='function') renderQualite(); }catch(e){}
+    try{ if(typeof renderResultatsPage==='function') renderResultatsPage(); }catch(e){}
+    try{ if(typeof renderDocuments==='function') renderDocuments(); }catch(e){}
   };
 
   // Merge "Utilité sociale" content into "Résultats & Impacts"
