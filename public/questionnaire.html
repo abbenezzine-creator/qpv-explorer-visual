@@ -1,0 +1,2527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon parcours — Contrat de Ville Orléans</title>
+<style>
+  :root {
+    --bleu: #2563eb;
+    --bleu-fonce: #1e40af;
+    --bleu-clair: #eff6ff;
+    --rouge: #dc2626;
+    --rouge-clair: #fef2f2;
+    --vert: #059669;
+    --vert-clair: #ecfdf5;
+    --orange: #ea580c;
+    --orange-clair: #fff7ed;
+    --violet: #7c3aed;
+    --violet-clair: #f5f3ff;
+    --gris-fonce: #1f2937;
+    --gris: #6b7280;
+    --gris-clair: #f3f4f6;
+    --bordure: #e5e7eb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #f9fafb;
+    color: var(--gris-fonce);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 16px;
+    font-size: 17px; /* FALC : texte plus grand */
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  header {
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+    color: #fff;
+    padding: 28px 32px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+  header .subtitle { font-size: 15px; opacity: 0.92; }
+
+  /* BARRE DE PROGRESSION */
+  .progress-wrap {
+    background: var(--gris-clair);
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--bordure);
+  }
+  .progress-track {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bleu), var(--vert));
+    border-radius: 8px;
+    transition: width 0.4s ease;
+    width: 16%;
+  }
+  .progress-text {
+    font-size: 13px;
+    color: var(--gris);
+    font-weight: 600;
+  }
+
+  main { padding: 32px; }
+  .step { display: none; animation: slideIn 0.3s; }
+  .step.active { display: block; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  h2 {
+    font-size: 24px;
+    color: var(--gris-fonce);
+    margin-bottom: 8px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+  .step-intro {
+    font-size: 16px;
+    color: var(--gris);
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--bleu-clair);
+    border-left: 4px solid var(--bleu);
+    border-radius: 8px;
+  }
+
+  /* CHAMPS DE FORMULAIRE */
+  .field {
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+  }
+  label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 10px;
+    font-size: 17px;
+    color: var(--gris-fonce);
+    /* Hauteur minimum pour aligner les labels avec ou sans label-help */
+    min-height: 24px;
+  }
+  .label-help {
+    display: block;
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--gris);
+    margin-top: 2px;
+  }
+  input[type="text"], input[type="date"], select, textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--bordure);
+    border-radius: 10px;
+    font-size: 17px;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color 0.15s;
+    /* Hauteur uniforme pour tous les inputs/select de même ligne */
+    height: 52px;
+    line-height: 1.2;
+  }
+  textarea {
+    height: auto;
+    min-height: 90px;
+    resize: vertical;
+  }
+  /* Select : on neutralise les variations de hauteur entre navigateurs */
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 44px;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--bleu);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    /* Aligner les bas des champs sur la même ligne */
+    align-items: end;
+  }
+  /* Quand un champ de la rangée a un label-help (donc plus haut),
+     l'autre s'aligne quand même proprement grâce à align-items: end */
+  @media (max-width: 640px) { .row { grid-template-columns: 1fr; } body { font-size: 16px; } }
+
+  /* CASES À COCHER GRANDES (FALC) */
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+  }
+  .check-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid var(--bordure);
+    border-radius: 12px;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.15s;
+    min-height: 60px;
+  }
+  .check-card:hover { border-color: var(--bleu); background: var(--bleu-clair); }
+  .check-card.checked {
+    border-color: var(--bleu);
+    background: var(--bleu-clair);
+  }
+  .check-card .check-box {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--bordure);
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+  .check-card.checked .check-box {
+    background: var(--bleu);
+    border-color: var(--bleu);
+  }
+  .check-card.checked .check-box::after {
+    content: '';
+    width: 12px;
+    height: 7px;
+    border-left: 3px solid #fff;
+    border-bottom: 3px solid #fff;
+    transform: rotate(-45deg) translate(2px, -2px);
+  }
+  .check-card .check-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--bleu);
+    flex-shrink: 0;
+  }
+  .check-card .check-text {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  /* BOUTON "+ AJOUTER" sous une grille */
+  .add-item-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 16px;
+    background: #fff;
+    border: 2px dashed var(--bordure);
+    border-radius: 10px;
+    color: var(--bleu);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .add-item-btn:hover {
+    border-color: var(--bleu);
+    border-style: solid;
+    background: var(--bleu-clair);
+  }
+  .add-item-btn .plus-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--bleu);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* Carte personnalisée avec input éditable */
+  .check-card.custom-card {
+    background: var(--bleu-clair);
+    border-color: var(--bleu);
+    border-style: dashed;
+  }
+  .check-card.custom-card.checked {
+    border-style: solid;
+  }
+  .check-card.custom-card .custom-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: inherit;
+    padding: 4px 0;
+    color: var(--gris-fonce);
+    outline: none;
+  }
+  .check-card.custom-card .custom-input::placeholder {
+    color: var(--gris);
+    font-style: italic;
+  }
+  .check-card.custom-card .remove-btn {
+    background: none;
+    border: none;
+    color: var(--rouge);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .check-card.custom-card .remove-btn:hover {
+    color: #b91c1c;
+  }
+
+  /* CARTES DE THÉMATIQUE GRANDES */
+  .thematique-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+  }
+  .thematique-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    border: 2px solid var(--bordure);
+    border-radius: 14px;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.15s;
+  }
+  .thematique-card:hover { border-color: var(--bleu); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+  .thematique-card.checked {
+    border-color: var(--bleu);
+    background: var(--bleu-clair);
+  }
+  .thematique-card .icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--bleu-clair);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bleu);
+  }
+  .thematique-card.checked .icon-wrap {
+    background: #fff;
+  }
+  .thematique-card svg { width: 28px; height: 28px; }
+  .thematique-card .th-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--gris-fonce);
+  }
+  .thematique-card .th-desc {
+    font-size: 14px;
+    color: var(--gris);
+    line-height: 1.4;
+  }
+
+  /* SOUS-THÉMATIQUES (boutons radio en grille) */
+  .sous-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+  }
+  .sous-card {
+    padding: 14px 16px;
+    border: 2px solid var(--bordure);
+    border-radius: 10px;
+    cursor: pointer;
+    background: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .sous-card:hover { border-color: var(--bleu); }
+  .sous-card.checked { border-color: var(--bleu); background: var(--bleu-clair); color: var(--bleu-fonce); }
+
+  /* ÉCHELLE EN POURCENTAGE */
+  .pct-display {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .pct-value {
+    font-size: 56px;
+    font-weight: 800;
+    color: var(--bleu);
+    line-height: 1;
+  }
+  .pct-label { font-size: 14px; color: var(--gris); margin-top: 4px; }
+  .pct-slider {
+    width: 100%;
+    height: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(90deg, var(--rouge), #fbbf24, var(--vert));
+    border-radius: 8px;
+    outline: none;
+    margin-bottom: 8px;
+  }
+  .pct-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    border: 4px solid var(--bleu);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .pct-slider::-moz-range-thumb {
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    border: 4px solid var(--bleu);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .pct-marks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--gris);
+    font-weight: 600;
+  }
+
+  /* NAVIGATION */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--bordure);
+    gap: 12px;
+  }
+  button.btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--bleu);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--bleu-fonce); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37,99,235,0.3); }
+  .btn-secondary {
+    background: #fff;
+    color: var(--gris-fonce);
+    border: 2px solid var(--bordure);
+  }
+  .btn-secondary:hover { border-color: var(--bleu); color: var(--bleu); }
+  .btn-success { background: var(--vert); color: #fff; }
+  .btn-success:hover { background: #047857; }
+
+  /* ====== PARCOURS FINAL ====== */
+  .resultat-wrap {
+    background: linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%);
+    border-radius: 20px;
+    padding: 32px 24px;
+    margin-bottom: 24px;
+  }
+  .resultat-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--bleu-fonce);
+    margin-bottom: 6px;
+  }
+  .resultat-subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: var(--gris);
+    margin-bottom: 28px;
+  }
+
+  /* COMPTEURS EN HAUT */
+  .compteurs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 700px) { .compteurs { grid-template-columns: repeat(2, 1fr); } }
+  .compteur {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .compteur svg { width: 32px; height: 32px; margin-bottom: 8px; }
+  .compteur-num {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .compteur-label {
+    font-size: 12px;
+    color: var(--gris);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .c-rouge .compteur-num, .c-rouge svg { color: var(--rouge); }
+  .c-bleu .compteur-num, .c-bleu svg { color: var(--bleu); }
+  .c-violet .compteur-num, .c-violet svg { color: var(--violet); }
+  .c-vert .compteur-num, .c-vert svg { color: var(--vert); }
+
+  /* PARCOURS DROIT */
+  .parcours-svg-wrap {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow-x: auto;
+  }
+
+  /* IMPACT */
+  .impact-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+  }
+  .impact-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gris);
+    text-align: center;
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+  .impact-bars {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .impact-side {
+    text-align: center;
+    flex: 1;
+    min-width: 140px;
+  }
+  .impact-circle {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 8px;
+    position: relative;
+  }
+  .impact-circle svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .impact-circle-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .impact-side-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gris-fonce);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .impact-arrow {
+    font-size: 32px;
+    color: var(--gris);
+  }
+  .impact-delta {
+    background: var(--vert-clair);
+    color: var(--vert);
+    padding: 16px 24px;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 16px;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .impact-delta.negatif { background: var(--rouge-clair); color: var(--rouge); }
+
+  /* RÉCAP */
+  .recap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 768px) { .recap-grid { grid-template-columns: 1fr; } }
+  .recap-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .recap-card h4 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+  .recap-card h4 svg { width: 18px; height: 18px; }
+  .recap-depart h4 { color: var(--rouge); border-color: #fecaca; }
+  .recap-chemin h4 { color: var(--violet); border-color: #ddd6fe; }
+  .recap-arrivee h4 { color: var(--vert); border-color: #a7f3d0; }
+  .recap-card ul { list-style: none; }
+  .recap-card li {
+    font-size: 14px;
+    padding: 5px 0;
+    color: var(--gris-fonce);
+    display: flex;
+    gap: 6px;
+  }
+  .recap-card li::before {
+    content: "•";
+    color: var(--gris);
+    font-weight: 700;
+  }
+  .empty { color: var(--gris); font-style: italic; font-size: 14px; }
+
+  .actions-final {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  /* PRINT */
+  @media print {
+    body { background: #fff; padding: 0; font-size: 12px; }
+    .container { box-shadow: none; }
+    .nav, .progress-wrap, .actions-final { display: none; }
+    .step { display: block !important; page-break-after: always; }
+    .step:last-child { page-break-after: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Mon parcours</h1>
+    <div class="subtitle">Contrat de Ville Orléans · Évaluation des actions associatives</div>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">Étape 1 sur 6</div>
+  </div>
+
+  <main>
+    <!-- ÉTAPE 1 : QUI ÊTES-VOUS ? -->
+    <section class="step active" data-step="0">
+      <h2>Qui êtes-vous ?</h2>
+      <div class="step-intro">
+        Cette première partie nous aide à connaître votre situation.<br>
+        Vos réponses restent confidentielles.
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Votre âge</label>
+          <select name="age">
+            <option value="">Choisir votre âge</option>
+            <option>Moins de 16 ans</option>
+            <option>16 à 25 ans</option>
+            <option>26 à 45 ans</option>
+            <option>46 à 60 ans</option>
+            <option>Plus de 60 ans</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Vous êtes</label>
+          <select name="genre">
+            <option value="">Choisir</option>
+            <option>Une femme</option>
+            <option>Un homme</option>
+            <option>Je ne souhaite pas répondre</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Votre quartier</label>
+          <select name="quartier">
+            <option value="">Choisir votre quartier</option>
+            <option>Argonne</option>
+            <option>Blossières</option>
+            <option>La Source</option>
+            <option>Dauphine</option>
+            <option>Autre quartier</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Votre bailleur</label>
+          <select name="bailleur">
+            <option value="">Choisir votre bailleur</option>
+            <option>Résidence de l'Orléanais</option>
+            <option>3F</option>
+            <option>Logem Loiret</option>
+            <option>Pierre et Lumières</option>
+            <option>Valloire Habitat</option>
+            <option>France Loire</option>
+            <option>Autre</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Le nom de l'association qui vous a aidé</label>
+          <input type="text" name="asso" placeholder="Exemple : AJLA, UPA, CRIA45, JAM…">
+        </div>
+        <div class="field">
+          <label>Quand avez-vous commencé ?</label>
+          <input type="date" name="date_debut">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Le nom de l'action à laquelle vous avez participé</label>
+        <input type="text" name="action" placeholder="Exemple : Forum santé, Cours de français, Pass'emploi…">
+      </div>
+
+      <div class="nav">
+        <span></span>
+        <button class="btn btn-primary" onclick="nextStep()">Continuer →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 2 : THÉMATIQUE -->
+    <section class="step" data-step="1">
+      <h2>Quel est le sujet de l'action ?</h2>
+      <div class="step-intro">
+        Choisissez le thème qui correspond le mieux à l'action de l'association.
+      </div>
+
+      <div class="thematique-grid" id="thematiquesGrid"></div>
+
+      <div class="field" id="sousThemWrap" style="display:none; margin-top: 28px;">
+        <label>Quel sujet précis ?
+          <span class="label-help">Choisissez celui qui correspond le mieux à votre action.</span>
+        </label>
+        <div class="sous-grid" id="sousThematiquesGrid"></div>
+      </div>
+
+      <div class="nav">
+        <button class="btn btn-secondary" onclick="prevStep()">← Retour</button>
+        <button class="btn btn-primary" onclick="nextStep()">Continuer →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 3 : POINT DE DÉPART -->
+    <section class="step" data-step="2">
+      <h2>Avant : comment ça allait ?</h2>
+      <div class="step-intro">
+        Pensez au moment où vous avez rencontré l'association.<br>
+        Quelles étaient vos difficultés à ce moment-là ?
+      </div>
+
+      <div class="field">
+        <label>Quelles difficultés aviez-vous ?
+          <span class="label-help">Cochez toutes les difficultés qui vous concernent.</span>
+        </label>
+        <div class="check-grid" id="freinsGrid"></div>
+        <button type="button" class="add-item-btn" onclick="addCustomItem('freinsGrid', 'freins')">
+          <span class="plus-icon">+</span> Ajouter une difficulté
+        </button>
+      </div>
+
+      <div class="field">
+        <label>À combien estimez-vous votre situation au début ?
+          <span class="label-help">Déplacez le curseur. 0% = très difficile, 100% = très bien.</span>
+        </label>
+        <div class="pct-display">
+          <div class="pct-value" id="pctAvantDisplay">30%</div>
+          <div class="pct-label">Au début, votre situation était à</div>
+        </div>
+        <input type="range" min="0" max="100" value="30" class="pct-slider" id="pctAvantSlider">
+        <div class="pct-marks">
+          <span>0%</span><span>50%</span><span>100%</span>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="btn btn-secondary" onclick="prevStep()">← Retour</button>
+        <button class="btn btn-primary" onclick="nextStep()">Continuer →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 4 : CHEMIN -->
+    <section class="step" data-step="3">
+      <h2>Pendant : qu'avez-vous fait ?</h2>
+      <div class="step-intro">
+        Avec l'association, vous avez participé à des activités.<br>
+        Vous avez aussi appris des choses nouvelles.
+      </div>
+
+      <div class="field">
+        <label>À quelles actions avez-vous participé ?
+          <span class="label-help">Cochez toutes les actions auxquelles vous avez pris part.</span>
+        </label>
+        <div class="check-grid" id="actionsGrid"></div>
+        <button type="button" class="add-item-btn" onclick="addCustomItem('actionsGrid', 'actions')">
+          <span class="plus-icon">+</span> Ajouter une action
+        </button>
+      </div>
+
+      <div class="field">
+        <label>Qu'avez-vous appris ou développé ?
+          <span class="label-help">Cochez toutes les choses que vous savez mieux faire maintenant.</span>
+        </label>
+        <div class="check-grid" id="competencesGrid"></div>
+        <button type="button" class="add-item-btn" onclick="addCustomItem('competencesGrid', 'competences')">
+          <span class="plus-icon">+</span> Ajouter une compétence
+        </button>
+      </div>
+
+      <div class="nav">
+        <button class="btn btn-secondary" onclick="prevStep()">← Retour</button>
+        <button class="btn btn-primary" onclick="nextStep()">Continuer →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 5 : ARRIVÉE -->
+    <section class="step" data-step="4">
+      <h2>Aujourd'hui : qu'est-ce qui a changé ?</h2>
+      <div class="step-intro">
+        Vous arrivez au bout du parcours.<br>
+        Quels résultats avez-vous obtenus grâce à l'association ?
+      </div>
+
+      <div class="field">
+        <label>Quelles difficultés sont aujourd'hui résolues ou améliorées ?
+          <span class="label-help">Cochez toutes les difficultés qui vont mieux maintenant.</span>
+        </label>
+        <div class="check-grid" id="freinsLevesGrid"></div>
+        <button type="button" class="add-item-btn" onclick="addCustomItem('freinsLevesGrid', 'freins_leves')">
+          <span class="plus-icon">+</span> Ajouter une difficulté résolue
+        </button>
+      </div>
+
+      <div class="field">
+        <label>Quels résultats avez-vous obtenus ?
+          <span class="label-help">Cochez tous les résultats concrets de votre parcours.</span>
+        </label>
+        <div class="check-grid" id="resultatsGrid"></div>
+        <button type="button" class="add-item-btn" onclick="addCustomItem('resultatsGrid', 'resultats')">
+          <span class="plus-icon">+</span> Ajouter un résultat
+        </button>
+      </div>
+
+      <div class="field">
+        <label>À combien estimez-vous votre situation aujourd'hui ?
+          <span class="label-help">Déplacez le curseur. 0% = très difficile, 100% = très bien.</span>
+        </label>
+        <div class="pct-display">
+          <div class="pct-value" id="pctApresDisplay" style="color: var(--vert)">70%</div>
+          <div class="pct-label">Aujourd'hui, votre situation est à</div>
+        </div>
+        <input type="range" min="0" max="100" value="70" class="pct-slider" id="pctApresSlider">
+        <div class="pct-marks">
+          <span>0%</span><span>50%</span><span>100%</span>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="btn btn-secondary" onclick="prevStep()">← Retour</button>
+        <button class="btn btn-primary" onclick="nextStep()">Voir mon parcours →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 6 : RÉSULTAT -->
+    <section class="step" data-step="5">
+      <h2>Votre parcours</h2>
+      <div class="step-intro">
+        Voici votre chemin, du début à aujourd'hui.<br>
+        Bravo pour le travail accompli !
+      </div>
+
+      <div class="resultat-wrap">
+        <div class="resultat-title" id="resultatTitle">Mon parcours</div>
+        <div class="resultat-subtitle" id="resultatSubtitle">Du début à aujourd'hui</div>
+
+        <!-- COMPTEURS -->
+        <div class="compteurs">
+          <div class="compteur c-rouge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <div class="compteur-num" id="cFreins">0</div>
+            <div class="compteur-label">Freins levés</div>
+          </div>
+          <div class="compteur c-bleu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <div class="compteur-num" id="cActions">0</div>
+            <div class="compteur-label">Actions suivies</div>
+          </div>
+          <div class="compteur c-violet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <div class="compteur-num" id="cCompetences">0</div>
+            <div class="compteur-label">Compétences acquises</div>
+          </div>
+          <div class="compteur c-vert">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <div class="compteur-num" id="cResultats">0</div>
+            <div class="compteur-label">Résultats obtenus</div>
+          </div>
+        </div>
+
+        <!-- PARCOURS DROIT -->
+        <div class="parcours-svg-wrap">
+          <svg id="parcoursSvg" viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; min-width:680px;">
+            <defs>
+              <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#dc2626"/>
+                <stop offset="33%" stop-color="#2563eb"/>
+                <stop offset="66%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#059669"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Ligne droite de fond -->
+            <line x1="80" y1="100" x2="920" y2="100" stroke="#e5e7eb" stroke-width="4"/>
+            <!-- Ligne droite de progression -->
+            <line x1="80" y1="100" x2="920" y2="100" stroke="url(#lineGrad)" stroke-width="6" stroke-linecap="round"/>
+
+            <!-- POINT 1 : DÉPART -->
+            <circle cx="80" cy="100" r="36" fill="#fff" stroke="#dc2626" stroke-width="4"/>
+            <g transform="translate(80, 100)" stroke="#dc2626" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M -10 -8 L -10 8 M -10 -8 L 8 -8 L 4 -4 L 8 0 L -10 0" />
+            </g>
+            <text x="80" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#dc2626">DÉPART</text>
+            <text x="80" y="155" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2937">Avant</text>
+            <text x="80" y="175" text-anchor="middle" font-size="20" font-weight="800" fill="#dc2626" id="svgPctAvant">—%</text>
+
+            <!-- POINT 2 : FREINS -->
+            <circle cx="290" cy="100" r="32" fill="#fff" stroke="#2563eb" stroke-width="3"/>
+            <g transform="translate(290, 100)" stroke="#2563eb" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="0" cy="-2" r="6"/>
+              <path d="M -8 12 a 8 6 0 0 1 16 0"/>
+            </g>
+            <text x="290" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#2563eb">DIFFICULTÉS</text>
+            <text x="290" y="155" text-anchor="middle" font-size="13" fill="#1f2937" id="svgFreins">— freins</text>
+            <text x="290" y="173" text-anchor="middle" font-size="11" fill="#6b7280">levés</text>
+
+            <!-- POINT 3 : ACTIONS -->
+            <circle cx="500" cy="100" r="32" fill="#fff" stroke="#7c3aed" stroke-width="3"/>
+            <g transform="translate(500, 100)" stroke="#7c3aed" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="0" cy="0" r="9"/>
+              <line x1="0" y1="-9" x2="0" y2="-13"/>
+              <line x1="0" y1="9" x2="0" y2="13"/>
+              <line x1="-9" y1="0" x2="-13" y2="0"/>
+              <line x1="9" y1="0" x2="13" y2="0"/>
+            </g>
+            <text x="500" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#7c3aed">ACTIONS</text>
+            <text x="500" y="155" text-anchor="middle" font-size="13" fill="#1f2937" id="svgActions">— actions</text>
+            <text x="500" y="173" text-anchor="middle" font-size="11" fill="#6b7280">suivies</text>
+
+            <!-- POINT 4 : COMPÉTENCES -->
+            <circle cx="710" cy="100" r="32" fill="#fff" stroke="#ea580c" stroke-width="3"/>
+            <g transform="translate(710, 100)" stroke="#ea580c" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M -8 -8 L 0 -12 L 8 -8 L 8 4 L 0 10 L -8 4 Z"/>
+              <circle cx="0" cy="-1" r="2.5" fill="#ea580c"/>
+            </g>
+            <text x="710" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#ea580c">COMPÉTENCES</text>
+            <text x="710" y="155" text-anchor="middle" font-size="13" fill="#1f2937" id="svgComp">— acquises</text>
+            <text x="710" y="173" text-anchor="middle" font-size="11" fill="#6b7280">mobilisées</text>
+
+            <!-- POINT 5 : ARRIVÉE -->
+            <circle cx="920" cy="100" r="36" fill="#fff" stroke="#059669" stroke-width="4"/>
+            <g transform="translate(920, 100)" stroke="#059669" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M -10 4 L -3 11 L 10 -8"/>
+            </g>
+            <text x="920" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#059669">ARRIVÉE</text>
+            <text x="920" y="155" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2937">Après</text>
+            <text x="920" y="175" text-anchor="middle" font-size="20" font-weight="800" fill="#059669" id="svgPctApres">—%</text>
+          </svg>
+        </div>
+
+        <!-- MESURE D'IMPACT -->
+        <div class="impact-card">
+          <div class="impact-title">Mesure d'impact</div>
+          <div class="impact-bars">
+            <div class="impact-side">
+              <div class="impact-circle">
+                <svg viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#fee2e2" stroke-width="10"/>
+                  <circle id="circleAvant" cx="50" cy="50" r="42" fill="none" stroke="#dc2626" stroke-width="10"
+                          stroke-linecap="round" stroke-dasharray="0 264"/>
+                </svg>
+                <div class="impact-circle-text" id="impactAvantTxt" style="color: var(--rouge)">—%</div>
+              </div>
+              <div class="impact-side-label">Avant</div>
+            </div>
+
+            <div class="impact-arrow">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </div>
+
+            <div class="impact-side">
+              <div class="impact-circle">
+                <svg viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#d1fae5" stroke-width="10"/>
+                  <circle id="circleApres" cx="50" cy="50" r="42" fill="none" stroke="#059669" stroke-width="10"
+                          stroke-linecap="round" stroke-dasharray="0 264"/>
+                </svg>
+                <div class="impact-circle-text" id="impactApresTxt" style="color: var(--vert)">—%</div>
+              </div>
+              <div class="impact-side-label">Après</div>
+            </div>
+          </div>
+          <div class="impact-delta" id="impactDelta">Progression de — points</div>
+        </div>
+
+        <!-- RÉCAP -->
+        <div class="recap-grid">
+          <div class="recap-card recap-depart">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+              Au départ
+            </h4>
+            <ul id="recapDepart"></ul>
+          </div>
+          <div class="recap-card recap-chemin">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+              Le chemin
+            </h4>
+            <ul id="recapChemin"></ul>
+          </div>
+          <div class="recap-card recap-arrivee">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Aujourd'hui
+            </h4>
+            <ul id="recapArrivee"></ul>
+          </div>
+        </div>
+
+        <div class="actions-final">
+          <button class="btn btn-success" onclick="window.print()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Imprimer / PDF
+          </button>
+          <button class="btn btn-primary" onclick="downloadJSON()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Sauvegarder
+          </button>
+          <button class="btn btn-secondary" onclick="resetForm()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            Nouveau parcours
+          </button>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="btn btn-secondary" onclick="prevStep()">← Modifier mes réponses</button>
+        <span></span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+// =================================================================
+// ICÔNES SVG ÉPURÉES (line-art)
+// =================================================================
+const ICONS = {
+  // Thématiques principales
+  emancipation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+  sante: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  emploi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  transition: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>',
+  tranquillite: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  transversal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>',
+
+  // Icônes pour les questions
+  langue: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  numerique: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+  mobilite: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="17.5" r="3.5"/><circle cx="17.5" cy="17.5" r="3.5"/><path d="M5 17l3-7 5 7"/><path d="M14 6h4l2 4"/></svg>',
+  argent: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  maison: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+  enfant: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V6a3 3 0 0 1 6 0v5"/><circle cx="12" cy="14" r="6"/></svg>',
+  coeur: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+  diplome: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>',
+  personnes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>',
+  briefcase: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  document: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  livre: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  sport: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>',
+  culture: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 22a10 10 0 1 1 7-17"/></svg>',
+  ampoule: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.9.6 1.4 1.6 1.4 2.6V18h5.2v-.7c0-1 .5-2 1.4-2.6A7 7 0 0 0 12 2z"/></svg>',
+  parler: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+  alerte: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  outil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  feuille: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>',
+  poubelle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  velo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h2"/></svg>',
+  bouclier: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  police: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  groupe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  oeil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  porte: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/><circle cx="14" cy="12" r="1" fill="currentColor"/></svg>',
+  chemin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  cible: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  cadenas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  triste: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>',
+  sourire: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>'
+};
+
+// =================================================================
+// THÉMATIQUES + SOUS-THÉMATIQUES (depuis votre feuille de route)
+// =================================================================
+const THEMATIQUES = {
+  emancipation: {
+    label: "Émancipation",
+    desc: "Droits, numérique, langue, sport, culture, éducation, parentalité, lien social, émancipation des femmes",
+    icon: ICONS.emancipation,
+    sous: {
+      "droits_numerique": "Accès aux droits & numérique",
+      "langue_francaise": "Apprendre le français",
+      "sport_culture": "Sport et culture",
+      "education_reussite": "Éducation et réussite scolaire",
+      "parentalite": "Soutien à la parentalité",
+      "lien_social": "Lien social et vie de quartier",
+      "femmes": "Émancipation des femmes"
+    }
+  },
+  sante: {
+    label: "Santé & Bien-être",
+    desc: "Prévention, sport-santé, addictions, contraception, infos santé",
+    icon: ICONS.sante,
+    sous: {
+      "prevention": "Prévention santé (dépistages, vaccins…)",
+      "sport_sante": "Sport-santé",
+      "addictions": "Prévention des addictions",
+      "vie_sexuelle": "Vie sexuelle et contraception",
+      "info_sante": "Bien s'informer sur la santé"
+    }
+  },
+  emploi: {
+    label: "Emploi & Économie",
+    desc: "Stages, parrainage, freins à l'emploi, métiers en tension, entrepreneuriat, dispositifs jeunes",
+    icon: ICONS.emploi,
+    sous: {
+      "stages_apprentissage": "Stages et apprentissage",
+      "parrainage": "Parrainage et mentorat",
+      "freins_emploi": "Lever les freins à l'emploi",
+      "metiers_tension": "Découvrir les métiers qui recrutent",
+      "entrepreneuriat": "Créer son activité",
+      "dispositifs_jeunes": "École 2e chance, EPIDE, chantiers éducatifs"
+    }
+  },
+  transition: {
+    label: "Transition & Cadre de vie",
+    desc: "Logement, cadre de vie, déchets, énergie, mobilité douce",
+    icon: ICONS.transition,
+    sous: {
+      "cadre_de_vie": "Mon quartier, ma rue (propreté…)",
+      "dechets": "Trier et réduire les déchets",
+      "energie": "Économiser l'énergie",
+      "mobilite_douce": "Vélo, marche, transports",
+      "logement": "Logement"
+    }
+  },
+  tranquillite: {
+    label: "Tranquillité publique",
+    desc: "Prévention de la délinquance, médiation, lien police-population, réserves citoyennes, parents relais",
+    icon: ICONS.tranquillite,
+    sous: {
+      "prevention_delinquance": "Prévention de la délinquance",
+      "mediation": "Médiation sociale",
+      "police_population": "Lien police - habitants",
+      "reserves_citoyennes": "Réserves citoyennes / cadets",
+      "parents_relais": "Parents relais"
+    }
+  },
+  transversal: {
+    label: "Vie associative & Citoyenneté",
+    desc: "Information, coordination entre acteurs, bénévolat et vie associative",
+    icon: ICONS.transversal,
+    sous: {
+      "aller_vers": "Aller vers les habitants (communication, médiation)",
+      "coordination": "Coordination et référent unique",
+      "vie_associative": "Vie associative et bénévolat"
+    }
+  }
+};
+
+// =================================================================
+// QUESTIONS PAR SOUS-THÉMATIQUE — FALC + COHÉRENCE
+// Chaque sous-thématique a SES propres :
+// - freins (difficultés au départ)
+// - actions (ce qui a été fait)
+// - competences (ce qui a été appris)
+// - freins_leves (difficultés résolues — symétriques)
+// - resultats (résultats concrets)
+// =================================================================
+const QUESTIONS = {
+  // ==================== ÉMANCIPATION ====================
+  droits_numerique: {
+    freins: [
+      { txt: "Je ne savais pas où aller pour mes papiers", ic: "alerte" },
+      { txt: "Je ne savais pas faire mes démarches sur internet", ic: "numerique" },
+      { txt: "Je n'avais pas d'ordinateur ou de téléphone", ic: "numerique" },
+      { txt: "Je ne connaissais pas mes droits", ic: "document" },
+      { txt: "J'avais peur d'aller dans les administrations", ic: "porte" },
+      { txt: "Je ne comprenais pas les courriers que je recevais", ic: "document" }
+    ],
+    actions: [
+      { txt: "J'ai été accompagné(e) à France Services", ic: "porte" },
+      { txt: "J'ai participé à un atelier numérique (Digilab, Res'O)", ic: "numerique" },
+      { txt: "J'ai été aidé(e) pour mes démarches en ligne", ic: "numerique" },
+      { txt: "J'ai été reçu(e) à la mairie de proximité", ic: "porte" },
+      { txt: "J'ai participé au Forum d'inclusion numérique", ic: "groupe" },
+      { txt: "Un médiateur numérique m'a aidé(e)", ic: "personnes" }
+    ],
+    competences: [
+      { txt: "Je sais utiliser un ordinateur ou un smartphone", ic: "numerique" },
+      { txt: "Je sais faire mes démarches sur internet", ic: "numerique" },
+      { txt: "Je connais mieux mes droits", ic: "document" },
+      { txt: "Je sais à qui m'adresser pour mes papiers", ic: "personnes" },
+      { txt: "J'ose aller dans les administrations", ic: "porte" },
+      { txt: "Je comprends mieux les courriers officiels", ic: "document" }
+    ],
+    freins_leves: [
+      { txt: "Je sais maintenant où faire mes démarches", ic: "porte" },
+      { txt: "Je suis à l'aise avec internet", ic: "numerique" },
+      { txt: "Je connais mes droits", ic: "document" },
+      { txt: "Je n'ai plus peur des administrations", ic: "sourire" }
+    ],
+    resultats: [
+      { txt: "J'ai obtenu ou renouvelé mes papiers d'identité", ic: "document" },
+      { txt: "J'ai accès à mes droits sociaux (CAF, CPAM…)", ic: "document" },
+      { txt: "J'ai créé mon compte FranceConnect / Ameli", ic: "numerique" },
+      { txt: "Je sais utiliser une boîte mail", ic: "numerique" },
+      { txt: "J'aide d'autres personnes dans leurs démarches", ic: "personnes" }
+    ]
+  },
+
+  langue_francaise: {
+    freins: [
+      { txt: "Je ne parlais pas bien français", ic: "parler" },
+      { txt: "Je ne savais pas lire le français", ic: "livre" },
+      { txt: "Je ne savais pas écrire en français", ic: "document" },
+      { txt: "J'avais peur de prendre la parole", ic: "alerte" },
+      { txt: "Je ne comprenais pas mes voisins", ic: "personnes" },
+      { txt: "Je ne pouvais pas aider mes enfants à l'école", ic: "enfant" }
+    ],
+    actions: [
+      { txt: "J'ai suivi des cours de français (FLE)", ic: "livre" },
+      { txt: "J'ai participé aux ateliers de l'Alliance française", ic: "livre" },
+      { txt: "J'ai participé aux ateliers de Libre de Mots / CRIA45", ic: "livre" },
+      { txt: "J'ai parlé français en groupe", ic: "groupe" },
+      { txt: "J'ai été accompagné(e) à l'écrit", ic: "document" }
+    ],
+    competences: [
+      { txt: "Je parle mieux français", ic: "parler" },
+      { txt: "Je lis mieux le français", ic: "livre" },
+      { txt: "J'écris mieux en français", ic: "document" },
+      { txt: "J'ose parler en public", ic: "parler" },
+      { txt: "Je peux aider mes enfants à l'école", ic: "enfant" }
+    ],
+    freins_leves: [
+      { txt: "Je n'ai plus peur de parler français", ic: "parler" },
+      { txt: "Je comprends ce qu'on me dit", ic: "personnes" },
+      { txt: "Je peux lire les documents", ic: "livre" },
+      { txt: "Je ne suis plus isolé(e)", ic: "groupe" }
+    ],
+    resultats: [
+      { txt: "J'ai obtenu une certification de français (DELF…)", ic: "diplome" },
+      { txt: "Je peux faire mes démarches seul(e)", ic: "document" },
+      { txt: "J'ai fait des connaissances dans mon quartier", ic: "personnes" },
+      { txt: "Je peux suivre une formation", ic: "diplome" },
+      { txt: "Je peux chercher un emploi", ic: "briefcase" }
+    ]
+  },
+
+  sport_culture: {
+    freins: [
+      { txt: "Je ne faisais aucune activité sportive", ic: "sport" },
+      { txt: "Je n'avais jamais été dans un musée ou un théâtre", ic: "culture" },
+      { txt: "Le sport ou la culture coûtaient trop cher", ic: "argent" },
+      { txt: "Je ne savais pas où aller", ic: "alerte" },
+      { txt: "Je n'osais pas y aller seul(e)", ic: "personnes" },
+      { txt: "Je restais à la maison", ic: "maison" }
+    ],
+    actions: [
+      { txt: "J'ai pratiqué un sport (Orléans Mouv', AJLA, UPA, JAM…)", ic: "sport" },
+      { txt: "J'ai participé au dispositif DEMOS", ic: "culture" },
+      { txt: "Je suis allé(e) à la Micro-Folie mobile", ic: "culture" },
+      { txt: "J'ai participé à une sortie culturelle (théâtre Charbon, Culture du Cœur)", ic: "culture" },
+      { txt: "J'ai participé au dispositif EMIS", ic: "sport" },
+      { txt: "J'ai participé à un projet artistique (Fabrique Opéra…)", ic: "culture" }
+    ],
+    competences: [
+      { txt: "Je connais mieux mon corps", ic: "sport" },
+      { txt: "J'ai découvert des activités culturelles", ic: "culture" },
+      { txt: "Je sais travailler en groupe", ic: "groupe" },
+      { txt: "J'ai pris confiance en moi", ic: "ampoule" },
+      { txt: "J'ai appris à respecter des règles", ic: "diplome" },
+      { txt: "Je m'exprime avec mon corps ou en art", ic: "culture" }
+    ],
+    freins_leves: [
+      { txt: "Je fais une activité régulièrement", ic: "sport" },
+      { txt: "Je sors plus de chez moi", ic: "porte" },
+      { txt: "J'ai accès à des activités gratuites ou peu chères", ic: "argent" },
+      { txt: "J'ai trouvé un groupe avec qui partager", ic: "groupe" }
+    ],
+    resultats: [
+      { txt: "J'ai pris une licence dans un club", ic: "sport" },
+      { txt: "Je vais régulièrement à des événements culturels", ic: "culture" },
+      { txt: "Je participe à des spectacles ou expositions", ic: "culture" },
+      { txt: "Mes enfants pratiquent une activité", ic: "enfant" },
+      { txt: "Je suis en meilleure forme physique", ic: "sport" }
+    ]
+  },
+
+  education_reussite: {
+    freins: [
+      { txt: "J'avais des difficultés à l'école", ic: "livre" },
+      { txt: "Je risquais de décrocher (NEET, absentéisme)", ic: "alerte" },
+      { txt: "Je n'avais pas d'aide pour mes devoirs", ic: "diplome" },
+      { txt: "Je ne savais pas vers quelle orientation aller", ic: "cible" },
+      { txt: "Je manquais de confiance en moi à l'école", ic: "triste" },
+      { txt: "Je n'avais pas accès à des activités après l'école", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai été inscrit(e) au Coup de pouce clé / CLI", ic: "diplome" },
+      { txt: "J'ai été suivi(e) en accompagnement scolaire (ATP, AMASCO…)", ic: "diplome" },
+      { txt: "J'ai été reçu(e) à la Maison de la Réussite", ic: "porte" },
+      { txt: "J'ai participé à des ateliers de prévention du décrochage", ic: "personnes" },
+      { txt: "J'ai participé à un programme sport-éducation (UPA, AJLA, JAS…)", ic: "sport" },
+      { txt: "J'ai participé à un atelier numérique éducatif (code, médias)", ic: "numerique" },
+      { txt: "J'ai bénéficié du dispositif Cité éducative", ic: "diplome" },
+      { txt: "J'ai été accompagné(e) sur mon orientation (Cap Réussite, Excellence)", ic: "cible" }
+    ],
+    competences: [
+      { txt: "J'ai amélioré mes compétences en lecture / écriture", ic: "livre" },
+      { txt: "J'ai pris confiance dans mes capacités scolaires", ic: "ampoule" },
+      { txt: "J'ai appris à m'organiser dans mon travail", ic: "cible" },
+      { txt: "J'ai développé l'esprit critique et la curiosité", ic: "oeil" },
+      { txt: "J'ai un projet d'orientation plus clair", ic: "cible" },
+      { txt: "J'ai développé des compétences psychosociales (CSP)", ic: "groupe" }
+    ],
+    freins_leves: [
+      { txt: "Je ne risque plus de décrocher", ic: "sourire" },
+      { txt: "Je suis aidé(e) pour mes devoirs", ic: "diplome" },
+      { txt: "J'ai retrouvé l'envie d'apprendre", ic: "ampoule" },
+      { txt: "Je sais où je vais après l'école", ic: "cible" }
+    ],
+    resultats: [
+      { txt: "Mes résultats scolaires se sont améliorés", ic: "diplome" },
+      { txt: "Je suis passé(e) en classe supérieure / au lycée", ic: "diplome" },
+      { txt: "J'ai trouvé un stage ou une orientation qui me plaît", ic: "briefcase" },
+      { txt: "Je participe à des activités éducatives régulières", ic: "groupe" },
+      { txt: "J'aide à mon tour d'autres jeunes", ic: "coeur" }
+    ]
+  },
+
+  parentalite: {
+    freins: [
+      { txt: "Je me sentais seul(e) en tant que parent", ic: "personnes" },
+      { txt: "Je ne connaissais pas les structures pour parents", ic: "alerte" },
+      { txt: "J'avais des difficultés avec mon enfant", ic: "enfant" },
+      { txt: "Je ne dialoguais pas assez avec l'école", ic: "porte" },
+      { txt: "Je n'arrivais pas à aider mes enfants à l'école", ic: "enfant" }
+    ],
+    actions: [
+      { txt: "Je suis allé(e) au Carrefour des parents", ic: "groupe" },
+      { txt: "J'ai participé à la Maison des 1000 premiers jours", ic: "enfant" },
+      { txt: "J'ai participé à la Journée des familles", ic: "groupe" },
+      { txt: "J'ai été reçu(e) à la Maison de la Réussite", ic: "porte" },
+      { txt: "J'ai participé à des ateliers parents (Récré des parents…)", ic: "groupe" },
+      { txt: "J'ai été soutenu(e) sur le handicap de mon enfant (MDPH)", ic: "document" }
+    ],
+    competences: [
+      { txt: "Je dialogue mieux avec mon enfant", ic: "parler" },
+      { txt: "Je dialogue mieux avec l'école", ic: "personnes" },
+      { txt: "Je sais mieux accompagner la scolarité de mon enfant", ic: "enfant" },
+      { txt: "Je connais les bons gestes pour les jeunes enfants", ic: "enfant" },
+      { txt: "Je sais à qui m'adresser quand j'ai un problème", ic: "personnes" }
+    ],
+    freins_leves: [
+      { txt: "Je ne suis plus seul(e) en tant que parent", ic: "groupe" },
+      { txt: "Je dialogue avec l'école", ic: "porte" },
+      { txt: "Mes relations familiales se sont apaisées", ic: "coeur" },
+      { txt: "J'aide mes enfants à l'école", ic: "enfant" }
+    ],
+    resultats: [
+      { txt: "J'ai retrouvé confiance dans mon rôle de parent", ic: "ampoule" },
+      { txt: "Je suis impliqué(e) à l'école (parent d'élève…)", ic: "groupe" },
+      { txt: "Mon enfant a été orienté(e) vers une structure adaptée", ic: "porte" },
+      { txt: "Je suis devenu(e) parent relais", ic: "personnes" }
+    ]
+  },
+
+  lien_social: {
+    freins: [
+      { txt: "Je me sentais seul(e)", ic: "triste" },
+      { txt: "Je ne connaissais personne dans mon quartier", ic: "personnes" },
+      { txt: "Je ne sortais pas beaucoup de chez moi", ic: "maison" },
+      { txt: "Je n'osais pas aller vers les autres", ic: "alerte" },
+      { txt: "Je ne connaissais pas les associations du quartier", ic: "groupe" }
+    ],
+    actions: [
+      { txt: "J'ai participé aux activités du centre social", ic: "groupe" },
+      { txt: "Je suis allé(e) à des temps forts du quartier", ic: "star" },
+      { txt: "J'ai été aidé(e) par AJLA, UPA ou une autre association", ic: "personnes" },
+      { txt: "J'ai participé à des projets collectifs", ic: "groupe" },
+      { txt: "J'ai rencontré mes voisins lors d'un événement", ic: "personnes" }
+    ],
+    competences: [
+      { txt: "J'ai appris à aller vers les autres", ic: "personnes" },
+      { txt: "Je sais m'investir dans un projet collectif", ic: "groupe" },
+      { txt: "Je connais mieux mon quartier", ic: "maison" },
+      { txt: "J'ai pris confiance en moi", ic: "ampoule" },
+      { txt: "Je sais aider les autres", ic: "coeur" }
+    ],
+    freins_leves: [
+      { txt: "Je me sens moins seul(e)", ic: "sourire" },
+      { txt: "J'ai des amis ou des contacts dans le quartier", ic: "groupe" },
+      { txt: "Je sors régulièrement", ic: "porte" },
+      { txt: "Je participe à la vie du quartier", ic: "personnes" }
+    ],
+    resultats: [
+      { txt: "Je suis bénévole dans une association", ic: "coeur" },
+      { txt: "J'ai créé ou rejoint un projet collectif", ic: "groupe" },
+      { txt: "Je suis devenu(e) parent relais", ic: "personnes" },
+      { txt: "Je participe au conseil citoyen", ic: "groupe" },
+      { txt: "Je me sens mieux dans mon quartier", ic: "sourire" }
+    ]
+  },
+
+  femmes: {
+    freins: [
+      { txt: "Je n'osais pas sortir de chez moi", ic: "maison" },
+      { txt: "Je ne connaissais pas mes droits en tant que femme", ic: "document" },
+      { txt: "Je n'avais pas d'activité personnelle", ic: "alerte" },
+      { txt: "Je ne savais pas où trouver de l'aide", ic: "personnes" },
+      { txt: "Je manquais de confiance en moi", ic: "triste" }
+    ],
+    actions: [
+      { txt: "J'ai participé à Activ'elles", ic: "groupe" },
+      { txt: "Je suis allée à la Maison du droit et de la justice", ic: "porte" },
+      { txt: "J'ai participé à des actions du CIDFF", ic: "personnes" },
+      { txt: "J'ai été aux événements de la Journée des droits des femmes", ic: "star" },
+      { txt: "J'ai pris la parole dans des actions du quartier", ic: "parler" }
+    ],
+    competences: [
+      { txt: "Je connais mieux mes droits", ic: "document" },
+      { txt: "J'ose prendre la parole", ic: "parler" },
+      { txt: "J'ai pris confiance en moi", ic: "ampoule" },
+      { txt: "Je sais où chercher de l'aide", ic: "personnes" },
+      { txt: "Je m'investis dans le quartier", ic: "groupe" }
+    ],
+    freins_leves: [
+      { txt: "Je sors plus de chez moi", ic: "porte" },
+      { txt: "Je connais mes droits", ic: "document" },
+      { txt: "J'ai des activités à moi", ic: "ampoule" },
+      { txt: "J'ai pris confiance en moi", ic: "sourire" }
+    ],
+    resultats: [
+      { txt: "Je suis revenue dans une dynamique professionnelle", ic: "briefcase" },
+      { txt: "J'aide d'autres femmes du quartier", ic: "personnes" },
+      { txt: "Je me suis engagée dans une association", ic: "coeur" },
+      { txt: "Je suis sortie d'une situation difficile", ic: "sourire" },
+      { txt: "Je suis plus indépendante", ic: "ampoule" }
+    ]
+  },
+
+  // ==================== SANTÉ ====================
+  prevention: {
+    freins: [
+      { txt: "Je n'allais pas chez le médecin", ic: "sante" },
+      { txt: "Je ne faisais pas les dépistages (cancers…)", ic: "sante" },
+      { txt: "Je n'étais pas bien informé(e) sur la santé", ic: "alerte" },
+      { txt: "Je n'avais pas de mutuelle", ic: "argent" },
+      { txt: "Je ne savais pas si j'étais à jour des vaccins", ic: "sante" }
+    ],
+    actions: [
+      { txt: "J'ai participé au Forum Santé du quartier", ic: "groupe" },
+      { txt: "J'ai été reçu(e) par le bus santé / CPAM", ic: "sante" },
+      { txt: "J'ai fait un bilan de santé", ic: "sante" },
+      { txt: "J'ai été informé(e) sur les dépistages", ic: "document" },
+      { txt: "J'ai consulté un médecin grâce à l'association", ic: "sante" }
+    ],
+    competences: [
+      { txt: "Je sais ce qu'est un dépistage", ic: "sante" },
+      { txt: "Je sais reconnaître une fausse information santé", ic: "alerte" },
+      { txt: "Je connais mes droits santé (mutuelle, CMU…)", ic: "document" },
+      { txt: "Je sais à qui m'adresser pour ma santé", ic: "personnes" },
+      { txt: "Je prends mieux soin de moi", ic: "coeur" }
+    ],
+    freins_leves: [
+      { txt: "J'ai un médecin référent", ic: "sante" },
+      { txt: "Je fais mes dépistages", ic: "sante" },
+      { txt: "Je suis à jour des vaccins", ic: "sante" },
+      { txt: "J'ai une mutuelle / CMU", ic: "document" }
+    ],
+    resultats: [
+      { txt: "J'ai fait un dépistage (cancer, diabète…)", ic: "sante" },
+      { txt: "J'ai accès aux soins (médecin, dentiste…)", ic: "sante" },
+      { txt: "Je sens que je suis en meilleure santé", ic: "sourire" },
+      { txt: "J'aide mes proches à prendre soin de leur santé", ic: "personnes" }
+    ]
+  },
+
+  sport_sante: {
+    freins: [
+      { txt: "Je ne faisais aucune activité physique", ic: "sport" },
+      { txt: "Je me sentais fatigué(e) souvent", ic: "triste" },
+      { txt: "J'avais des problèmes de poids", ic: "sante" },
+      { txt: "J'avais une maladie chronique mal suivie", ic: "sante" },
+      { txt: "Je ne savais pas comment commencer le sport", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "Je suis allé(e) dans une Maison Sport-Santé", ic: "sport" },
+      { txt: "J'ai été suivi(e) par un éducateur sportif", ic: "personnes" },
+      { txt: "Je pratique une activité sport-santé régulière", ic: "sport" },
+      { txt: "J'ai participé à des séances en groupe", ic: "groupe" }
+    ],
+    competences: [
+      { txt: "Je sais quelles activités sont bonnes pour moi", ic: "sport" },
+      { txt: "Je connais mes limites physiques", ic: "ampoule" },
+      { txt: "Je sais m'échauffer et m'étirer", ic: "sport" },
+      { txt: "Je gère mieux mon alimentation", ic: "sante" }
+    ],
+    freins_leves: [
+      { txt: "Je fais du sport régulièrement", ic: "sport" },
+      { txt: "Je suis moins fatigué(e)", ic: "sourire" },
+      { txt: "Ma santé s'est améliorée", ic: "sante" }
+    ],
+    resultats: [
+      { txt: "Je pratique au moins 1 activité par semaine", ic: "sport" },
+      { txt: "Mon médecin a constaté une amélioration", ic: "sante" },
+      { txt: "J'ai perdu du poids ou je me sens mieux dans mon corps", ic: "sourire" },
+      { txt: "Je suis moins essoufflé(e) au quotidien", ic: "sport" }
+    ]
+  },
+
+  addictions: {
+    freins: [
+      { txt: "Je consommais trop (tabac, alcool, écrans…)", ic: "alerte" },
+      { txt: "Je ne savais pas où demander de l'aide", ic: "personnes" },
+      { txt: "Je voulais arrêter sans y arriver", ic: "alerte" },
+      { txt: "Un proche avait des problèmes d'addiction", ic: "personnes" }
+    ],
+    actions: [
+      { txt: "J'ai été accompagné(e) par une association de prévention", ic: "personnes" },
+      { txt: "J'ai participé à un atelier de sensibilisation", ic: "groupe" },
+      { txt: "J'ai été orienté(e) vers un professionnel", ic: "sante" }
+    ],
+    competences: [
+      { txt: "Je connais les risques", ic: "alerte" },
+      { txt: "Je sais où demander de l'aide", ic: "personnes" },
+      { txt: "Je gère mieux mes envies", ic: "ampoule" }
+    ],
+    freins_leves: [
+      { txt: "J'ai diminué ou arrêté ma consommation", ic: "sourire" },
+      { txt: "Je sais à qui parler", ic: "personnes" },
+      { txt: "J'aide un proche à s'en sortir", ic: "coeur" }
+    ],
+    resultats: [
+      { txt: "J'ai arrêté ou diminué ma consommation", ic: "sourire" },
+      { txt: "Je suis suivi(e) régulièrement", ic: "sante" },
+      { txt: "Je me sens mieux au quotidien", ic: "sourire" }
+    ]
+  },
+
+  vie_sexuelle: {
+    freins: [
+      { txt: "Je n'osais pas parler de ces sujets", ic: "alerte" },
+      { txt: "Je manquais d'information", ic: "document" },
+      { txt: "Je ne connaissais pas les moyens de contraception", ic: "sante" }
+    ],
+    actions: [
+      { txt: "J'ai participé à un atelier d'information", ic: "groupe" },
+      { txt: "J'ai été reçu(e) par un professionnel", ic: "sante" },
+      { txt: "J'ai eu accès à des dépistages", ic: "sante" }
+    ],
+    competences: [
+      { txt: "Je suis mieux informé(e)", ic: "ampoule" },
+      { txt: "Je connais mes droits", ic: "document" },
+      { txt: "J'ose en parler", ic: "parler" }
+    ],
+    freins_leves: [
+      { txt: "Je suis informé(e)", ic: "document" },
+      { txt: "Je sais où trouver de l'aide", ic: "personnes" },
+      { txt: "J'ose en parler", ic: "parler" }
+    ],
+    resultats: [
+      { txt: "J'ai accès à la contraception", ic: "sante" },
+      { txt: "Je fais les dépistages régulièrement", ic: "sante" },
+      { txt: "Je peux en parler avec mes proches", ic: "personnes" }
+    ]
+  },
+
+  info_sante: {
+    freins: [
+      { txt: "Je croyais beaucoup d'infos qui circulaient sur internet", ic: "alerte" },
+      { txt: "Je ne savais pas qui croire", ic: "alerte" },
+      { txt: "Je n'osais pas demander à un professionnel", ic: "personnes" }
+    ],
+    actions: [
+      { txt: "J'ai participé à un atelier sur les fakes news santé", ic: "ampoule" },
+      { txt: "J'ai été informé(e) par un professionnel de santé", ic: "sante" }
+    ],
+    competences: [
+      { txt: "Je sais reconnaître une vraie info santé", ic: "ampoule" },
+      { txt: "Je vérifie mes sources", ic: "oeil" },
+      { txt: "Je préfère demander à mon médecin", ic: "sante" }
+    ],
+    freins_leves: [
+      { txt: "Je ne crois plus n'importe quoi", ic: "ampoule" },
+      { txt: "Je sais qui croire", ic: "oeil" }
+    ],
+    resultats: [
+      { txt: "Je prends de meilleures décisions pour ma santé", ic: "sante" },
+      { txt: "J'aide ma famille à mieux s'informer", ic: "personnes" }
+    ]
+  },
+
+  // ==================== EMPLOI ====================
+  stages_apprentissage: {
+    freins: [
+      { txt: "Je ne trouvais pas de stage", ic: "briefcase" },
+      { txt: "Je ne connaissais personne dans le monde du travail", ic: "personnes" },
+      { txt: "Je ne savais pas faire un CV ou une lettre", ic: "document" },
+      { txt: "Je n'avais pas confiance en moi pour postuler", ic: "triste" },
+      { txt: "Je ne savais pas quel métier choisir", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai participé à un forum stage / apprentissage", ic: "groupe" },
+      { txt: "J'ai été aidé(e) pour mon CV et lettre", ic: "document" },
+      { txt: "J'ai rencontré des entreprises grâce à l'association", ic: "briefcase" },
+      { txt: "J'ai fait des entretiens blancs", ic: "personnes" },
+      { txt: "J'ai été parrainé(e) par un professionnel", ic: "personnes" }
+    ],
+    competences: [
+      { txt: "Je sais faire un CV", ic: "document" },
+      { txt: "Je sais me présenter en entretien", ic: "parler" },
+      { txt: "Je connais des secteurs qui m'intéressent", ic: "ampoule" },
+      { txt: "J'ai pris confiance pour postuler", ic: "ampoule" }
+    ],
+    freins_leves: [
+      { txt: "J'ai trouvé un stage", ic: "briefcase" },
+      { txt: "Je sais faire un CV et une lettre", ic: "document" },
+      { txt: "J'ai un projet professionnel", ic: "cible" }
+    ],
+    resultats: [
+      { txt: "J'ai signé un contrat de stage ou d'apprentissage", ic: "briefcase" },
+      { txt: "J'ai été embauché(e) après mon stage", ic: "briefcase" },
+      { txt: "J'ai validé ma formation", ic: "diplome" },
+      { txt: "Je sais où chercher pour la suite", ic: "ampoule" }
+    ]
+  },
+
+  parrainage: {
+    freins: [
+      { txt: "Je n'avais aucun contact dans le monde professionnel", ic: "personnes" },
+      { txt: "Je ne savais pas comment faire fonctionner mon réseau", ic: "alerte" },
+      { txt: "Je ne connaissais aucun(e) professionnel(le) à qui parler", ic: "personnes" },
+      { txt: "Je manquais de confiance pour démarcher", ic: "triste" }
+    ],
+    actions: [
+      { txt: "J'ai été parrainé(e) par un professionnel (Proxité, Mentorat…)", ic: "personnes" },
+      { txt: "J'ai participé au programme Parcours & Réussite", ic: "groupe" },
+      { txt: "J'ai rencontré régulièrement mon parrain ou marraine", ic: "personnes" },
+      { txt: "J'ai été présenté(e) à des contacts professionnels", ic: "personnes" }
+    ],
+    competences: [
+      { txt: "Je sais comment construire un réseau", ic: "groupe" },
+      { txt: "Je sais demander des conseils", ic: "parler" },
+      { txt: "J'ai pris confiance grâce à mon parrain ou marraine", ic: "ampoule" }
+    ],
+    freins_leves: [
+      { txt: "J'ai un réseau professionnel", ic: "groupe" },
+      { txt: "Je connais des professionnels qui me soutiennent", ic: "personnes" },
+      { txt: "J'ose démarcher", ic: "ampoule" }
+    ],
+    resultats: [
+      { txt: "J'ai trouvé un emploi grâce au parrainage", ic: "briefcase" },
+      { txt: "Je suis entré(e) en formation", ic: "diplome" },
+      { txt: "Je veux à mon tour parrainer quelqu'un", ic: "coeur" }
+    ]
+  },
+
+  freins_emploi: {
+    freins: [
+      { txt: "Je n'avais pas de mode de garde pour mes enfants", ic: "enfant" },
+      { txt: "Je ne pouvais pas me déplacer (pas de permis)", ic: "mobilite" },
+      { txt: "J'avais des problèmes financiers", ic: "argent" },
+      { txt: "J'avais des problèmes de logement", ic: "maison" },
+      { txt: "Je manquais de confiance en moi", ic: "triste" },
+      { txt: "Je ne maîtrisais pas le français", ic: "parler" },
+      { txt: "Je ne connaissais pas mes droits", ic: "document" }
+    ],
+    actions: [
+      { txt: "J'ai été suivi(e) par Pass'emploi service", ic: "personnes" },
+      { txt: "J'ai été accompagné(e) par la Mission locale", ic: "personnes" },
+      { txt: "J'ai été aidé(e) par Initiative et développement", ic: "briefcase" },
+      { txt: "J'ai bénéficié d'une aide pour la mobilité (permis…)", ic: "mobilite" },
+      { txt: "J'ai été aidé(e) pour la garde d'enfants", ic: "enfant" },
+      { txt: "J'ai participé aux ateliers Amidon 45", ic: "groupe" }
+    ],
+    competences: [
+      { txt: "J'ai pris confiance en moi", ic: "ampoule" },
+      { txt: "Je sais m'organiser au quotidien", ic: "cible" },
+      { txt: "Je sais utiliser les transports", ic: "mobilite" },
+      { txt: "Je sais gérer mon budget", ic: "argent" },
+      { txt: "Je connais mes droits sociaux", ic: "document" }
+    ],
+    freins_leves: [
+      { txt: "Mes enfants ont un mode de garde", ic: "enfant" },
+      { txt: "Je peux me déplacer", ic: "mobilite" },
+      { txt: "Mes problèmes financiers sont moins lourds", ic: "argent" },
+      { txt: "Mon logement est stable", ic: "maison" },
+      { txt: "J'ai retrouvé confiance", ic: "sourire" }
+    ],
+    resultats: [
+      { txt: "J'ai un emploi (CDD, CDI, intérim)", ic: "briefcase" },
+      { txt: "Je suis entré(e) en formation", ic: "diplome" },
+      { txt: "J'ai obtenu mon permis de conduire", ic: "mobilite" },
+      { txt: "J'accède à mes droits sociaux", ic: "document" },
+      { txt: "Je peux me projeter dans l'avenir", ic: "cible" }
+    ]
+  },
+
+  metiers_tension: {
+    freins: [
+      { txt: "Je ne connaissais pas les métiers qui recrutent", ic: "alerte" },
+      { txt: "J'avais des idées reçues sur certains métiers", ic: "alerte" },
+      { txt: "Je ne savais pas comment me former", ic: "diplome" }
+    ],
+    actions: [
+      { txt: "J'ai participé à un rendez-vous métier dans le quartier", ic: "groupe" },
+      { txt: "J'ai rencontré des entreprises (logistique, BTP…)", ic: "briefcase" },
+      { txt: "J'ai visité des entreprises locales", ic: "porte" }
+    ],
+    competences: [
+      { txt: "Je connais les métiers qui recrutent", ic: "ampoule" },
+      { txt: "Je sais où me former", ic: "diplome" },
+      { txt: "J'ai changé mon regard sur certains métiers", ic: "oeil" }
+    ],
+    freins_leves: [
+      { txt: "J'ai un projet professionnel précis", ic: "cible" },
+      { txt: "Je connais des entreprises qui recrutent", ic: "briefcase" }
+    ],
+    resultats: [
+      { txt: "Je suis entré(e) en formation pour un métier en tension", ic: "diplome" },
+      { txt: "J'ai signé un contrat dans un métier qui recrute", ic: "briefcase" }
+    ]
+  },
+
+  entrepreneuriat: {
+    freins: [
+      { txt: "J'avais une idée mais je ne savais pas comment faire", ic: "ampoule" },
+      { txt: "Je n'avais pas de financement", ic: "argent" },
+      { txt: "Je ne connaissais pas les démarches", ic: "document" },
+      { txt: "Je n'osais pas me lancer", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai été reçu(e) par BGE", ic: "personnes" },
+      { txt: "J'ai rencontré le Bus de l'entrepreneuriat", ic: "mobilite" },
+      { txt: "J'ai participé au dispositif LABO", ic: "outil" },
+      { txt: "J'ai été suivi(e) à la Maison de la Réussite", ic: "porte" }
+    ],
+    competences: [
+      { txt: "Je sais faire un business plan", ic: "document" },
+      { txt: "Je connais les démarches pour créer", ic: "document" },
+      { txt: "Je sais où trouver des aides", ic: "argent" },
+      { txt: "J'ai construit mon projet", ic: "cible" }
+    ],
+    freins_leves: [
+      { txt: "J'ai un projet solide", ic: "cible" },
+      { txt: "Je connais les démarches", ic: "document" },
+      { txt: "J'ose me lancer", ic: "ampoule" }
+    ],
+    resultats: [
+      { txt: "J'ai créé mon entreprise (auto-entrepreneur, micro…)", ic: "briefcase" },
+      { txt: "J'ai obtenu un financement", ic: "argent" },
+      { txt: "Mon activité a démarré", ic: "star" }
+    ]
+  },
+
+  dispositifs_jeunes: {
+    freins: [
+      { txt: "J'étais sorti(e) du système scolaire (NEET)", ic: "alerte" },
+      { txt: "Je ne savais pas quoi faire", ic: "triste" },
+      { txt: "Je n'avais ni emploi ni formation", ic: "alerte" },
+      { txt: "Je ne connaissais pas les dispositifs pour jeunes", ic: "document" }
+    ],
+    actions: [
+      { txt: "Je suis entré(e) à l'École de la 2e chance (E2C)", ic: "diplome" },
+      { txt: "J'ai intégré l'EPIDE", ic: "diplome" },
+      { txt: "J'ai participé à un chantier éducatif", ic: "outil" },
+      { txt: "J'ai rejoint le réseau Étincelle", ic: "star" },
+      { txt: "J'ai été suivi(e) par la Mission locale", ic: "personnes" }
+    ],
+    competences: [
+      { txt: "J'ai retrouvé un cadre et des règles", ic: "diplome" },
+      { txt: "Je sais respecter des horaires", ic: "cible" },
+      { txt: "J'ai appris des bases pratiques (CV, lettre, métiers)", ic: "document" },
+      { txt: "J'ai pris confiance en moi", ic: "ampoule" }
+    ],
+    freins_leves: [
+      { txt: "J'ai un cadre et un projet", ic: "cible" },
+      { txt: "Je suis sorti(e) de l'inactivité", ic: "ampoule" },
+      { txt: "Je sais où je vais", ic: "ampoule" }
+    ],
+    resultats: [
+      { txt: "J'ai validé une formation ou un diplôme", ic: "diplome" },
+      { txt: "J'ai trouvé un emploi ou un apprentissage", ic: "briefcase" },
+      { txt: "Je me suis remis(e) à étudier", ic: "livre" }
+    ]
+  },
+
+  // ==================== TRANSITION ====================
+  cadre_de_vie: {
+    freins: [
+      { txt: "Mon quartier était sale (déchets, encombrants…)", ic: "poubelle" },
+      { txt: "Il y avait des problèmes dans les parties communes", ic: "maison" },
+      { txt: "Le bailleur ne répondait pas vite", ic: "porte" },
+      { txt: "Je ne savais pas à qui signaler les problèmes", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai participé à des réunions GUSP", ic: "groupe" },
+      { txt: "J'ai signalé des problèmes (mairie de proximité, bailleur)", ic: "alerte" },
+      { txt: "J'ai participé à des actions de propreté du quartier", ic: "feuille" }
+    ],
+    competences: [
+      { txt: "Je sais à qui signaler un problème", ic: "personnes" },
+      { txt: "Je connais le rôle du bailleur", ic: "porte" },
+      { txt: "Je m'investis dans mon quartier", ic: "groupe" }
+    ],
+    freins_leves: [
+      { txt: "Mon quartier est plus propre", ic: "feuille" },
+      { txt: "Mes signalements sont pris en compte", ic: "ampoule" },
+      { txt: "Je connais mes interlocuteurs", ic: "personnes" }
+    ],
+    resultats: [
+      { txt: "Mon cadre de vie s'est amélioré", ic: "sourire" },
+      { txt: "Je m'engage dans la vie de mon immeuble", ic: "groupe" }
+    ]
+  },
+
+  dechets: {
+    freins: [
+      { txt: "Je ne savais pas trier mes déchets", ic: "alerte" },
+      { txt: "Je ne savais pas où jeter les encombrants", ic: "poubelle" },
+      { txt: "Je jetais trop de choses à la poubelle", ic: "poubelle" }
+    ],
+    actions: [
+      { txt: "J'ai participé à un atelier de sensibilisation", ic: "groupe" },
+      { txt: "J'ai utilisé un composteur collectif", ic: "feuille" },
+      { txt: "J'ai donné mes objets à Ressource Toit / Emmaüs / Envie", ic: "coeur" },
+      { txt: "J'ai été informé(e) sur les encombrants (métropole)", ic: "document" }
+    ],
+    competences: [
+      { txt: "Je sais trier mes déchets", ic: "feuille" },
+      { txt: "Je sais composter", ic: "feuille" },
+      { txt: "Je sais quoi faire de mes encombrants", ic: "ampoule" },
+      { txt: "Je consomme moins (réemploi)", ic: "feuille" }
+    ],
+    freins_leves: [
+      { txt: "Je trie tous mes déchets", ic: "feuille" },
+      { txt: "Je connais les bons gestes", ic: "ampoule" }
+    ],
+    resultats: [
+      { txt: "Je produis moins de déchets", ic: "feuille" },
+      { txt: "J'ai donné une seconde vie à des objets", ic: "coeur" },
+      { txt: "Je composte mes biodéchets", ic: "feuille" }
+    ]
+  },
+
+  energie: {
+    freins: [
+      { txt: "Mes factures d'énergie étaient trop élevées", ic: "argent" },
+      { txt: "Mon logement était mal isolé", ic: "maison" },
+      { txt: "Je ne connaissais pas les bons gestes", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai visité l'appartement pédagogique", ic: "maison" },
+      { txt: "J'ai participé à un atelier sur les économies d'énergie", ic: "ampoule" },
+      { txt: "J'ai été aidé(e) pour mes factures (chèque énergie…)", ic: "argent" }
+    ],
+    competences: [
+      { txt: "Je connais les bons gestes pour économiser l'énergie", ic: "ampoule" },
+      { txt: "Je sais lire ma facture", ic: "document" },
+      { txt: "Je connais les aides existantes", ic: "argent" }
+    ],
+    freins_leves: [
+      { txt: "Mes factures ont baissé", ic: "argent" },
+      { txt: "Je sais faire des économies", ic: "ampoule" }
+    ],
+    resultats: [
+      { txt: "Je consomme moins d'énergie", ic: "feuille" },
+      { txt: "J'ai obtenu une aide", ic: "argent" }
+    ]
+  },
+
+  mobilite_douce: {
+    freins: [
+      { txt: "Je n'osais pas faire du vélo", ic: "velo" },
+      { txt: "Je ne connaissais pas les transports en commun", ic: "mobilite" },
+      { txt: "Je n'avais pas de vélo ou de local sécurisé", ic: "velo" }
+    ],
+    actions: [
+      { txt: "J'ai participé à des ateliers vélo", ic: "velo" },
+      { txt: "J'ai bénéficié d'un local vélo dans ma résidence", ic: "maison" },
+      { txt: "J'ai bénéficié d'une tarification sociale des transports", ic: "argent" }
+    ],
+    competences: [
+      { txt: "Je sais faire du vélo en ville", ic: "velo" },
+      { txt: "Je sais utiliser les transports", ic: "mobilite" },
+      { txt: "Je sais réparer mon vélo", ic: "outil" }
+    ],
+    freins_leves: [
+      { txt: "Je peux me déplacer facilement", ic: "mobilite" },
+      { txt: "Je fais du vélo régulièrement", ic: "velo" }
+    ],
+    resultats: [
+      { txt: "Je vais au travail à vélo / en transports", ic: "velo" },
+      { txt: "Je dépense moins en déplacements", ic: "argent" }
+    ]
+  },
+
+  logement: {
+    freins: [
+      { txt: "Mon logement était trop petit ou inadapté", ic: "maison" },
+      { txt: "J'avais des relations difficiles avec le bailleur", ic: "porte" },
+      { txt: "Je ne connaissais pas mes droits de locataire", ic: "document" },
+      { txt: "Je cherchais un logement sans en trouver", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai été aidé(e) dans ma demande de logement", ic: "document" },
+      { txt: "J'ai été reçu(e) par un agent de proximité du bailleur", ic: "personnes" },
+      { txt: "J'ai été accompagné(e) dans le cadre du NPNRU", ic: "maison" }
+    ],
+    competences: [
+      { txt: "Je connais mes droits de locataire", ic: "document" },
+      { txt: "Je sais à qui m'adresser au bailleur", ic: "personnes" },
+      { txt: "Je sais faire ma demande de logement", ic: "document" }
+    ],
+    freins_leves: [
+      { txt: "J'ai obtenu un logement adapté", ic: "maison" },
+      { txt: "Mes relations avec le bailleur sont apaisées", ic: "sourire" }
+    ],
+    resultats: [
+      { txt: "J'ai obtenu un nouveau logement", ic: "maison" },
+      { txt: "Mon logement a été rénové", ic: "outil" },
+      { txt: "Mes problèmes de logement sont réglés", ic: "sourire" }
+    ]
+  },
+
+  // ==================== TRANQUILLITÉ ====================
+  prevention_delinquance: {
+    freins: [
+      { txt: "Je traînais dehors sans rien faire", ic: "alerte" },
+      { txt: "Je traînais avec des mauvaises fréquentations", ic: "personnes" },
+      { txt: "J'avais des problèmes avec la justice", ic: "alerte" },
+      { txt: "Je ne respectais pas toujours les règles", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai été suivi(e) par un éducateur de prévention spécialisée", ic: "personnes" },
+      { txt: "J'ai participé à un chantier éducatif", ic: "outil" },
+      { txt: "Mes parents ont été soutenus dans mon parcours", ic: "enfant" }
+    ],
+    competences: [
+      { txt: "Je sais respecter des règles", ic: "diplome" },
+      { txt: "Je sais gérer ma colère", ic: "ampoule" },
+      { txt: "J'ai retrouvé un cadre", ic: "cible" },
+      { txt: "Je sais à qui parler quand ça va mal", ic: "personnes" }
+    ],
+    freins_leves: [
+      { txt: "Je ne traîne plus sans rien faire", ic: "ampoule" },
+      { txt: "J'ai changé de fréquentations", ic: "personnes" },
+      { txt: "Mes problèmes avec la justice sont résolus", ic: "sourire" }
+    ],
+    resultats: [
+      { txt: "Je suis en formation ou en emploi", ic: "diplome" },
+      { txt: "Je suis impliqué(e) dans un projet positif", ic: "star" },
+      { txt: "J'aide d'autres jeunes du quartier", ic: "coeur" }
+    ]
+  },
+
+  mediation: {
+    freins: [
+      { txt: "J'avais des conflits avec mes voisins", ic: "personnes" },
+      { txt: "J'avais des conflits avec ma famille", ic: "enfant" },
+      { txt: "Je ne savais pas à qui demander de l'aide", ic: "alerte" },
+      { txt: "Je n'osais pas parler de mes problèmes", ic: "triste" }
+    ],
+    actions: [
+      { txt: "J'ai été aidé(e) par un médiateur social", ic: "personnes" },
+      { txt: "J'ai été reçu(e) par l'association Lien social et médiation", ic: "groupe" },
+      { txt: "J'ai été soutenu(e) par un parent relais", ic: "personnes" }
+    ],
+    competences: [
+      { txt: "Je sais dialoguer même quand c'est difficile", ic: "parler" },
+      { txt: "Je sais demander de l'aide", ic: "personnes" },
+      { txt: "Je sais écouter l'autre", ic: "oeil" }
+    ],
+    freins_leves: [
+      { txt: "Mes conflits sont apaisés", ic: "sourire" },
+      { txt: "Je dialogue avec mes voisins", ic: "personnes" },
+      { txt: "Mes relations familiales vont mieux", ic: "coeur" }
+    ],
+    resultats: [
+      { txt: "Mes conflits sont résolus", ic: "sourire" },
+      { txt: "Je vis mieux dans mon immeuble", ic: "maison" },
+      { txt: "Je me suis formé(e) pour devenir médiateur/médiatrice", ic: "diplome" }
+    ]
+  },
+
+  police_population: {
+    freins: [
+      { txt: "Je n'avais pas confiance dans la police", ic: "triste" },
+      { txt: "Je ne connaissais pas les forces de l'ordre du quartier", ic: "personnes" },
+      { txt: "J'avais des préjugés", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai rencontré un délégué cohésion police-population", ic: "personnes" },
+      { txt: "J'ai participé à une action police-population à l'école", ic: "groupe" },
+      { txt: "J'ai visité un commissariat ou une caserne", ic: "porte" }
+    ],
+    competences: [
+      { txt: "Je connais le rôle de la police", ic: "ampoule" },
+      { txt: "J'ai changé mon regard", ic: "oeil" },
+      { txt: "Je sais à qui m'adresser", ic: "personnes" }
+    ],
+    freins_leves: [
+      { txt: "Mes préjugés ont diminué", ic: "ampoule" },
+      { txt: "Je peux dialoguer avec la police", ic: "parler" }
+    ],
+    resultats: [
+      { txt: "Je me sens plus en sécurité dans le quartier", ic: "bouclier" },
+      { txt: "Je connais les forces de l'ordre du quartier", ic: "personnes" }
+    ]
+  },
+
+  reserves_citoyennes: {
+    freins: [
+      { txt: "Je ne connaissais pas les réserves citoyennes", ic: "alerte" },
+      { txt: "Je ne pensais pas pouvoir m'engager", ic: "triste" }
+    ],
+    actions: [
+      { txt: "J'ai été informé(e) sur les réserves (police, pompiers, défense…)", ic: "police" },
+      { txt: "J'ai intégré le dispositif des cadets", ic: "diplome" },
+      { txt: "J'ai participé à des actions citoyennes", ic: "groupe" }
+    ],
+    competences: [
+      { txt: "Je connais les institutions républicaines", ic: "ampoule" },
+      { txt: "Je sais m'engager pour les autres", ic: "coeur" },
+      { txt: "J'ai appris à respecter une discipline", ic: "diplome" }
+    ],
+    freins_leves: [
+      { txt: "Je m'engage pour ma société", ic: "coeur" },
+      { txt: "J'ai trouvé une vocation", ic: "cible" }
+    ],
+    resultats: [
+      { txt: "Je suis cadet ou réserviste", ic: "police" },
+      { txt: "Je veux travailler dans ces métiers", ic: "briefcase" }
+    ]
+  },
+
+  parents_relais: {
+    freins: [
+      { txt: "Je voulais aider d'autres parents mais je ne savais pas comment", ic: "personnes" },
+      { txt: "Je ne connaissais pas le dispositif", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai été formé(e) au dispositif des parents relais", ic: "diplome" },
+      { txt: "J'accompagne d'autres parents du quartier", ic: "personnes" }
+    ],
+    competences: [
+      { txt: "Je sais écouter et orienter d'autres parents", ic: "oeil" },
+      { txt: "Je connais les structures du quartier", ic: "porte" },
+      { txt: "J'ai pris une posture professionnelle", ic: "ampoule" }
+    ],
+    freins_leves: [
+      { txt: "Je suis utile aux autres parents", ic: "coeur" },
+      { txt: "Je connais les ressources du quartier", ic: "ampoule" }
+    ],
+    resultats: [
+      { txt: "Je suis parent relais reconnu(e) dans mon quartier", ic: "star" },
+      { txt: "J'ai accompagné plusieurs familles", ic: "personnes" }
+    ]
+  },
+
+  // ==================== TRANSVERSAL ====================
+  aller_vers: {
+    freins: [
+      { txt: "Je n'étais pas au courant des actions du quartier", ic: "alerte" },
+      { txt: "Je ne lisais pas les communications de la mairie", ic: "document" },
+      { txt: "Personne ne venait vers moi", ic: "triste" }
+    ],
+    actions: [
+      { txt: "J'ai été abordé(e) par un médiateur dans la rue", ic: "personnes" },
+      { txt: "Un(e) animateur/animatrice est venu(e) me voir chez moi", ic: "porte" },
+      { txt: "J'ai reçu un guide des associations", ic: "livre" }
+    ],
+    competences: [
+      { txt: "Je connais mieux les associations", ic: "groupe" },
+      { txt: "Je connais les actions du quartier", ic: "ampoule" },
+      { txt: "Je sais où trouver les infos", ic: "document" }
+    ],
+    freins_leves: [
+      { txt: "Je suis au courant de ce qui se passe", ic: "ampoule" },
+      { txt: "Je sais où chercher les infos", ic: "oeil" }
+    ],
+    resultats: [
+      { txt: "Je participe régulièrement aux actions du quartier", ic: "groupe" },
+      { txt: "Je relaie les infos à mes voisins", ic: "personnes" }
+    ]
+  },
+
+  coordination: {
+    freins: [
+      { txt: "Je devais répéter mon histoire à plusieurs structures", ic: "alerte" },
+      { txt: "Les acteurs ne se parlaient pas entre eux", ic: "personnes" },
+      { txt: "Je me perdais entre tous les interlocuteurs", ic: "alerte" }
+    ],
+    actions: [
+      { txt: "J'ai été suivi(e) par un référent unique", ic: "personnes" },
+      { txt: "Plusieurs associations ont travaillé ensemble pour moi", ic: "groupe" }
+    ],
+    competences: [
+      { txt: "Je connais l'écosystème des structures", ic: "ampoule" },
+      { txt: "Je sais qui fait quoi", ic: "oeil" }
+    ],
+    freins_leves: [
+      { txt: "J'ai un référent unique", ic: "personnes" },
+      { txt: "Mon parcours est plus fluide", ic: "sourire" }
+    ],
+    resultats: [
+      { txt: "Mon parcours a été plus rapide", ic: "cible" },
+      { txt: "Je suis bien orienté(e)", ic: "ampoule" }
+    ]
+  },
+
+  vie_associative: {
+    freins: [
+      { txt: "Je ne connaissais aucune association", ic: "alerte" },
+      { txt: "Je ne savais pas qu'on pouvait être bénévole", ic: "coeur" },
+      { txt: "Je n'osais pas m'engager", ic: "triste" }
+    ],
+    actions: [
+      { txt: "J'ai été bénévole dans une association", ic: "coeur" },
+      { txt: "J'ai participé à des projets associatifs", ic: "groupe" },
+      { txt: "J'ai rejoint un conseil d'administration", ic: "diplome" }
+    ],
+    competences: [
+      { txt: "Je sais m'investir dans un projet", ic: "ampoule" },
+      { txt: "Je travaille en équipe", ic: "groupe" },
+      { txt: "J'ai pris des responsabilités", ic: "diplome" }
+    ],
+    freins_leves: [
+      { txt: "Je suis investi(e) dans une association", ic: "coeur" },
+      { txt: "J'ai pris confiance pour m'engager", ic: "ampoule" }
+    ],
+    resultats: [
+      { txt: "Je suis bénévole régulier(ère)", ic: "coeur" },
+      { txt: "J'ai créé une association ou un projet", ic: "star" },
+      { txt: "Je suis administrateur/administratrice", ic: "diplome" }
+    ]
+  }
+};
+
+// =================================================================
+// ÉTAT
+// =================================================================
+const state = {
+  step: 0,
+  totalSteps: 6,
+  data: {
+    thematique: null,
+    sous_thematique: null,
+    freins: [],
+    actions: [],
+    competences: [],
+    freins_leves: [],
+    resultats: [],
+    pct_avant: 30,
+    pct_apres: 70
+  }
+};
+
+// =================================================================
+// INITIALISATION
+// =================================================================
+function init() {
+  buildThematiques();
+  bindSliders();
+  updateProgress();
+}
+
+function buildThematiques() {
+  const grid = document.getElementById('thematiquesGrid');
+  grid.innerHTML = Object.entries(THEMATIQUES).map(([key, t]) => `
+    <div class="thematique-card" data-key="${key}" onclick="selectThematique('${key}')">
+      <div class="icon-wrap">${t.icon}</div>
+      <div class="th-title">${t.label}</div>
+      <div class="th-desc">${t.desc}</div>
+    </div>
+  `).join('');
+}
+
+function selectThematique(key) {
+  state.data.thematique = key;
+  document.querySelectorAll('.thematique-card').forEach(el =>
+    el.classList.toggle('checked', el.dataset.key === key)
+  );
+  // Construire les sous-thématiques
+  const sousGrid = document.getElementById('sousThematiquesGrid');
+  sousGrid.innerHTML = Object.entries(THEMATIQUES[key].sous).map(([k, label]) => `
+    <div class="sous-card" data-skey="${k}" onclick="selectSousThematique('${k}')">${label}</div>
+  `).join('');
+  document.getElementById('sousThemWrap').style.display = 'block';
+  // Réinitialiser la sélection précédente
+  state.data.sous_thematique = null;
+  // Réinitialiser les listes filtrées par sous-thématique
+  state.data.freins = [];
+  state.data.actions = [];
+  state.data.competences = [];
+  state.data.freins_leves = [];
+  state.data.resultats = [];
+}
+
+function selectSousThematique(key) {
+  state.data.sous_thematique = key;
+  document.querySelectorAll('.sous-card').forEach(el =>
+    el.classList.toggle('checked', el.dataset.skey === key)
+  );
+  // Construire les questions DYNAMIQUEMENT en fonction de la sous-thématique
+  const q = QUESTIONS[key];
+  if (q) {
+    buildCheckGrid('freinsGrid', q.freins, 'freins');
+    buildCheckGrid('actionsGrid', q.actions, 'actions');
+    buildCheckGrid('competencesGrid', q.competences, 'competences');
+    buildCheckGrid('freinsLevesGrid', q.freins_leves, 'freins_leves');
+    buildCheckGrid('resultatsGrid', q.resultats, 'resultats');
+  }
+}
+
+function buildCheckGrid(containerId, items, stateKey) {
+  const grid = document.getElementById(containerId);
+  if (!grid) return;
+  grid.innerHTML = items.map((item, i) => `
+    <div class="check-card" onclick="toggleCheck(this, '${stateKey}', \`${item.txt.replace(/`/g, '\\`')}\`)">
+      <div class="check-box"></div>
+      <div class="check-icon">${ICONS[item.ic] || ICONS.ampoule}</div>
+      <div class="check-text">${item.txt}</div>
+    </div>
+  `).join('');
+}
+
+function toggleCheck(el, key, value) {
+  el.classList.toggle('checked');
+  if (el.classList.contains('checked')) {
+    if (!state.data[key].includes(value)) state.data[key].push(value);
+  } else {
+    state.data[key] = state.data[key].filter(v => v !== value);
+  }
+}
+
+// Ajouter un item personnalisé (saisi par l'utilisateur) à une grille
+function addCustomItem(gridId, stateKey) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  const card = document.createElement('div');
+  card.className = 'check-card custom-card checked';
+  // Pré-coché par défaut puisque l'utilisateur vient d'ajouter cet item
+  card.innerHTML = `
+    <div class="check-box" onclick="toggleCustomCheck(event, this.parentElement, '${stateKey}')"></div>
+    <input type="text" class="custom-input" placeholder="Écrire ici…"
+           oninput="updateCustomValue(this, '${stateKey}')"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+    <button type="button" class="remove-btn" onclick="removeCustomItem(this.parentElement, '${stateKey}')" title="Supprimer">×</button>
+  `;
+  grid.appendChild(card);
+  const input = card.querySelector('.custom-input');
+  // Stocker la valeur courante sur le DOM pour pouvoir la retirer/mettre à jour proprement
+  input.dataset.prev = '';
+  setTimeout(() => input.focus(), 50);
+}
+
+// L'utilisateur tape dans l'input personnalisé : on met à jour state.data
+function updateCustomValue(input, stateKey) {
+  const card = input.parentElement;
+  const prev = input.dataset.prev || '';
+  const next = input.value.trim();
+  // Retire l'ancienne valeur
+  if (prev) state.data[stateKey] = state.data[stateKey].filter(v => v !== prev);
+  // Ajoute la nouvelle (si cochée et non vide)
+  if (card.classList.contains('checked') && next) {
+    if (!state.data[stateKey].includes(next)) state.data[stateKey].push(next);
+  }
+  input.dataset.prev = next;
+}
+
+// Cocher / décocher une carte personnalisée
+function toggleCustomCheck(event, card, stateKey) {
+  event.stopPropagation();
+  const input = card.querySelector('.custom-input');
+  const value = input.value.trim();
+  card.classList.toggle('checked');
+  if (card.classList.contains('checked')) {
+    if (value && !state.data[stateKey].includes(value)) state.data[stateKey].push(value);
+  } else {
+    if (value) state.data[stateKey] = state.data[stateKey].filter(v => v !== value);
+  }
+}
+
+// Supprimer une carte personnalisée
+function removeCustomItem(card, stateKey) {
+  const input = card.querySelector('.custom-input');
+  const value = input.value.trim();
+  if (value) state.data[stateKey] = state.data[stateKey].filter(v => v !== value);
+  card.remove();
+}
+
+function bindSliders() {
+  const a = document.getElementById('pctAvantSlider');
+  const aD = document.getElementById('pctAvantDisplay');
+  a.oninput = e => {
+    const v = parseInt(e.target.value);
+    state.data.pct_avant = v;
+    aD.textContent = v + '%';
+    aD.style.color = v < 33 ? 'var(--rouge)' : v < 66 ? 'var(--orange)' : 'var(--vert)';
+  };
+  const b = document.getElementById('pctApresSlider');
+  const bD = document.getElementById('pctApresDisplay');
+  b.oninput = e => {
+    const v = parseInt(e.target.value);
+    state.data.pct_apres = v;
+    bD.textContent = v + '%';
+    bD.style.color = v < 33 ? 'var(--rouge)' : v < 66 ? 'var(--orange)' : 'var(--vert)';
+  };
+}
+
+function updateProgress() {
+  const pct = ((state.step + 1) / state.totalSteps) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent =
+    `Étape ${state.step + 1} sur ${state.totalSteps}`;
+}
+
+// =================================================================
+// NAVIGATION
+// =================================================================
+function nextStep() {
+  if (state.step < state.totalSteps - 1) {
+    state.step++;
+    updateStepDisplay();
+    if (state.step === state.totalSteps - 1) renderParcours();
+  }
+}
+function prevStep() {
+  if (state.step > 0) {
+    state.step--;
+    updateStepDisplay();
+  }
+}
+function updateStepDisplay() {
+  document.querySelectorAll('.step').forEach((s, i) =>
+    s.classList.toggle('active', i === state.step)
+  );
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// =================================================================
+// PARCOURS FINAL
+// =================================================================
+function getInputVal(name) {
+  const el = document.querySelector(`[name="${name}"]`);
+  return el ? el.value : '';
+}
+
+function renderParcours() {
+  const d = state.data;
+  const action = getInputVal('action') || 'l\'action';
+  const asso = getInputVal('asso');
+
+  document.getElementById('resultatTitle').textContent = 'Votre parcours';
+  const sousLabel = THEMATIQUES[d.thematique]?.label || '';
+  const subParts = [action];
+  if (asso) subParts.push(asso);
+  if (sousLabel) subParts.push(sousLabel);
+  document.getElementById('resultatSubtitle').textContent = subParts.join(' · ');
+
+  // COMPTEURS
+  const nFreins = d.freins_leves.length;
+  const nActions = d.actions.length;
+  const nComp = d.competences.length;
+  const nResult = d.resultats.length;
+  document.getElementById('cFreins').textContent = nFreins;
+  document.getElementById('cActions').textContent = nActions;
+  document.getElementById('cCompetences').textContent = nComp;
+  document.getElementById('cResultats').textContent = nResult;
+
+  // SVG PARCOURS
+  document.getElementById('svgPctAvant').textContent = d.pct_avant + '%';
+  document.getElementById('svgPctApres').textContent = d.pct_apres + '%';
+  document.getElementById('svgFreins').textContent = nFreins + ' frein' + (nFreins > 1 ? 's' : '');
+  document.getElementById('svgActions').textContent = nActions + ' action' + (nActions > 1 ? 's' : '');
+  document.getElementById('svgComp').textContent = nComp + ' compétence' + (nComp > 1 ? 's' : '');
+
+  // IMPACT — cercles de progression
+  const circ = 2 * Math.PI * 42; // ≈ 264
+  const circleAvant = document.getElementById('circleAvant');
+  circleAvant.style.strokeDasharray = `${(d.pct_avant / 100) * circ} ${circ}`;
+  document.getElementById('impactAvantTxt').textContent = d.pct_avant + '%';
+
+  const circleApres = document.getElementById('circleApres');
+  circleApres.style.strokeDasharray = `${(d.pct_apres / 100) * circ} ${circ}`;
+  document.getElementById('impactApresTxt').textContent = d.pct_apres + '%';
+
+  const delta = d.pct_apres - d.pct_avant;
+  const deltaBox = document.getElementById('impactDelta');
+  if (delta > 0) {
+    deltaBox.textContent = `Progression de +${delta} points · ${nResult} résultat${nResult > 1 ? 's' : ''} concret${nResult > 1 ? 's' : ''} obtenu${nResult > 1 ? 's' : ''}`;
+    deltaBox.classList.remove('negatif');
+  } else if (delta < 0) {
+    deltaBox.textContent = `Évolution de ${delta} points`;
+    deltaBox.classList.add('negatif');
+  } else {
+    deltaBox.textContent = `Situation stable`;
+  }
+
+  // RÉCAP
+  const recapDepart = d.freins.length
+    ? d.freins.slice(0, 6).map(f => `<li>${escapeHtml(f)}</li>`).join('')
+    : '<li class="empty">Aucune difficulté indiquée</li>';
+  document.getElementById('recapDepart').innerHTML = recapDepart;
+
+  const cheminItems = [];
+  if (d.thematique) cheminItems.push('<strong>' + THEMATIQUES[d.thematique].label + '</strong>');
+  if (d.sous_thematique && THEMATIQUES[d.thematique]?.sous[d.sous_thematique]) {
+    cheminItems.push(THEMATIQUES[d.thematique].sous[d.sous_thematique]);
+  }
+  d.actions.slice(0, 4).forEach(a => cheminItems.push(a));
+  d.competences.slice(0, 3).forEach(c => cheminItems.push('💪 ' + c));
+  document.getElementById('recapChemin').innerHTML = cheminItems.length
+    ? cheminItems.map(i => `<li>${i}</li>`).join('')
+    : '<li class="empty">Aucune action indiquée</li>';
+
+  document.getElementById('recapArrivee').innerHTML = d.resultats.length
+    ? d.resultats.slice(0, 6).map(r => `<li>${escapeHtml(r)}</li>`).join('')
+    : '<li class="empty">Aucun résultat indiqué</li>';
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// =================================================================
+// EXPORT / RESET
+// =================================================================
+function downloadJSON() {
+  const allData = {
+    ...state.data,
+    thematique_label: THEMATIQUES[state.data.thematique]?.label || null,
+    sous_thematique_label: THEMATIQUES[state.data.thematique]?.sous[state.data.sous_thematique] || null,
+    age: getInputVal('age'),
+    quartier: getInputVal('quartier'),
+    genre: getInputVal('genre'),
+    bailleur: getInputVal('bailleur'),
+    asso: getInputVal('asso'),
+    action: getInputVal('action'),
+    date_debut: getInputVal('date_debut'),
+    date_export: new Date().toISOString(),
+    impact: {
+      freins_leves: state.data.freins_leves.length,
+      actions_suivies: state.data.actions.length,
+      competences_acquises: state.data.competences.length,
+      resultats_obtenus: state.data.resultats.length,
+      progression_points: state.data.pct_apres - state.data.pct_avant
+    }
+  };
+  const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const slug = (getInputVal('asso') || 'parcours').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  a.download = `parcours_${slug}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetForm() {
+  if (confirm('Vraiment recommencer ? Toutes les réponses seront effacées.')) {
+    location.reload();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
