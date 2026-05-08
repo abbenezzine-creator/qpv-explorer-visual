@@ -4601,7 +4601,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   }catch(e){}
 
   function applyHash(){
-    const m = (location.hash||'').match(/page=([a-z]+)/i);
+    const m = (location.hash||'').match(/page=([a-z-]+)/i);
     if(m && typeof nav==='function'){ try{ nav(m[1]); }catch(e){} }
   }
   window.addEventListener('hashchange', applyHash);
