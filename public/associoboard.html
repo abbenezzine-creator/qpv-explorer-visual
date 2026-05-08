@@ -605,10 +605,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       </div>
       <div class="eval-tabs" id="evalTabs"></div>
       <div class="ref-leg">
-        <div class="ref-leg-item"><div class="ref-leg-dot" style="background:var(--destructive)"></div>Non conforme</div>
-        <div class="ref-leg-item"><div class="ref-leg-dot" style="background:var(--warning)"></div>Partiellement</div>
-        <div class="ref-leg-item"><div class="ref-leg-dot" style="background:var(--info)"></div>Conforme</div>
-        <div class="ref-leg-item"><div class="ref-leg-dot" style="background:var(--success)"></div>Très conforme</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.6 0.24 25)">★</span>Non conforme</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.7 0.2 40)">★</span>Insuffisant</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.78 0.16 90)">★</span>Partiellement</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.7 0.18 145)">★</span>Conforme</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.6 0.2 150)">★</span>Très conforme</div>
         <div style="margin-left:auto;font-size:12px;color:var(--muted-fore)">Score global : <strong id="qualGlobalScore" style="color:var(--primary);font-family:'JetBrains Mono',monospace">—</strong></div>
       </div>
       <div class="ref-grid" id="refGrid"></div>
