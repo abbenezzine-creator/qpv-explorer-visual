@@ -5,7 +5,7 @@ const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?forma
 
 // Mapping libre des libellés Google Form -> QPV de la métropole d'Orléans
 function mapToQuartier(raw: string): string {
-  const v = raw.toLowerCase();
+  const v = raw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   if (v.includes("argonne")) return "L'Argonne";
   if (v.includes("source")) return "La Source";
   if (v.includes("dauphine") || v.includes("saint-marceau")) return "Dauphine";
