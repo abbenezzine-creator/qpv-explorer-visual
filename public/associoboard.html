@@ -3486,7 +3486,7 @@ function renderCitizenEval() {
 
   const dataKey = QPV_KEY_MAP[qpvSel] || null;
   const data = dataKey ? CITIZEN_2023[dataKey] : aggregateCitizenData();
-  const qpvLabel = qpvSel ? document.getElementById('citizenQPVSel')?.options[document.getElementById('citizenQPVSel').selectedIndex]?.text : 'Tous les quartiers';
+  const qpvLabel = qpvSel ? document.getElementById('citizenQPVSel')?.options[document.getElementById('citizenQPVSel').selectedIndex]?.text : "Les 4 QPV d'Orléans";
 
   renderCitizenStats(data, qpvLabel, yearSel);
   renderCitizenCharts(data, yearSel);
