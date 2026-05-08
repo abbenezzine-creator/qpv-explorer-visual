@@ -3038,7 +3038,8 @@ async function importActionsXlsx(){
     const cAsso=_xlsxFindCol(head,['libellé - demandeur','libelle - demandeur','libellé demandeur','libelle demandeur','libellé']);
     const cTit=_xlsxFindCol(head,['intitulé - demande','intitule']);
     const cThe=_xlsxFindCol(head,['thématique','thematique','dispositif']);
-    const cDes=_xlsxFindCol(head,['description']);
+    const cDes=_xlsxFindCol(head,["synthèse de l'action",'synthese de l action','synthèse','synthese','description']);
+    const cObj=_xlsxFindCol(head,['objectifs','objectif']);
     const cNb=_xlsxFindCol(head,['total bénéficiaires','bénéficiaires','beneficiaires']);
     const cLieu=_xlsxFindCol(head,['communes concernées','communes']);
     const cQrt=_xlsxFindCol(head,['quartiers concernés','quartiers']);
