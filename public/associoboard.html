@@ -4185,6 +4185,27 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     .ac-det-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
     .benef-q-btn{flex:1;min-width:36px;padding:6px;border:1px solid var(--border);background:var(--background);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--foreground)}
     .benef-q-btn.active{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+    /* Eval status block on action cards */
+    .eval-block{margin-top:10px;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);background:var(--muted)}
+    .eval-block .eval-icn{flex-shrink:0;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);color:var(--muted-fore)}
+    .eval-block .eval-txt{flex:1;min-width:0}
+    .eval-block .eval-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore);margin-bottom:3px}
+    .eval-block .eval-val{font-size:13px;font-weight:700;color:var(--foreground)}
+    .eval-block.is-pending{background:linear-gradient(135deg,oklch(0.97 0.04 75),oklch(0.96 0.05 60));border-color:oklch(0.85 0.1 75)}
+    .eval-block.is-pending .eval-icn{color:oklch(0.55 0.18 60);animation:evalPendPulse 2s ease-in-out infinite}
+    .eval-block.is-pending .eval-val{color:oklch(0.45 0.18 55)}
+    .eval-block.is-done{background:linear-gradient(135deg,oklch(0.96 0.05 150),oklch(0.95 0.06 175));border-color:oklch(0.78 0.13 155)}
+    .eval-block.is-done .eval-icn{color:oklch(0.5 0.16 155);background:oklch(0.96 0.06 155)}
+    .eval-bar{height:6px;border-radius:99px;background:oklch(0.92 0.02 285);overflow:hidden;margin-top:6px}
+    .eval-bar > span{display:block;height:100%;background:linear-gradient(90deg,oklch(0.55 0.18 155),oklch(0.62 0.18 175));border-radius:99px;transition:width .4s ease}
+    @keyframes evalPendPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.7}}
+    /* Beneficiary evaluation button */
+    .btn-benef{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:8px 12px;width:100%;justify-content:center;font-family:inherit;font-size:12px;font-weight:600;border-radius:9px;cursor:pointer;border:1px solid var(--primary);background:var(--card);color:var(--primary);transition:all .18s;animation:benefSoftPulse 2.4s ease-in-out infinite}
+    .btn-benef:hover{background:var(--primary);color:var(--primary-foreground);transform:translateY(-1px)}
+    .btn-benef.is-urgent{border-color:oklch(0.62 0.24 25);background:oklch(0.62 0.24 25);color:#fff;animation:benefRedBlink 1s ease-in-out infinite;box-shadow:0 0 0 0 oklch(0.62 0.24 25 / .55)}
+    .btn-benef.is-urgent:hover{background:oklch(0.55 0.24 25);border-color:oklch(0.55 0.24 25);color:#fff}
+    @keyframes benefSoftPulse{0%,100%{box-shadow:0 0 0 0 color-mix(in oklab,var(--primary) 35%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in oklab,var(--primary) 0%,transparent)}}
+    @keyframes benefRedBlink{0%,100%{background:oklch(0.62 0.24 25);box-shadow:0 0 0 0 oklch(0.62 0.24 25 / .6)}50%{background:oklch(0.5 0.24 25);box-shadow:0 0 0 8px oklch(0.62 0.24 25 / 0)}}
   `;
   document.head.appendChild(st);
 
