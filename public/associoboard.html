@@ -1640,7 +1640,40 @@ function renderActionsList(cid,actions,limit){
     </div>`;
   }).join('');
 }
-function renderAllActions(){renderActionsList('allActionsList',filteredActions());}
+let _themeOpen={};
+function renderAllActions(){
+  const el=document.getElementById('allActionsList'); if(!el) return;
+  const acts=filteredActions();
+  if(!acts.length){el.innerHTML='<p style="color:var(--muted-fore);font-size:12px;padding:9px 0">Aucune action</p>';return;}
+  const groups={};
+  acts.forEach(a=>{const k=a.theme||'Autre';(groups[k]=groups[k]||[]).push(a);});
+  const themes=Object.keys(groups).sort();
+  el.innerHTML=themes.map(th=>{
+    const open=!!_themeOpen[th];
+    const list=groups[th];
+    return `<div class="theme-group" style="border:1px solid var(--border);border-radius:10px;margin:8px 0;overflow:hidden;background:var(--card)">
+      <button type="button" onclick="toggleTheme('${th.replace(/'/g,"\\'")}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:linear-gradient(135deg,oklch(0.52 0.22 285/.06),oklch(0.62 0.22 340/.06));border:0;cursor:pointer;color:var(--foreground);font-family:'Lexend',sans-serif;font-weight:700;font-size:13px;text-align:left">
+        <span style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;transition:transform .2s;transform:rotate(${open?90:0}deg)">▶</span>${th}</span>
+        <span class="badge badge-gray">${list.length}</span>
+      </button>
+      <div id="theme-body-${btoa(unescape(encodeURIComponent(th))).replace(/=/g,'')}" style="display:${open?'block':'none'};padding:6px 10px"></div>
+    </div>`;
+  }).join('');
+  themes.forEach(th=>{
+    const id='theme-body-'+btoa(unescape(encodeURIComponent(th))).replace(/=/g,'');
+    const body=document.getElementById(id); if(body){body.id=id;renderActionsList(id,groups[th]);}
+  });
+}
+function toggleTheme(th){_themeOpen[th]=!_themeOpen[th];renderAllActions();}
+function toggleAllThemes(){
+  const acts=filteredActions();
+  const themes=[...new Set(acts.map(a=>a.theme||'Autre'))];
+  const allOpen=themes.every(t=>_themeOpen[t]);
+  themes.forEach(t=>_themeOpen[t]=!allOpen);
+  const btn=document.getElementById('toggleAllThemesBtn');
+  if(btn) btn.textContent=allOpen?'Tout dérouler':'Tout enrouler';
+  renderAllActions();
+}
 function updateBadge(){const el=document.getElementById('agendaBadge');if(el)el.textContent=filteredActions().length;}
 function getBudgetTotal(a){return (a.budgetLines||[]).reduce((s,r)=>s+(parseFloat(r.montant)||0),0);}
 
