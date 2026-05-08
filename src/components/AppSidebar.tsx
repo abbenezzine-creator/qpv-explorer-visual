@@ -45,15 +45,18 @@ const territoire: NavItem[] = [
 const principal: NavItem[] = [
   { title: "Tableau de bord", to: "/app", search: { page: "dashboard" }, icon: LayoutDashboard },
   { title: "Actions", to: "/app", search: { page: "agenda" }, icon: CalendarDays },
-  { title: "Référentiel Qualité", to: "/app", search: { page: "qualite" }, icon: Award },
-  { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
-  { title: "Centre de Ressources", to: "/app", search: { page: "ressources" }, icon: Library },
 ];
 
 const evaluation: NavItem[] = [
   { title: "Questionnaire", to: "/app", search: { page: "questionnaire" }, icon: ClipboardList },
-  { title: "Documents", to: "/app", search: { page: "documents" }, icon: FileText },
   { title: "Résultats & Impacts", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
+  { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
+  { title: "Référentiel Qualité", to: "/app", search: { page: "qualite" }, icon: Award },
+];
+
+const ressources: NavItem[] = [
+  { title: "Documents", to: "/app", search: { page: "documents" }, icon: FileText },
+  { title: "Centre de Ressources", to: "/app", search: { page: "ressources" }, icon: Library },
 ];
 
 const admin: NavItem[] = [
@@ -184,6 +187,7 @@ export function AppSidebar() {
         {renderGroup("Territoire", territoire)}
         {renderGroup("Principal", principal, associationsSelector)}
         {renderGroup("Évaluation", evaluation)}
+        {renderGroup("Ressource Documentaire", ressources)}
         {renderGroup("Administration", admin)}
       </SidebarContent>
       <SidebarFooter>

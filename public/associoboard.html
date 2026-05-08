@@ -1506,16 +1506,24 @@ function renderQualiteProgressDash(){
       <div style="font-size:11px;color:var(--muted-fore)">${scopeName} · <strong>${critLabel}</strong></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg}%</div>
     </div>
-    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Moyenne par action</div>
-    ${perAction.length ? perAction.map(({a,avg})=>`
-      <div class="qual-crit-item">
-        <span class="qual-crit-id" style="min-width:90px;color:var(--primary);font-size:10px">${getAssocName(a.assocId)}</span>
-        <span class="qual-crit-txt" style="font-size:12px">${a.titre}</span>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          <div class="qual-crit-bar" style="width:60px"><div class="qual-crit-bar-fill" style="width:${avg}%;background:var(--primary)"></div></div>
-          <span class="qual-crit-pct" style="color:var(--primary);min-width:32px;text-align:right">${avg}%</span>
-        </div>
-      </div>`).join('') : '<p style="color:var(--muted-fore);font-size:12px;padding:6px 0">Aucune action dans le périmètre</p>'}
+    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Moyenne par association</div>
+    ${(() => {
+      const byAssoc = {};
+      perAction.forEach(({a,avg})=>{ (byAssoc[a.assocId] ||= []).push(avg); });
+      const rows = Object.keys(byAssoc).map(aid=>{
+        const list=byAssoc[aid]; const m=Math.round(list.reduce((s,v)=>s+v,0)/list.length);
+        return {aid:+aid, nom:getAssocName(+aid), avg:m, n:list.length};
+      }).sort((x,y)=>y.avg-x.avg);
+      return rows.length ? rows.map(r=>`
+        <div class="qual-crit-item">
+          <span class="qual-crit-id" style="min-width:120px;color:var(--primary);font-size:11px;font-weight:700">${r.nom}</span>
+          <span class="qual-crit-txt" style="font-size:11px;color:var(--muted-fore)">${r.n} action${r.n>1?'s':''}</span>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <div class="qual-crit-bar" style="width:60px"><div class="qual-crit-bar-fill" style="width:${r.avg}%;background:var(--primary)"></div></div>
+            <span class="qual-crit-pct" style="color:var(--primary);min-width:32px;text-align:right">${r.avg}%</span>
+          </div>
+        </div>`).join('') : '<p style="color:var(--muted-fore);font-size:12px;padding:6px 0">Aucune action dans le périmètre</p>';
+    })()}
     <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;border-top:1px dashed var(--border);padding-top:8px">Indicateurs (${critLabel})</div>
     ${perInd.map(i=>`
       <div class="qual-crit-item">
@@ -1557,6 +1565,12 @@ function renderActionsList(cid,actions,limit){
         ${(a.ages||[]).map(ag=>`<span class="badge badge-blue">${ag}</span>`).join('')}
       </div>
       ${surveyPill}
+      ${(() => {
+        const inds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
+        const vals = inds.map(id => (typeof _qualScore==='function' ? _qualScore(a.id,id) : 75));
+        const avg = Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
+        return `<div class="result-pill" style="background:oklch(0.96 0.04 285);color:var(--primary);border-color:oklch(0.85 0.08 285)"><svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>Moyenne qualité · ${avg}%</div>`;
+      })()}
       <div class="ac-footer">
         <span>${a.date.split('-').reverse().join('/')} · ${a.heure}</span>
         <span>${a.nb} participants · ${getBudgetTotal(a)} €</span>
