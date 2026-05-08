@@ -1443,11 +1443,23 @@ function renderDashboard(){
   const totalActions=isAdmin?allActsYear.length:acts.length;
   const totalBenef=isAdmin?allActsYear.reduce((s,a)=>s+(a.nb||0),0):acts.reduce((s,a)=>s+(a.nb||0),0);
   const filteredBenef=acts.reduce((s,a)=>s+(a.nb||0),0);
+  // Score qualité scoped to current association (or moyenne globale si superadmin sans sélection)
+  const scopedActs = (typeof _scopedActionsForQual==='function') ? _scopedActionsForQual() : acts;
+  const allInds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
+  let qualScorePct = 0;
+  if (scopedActs.length && allInds.length) {
+    const perActAvg = scopedActs.map(a => {
+      const vals = allInds.map(id => _qualScore(a.id, id));
+      return vals.reduce((s,v)=>s+v,0)/vals.length;
+    });
+    qualScorePct = Math.round(perActAvg.reduce((s,v)=>s+v,0)/perActAvg.length);
+  }
+  const qualScopeLbl = isAdmin ? (currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Moy. toutes associations') : 'Moy. '+(ASSOCS.find(x=>x.id===currentUser?.assocId)?.nom||'');
   const el=document.getElementById('dashStats');
   if(el) el.innerHTML=`
     <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Actions ${currentYear}${isAdmin?' — Total':''}</div><div class="stat-val" style="color:var(--primary)">${totalActions}</div><div class="stat-trend">${isAdmin&&currentAssocId?'Sélection : '+acts.length:isAdmin?ASSOCS.length+' associations':acts.length+' en cours'}</div></div>
     <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Bénéficiaires${isAdmin?' — Total':''}</div><div class="stat-val" style="color:oklch(0.6 0.17 60)">${totalBenef}</div><div class="stat-trend">${isAdmin&&currentAssocId?'Sélection : '+filteredBenef:isAdmin?'Toutes associations':'Personnes touchées'}</div></div>
-    <div class="stat-card"><div class="stat-blob" style="background:var(--accent-rose)"></div><div class="stat-lbl">Score Qualité</div><div class="stat-val" style="color:var(--accent-rose)">84%</div><div class="stat-trend">Moy. référentiel</div></div>
+    <div class="stat-card"><div class="stat-blob" style="background:var(--accent-rose)"></div><div class="stat-lbl">Score Qualité</div><div class="stat-val" style="color:var(--accent-rose)">${qualScorePct||'—'}${qualScorePct?'%':''}</div><div class="stat-trend">${qualScopeLbl}</div></div>
     <div class="stat-card"><div class="stat-blob" style="background:var(--info)"></div><div class="stat-lbl">Satisfaction</div><div class="stat-val" style="color:var(--info)">4.3<span style="font-size:14px">/5</span></div><div class="stat-trend">↑ +0.2</div></div>`;
   renderActionsList('dashActions',acts,4);
   renderQualiteProgressDash();
