@@ -117,9 +117,19 @@ export function AppSidebar() {
     </SidebarGroup>
   );
 
+  const handleAssocChange = (value: string) => {
+    try {
+      const f = document.querySelector<HTMLIFrameElement>("iframe[title='AssocioBoard']");
+      const w = f?.contentWindow as (Window & { setAssocFilter?: (n: string) => void }) | null;
+      w?.setAssocFilter?.(value);
+    } catch {
+      /* noop */
+    }
+  };
+
   const associationsSelector = !collapsed ? (
     <div className="px-2 pb-2">
-      <Select defaultValue="Toutes les associations">
+      <Select defaultValue="Toutes les associations" onValueChange={handleAssocChange}>
         <SelectTrigger className="h-8 text-xs">
           <SelectValue placeholder="Associations" />
         </SelectTrigger>
