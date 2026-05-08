@@ -1055,12 +1055,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
           </label>
           <div class="budget-wrap">
             <table class="budget-tbl">
-              <thead><tr><th>Financeur</th><th>Type de financement</th><th>Montant (€)</th><th></th></tr></thead>
+              <thead><tr><th style="width:78px">Année</th><th>Financeur</th><th>Type de financement</th><th style="width:110px">Montant (€)</th><th style="width:32px"></th></tr></thead>
               <tbody id="budgetRows">
-                <tr><td><input placeholder="ex : Orléans Métropole"/></td><td><input placeholder="Subvention, Dotation…"/></td><td><input type="number" placeholder="0" oninput="updateBudgetTotal()"/></td><td><button type="button" class="btn btn-ghost btn-sm" onclick="removeBudgetRow(this)">✕</button></td></tr>
+                <tr><td><input type="number" min="2000" max="2099" placeholder="2025" value="2025" class="bg-year"/></td><td><input placeholder="ex : Orléans Métropole"/></td><td><input placeholder="Subvention, Dotation…"/></td><td><input type="number" placeholder="0" oninput="updateBudgetTotal()"/></td><td><button type="button" class="btn btn-ghost btn-sm" onclick="removeBudgetRow(this)">✕</button></td></tr>
               </tbody>
-              <tfoot><tr class="budget-total-row"><td colspan="2" style="padding:6px 10px;font-size:12px">TOTAL</td><td id="budgetTotalCell" style="padding:6px 10px;color:var(--primary)">0 €</td><td></td></tr></tfoot>
+              <tfoot><tr class="budget-total-row"><td colspan="3" style="padding:6px 10px;font-size:12px">TOTAL</td><td id="budgetTotalCell" style="padding:6px 10px;color:var(--primary)">0 €</td><td></td></tr></tfoot>
             </table>
+            <div id="budgetByYear" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
           </div>
           <button type="button" class="dyn-add" onclick="addBudgetRow()" style="margin-top:6px">
             <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>
