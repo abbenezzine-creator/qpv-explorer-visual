@@ -4657,7 +4657,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     try{
       if(typeof QUALITE_AXES==='undefined' || typeof _qualScore!=='function') return 0;
       const inds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
-      const vals = inds.map(id=>_qualScore(actionId, id));
+      const vals = inds.map(id=>_qualScore(actionId, id)).filter(v=>v!=null);
       if(!vals.length) return 0;
       return Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
     }catch(e){ return 0; }
