@@ -4034,27 +4034,47 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     .theme-group-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--muted);border-radius:calc(var(--radius) - 2px);margin-bottom:10px;border-left:4px solid var(--primary)}
     .theme-group-hdr .tg-name{font-family:'Lexend',sans-serif;font-weight:700;font-size:14px;flex:1}
     .theme-group-hdr .tg-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-fore);background:var(--card);padding:3px 10px;border-radius:99px;border:1px solid var(--border)}
+    .theme-group-hdr .tg-icn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--card);border:1px solid var(--border)}
     .theme-group-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-    .pending-eval{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:oklch(0.95 0.05 75);color:oklch(0.45 0.18 75);border:1px solid oklch(0.85 0.12 75);margin-top:6px}
-    [data-theme="dark"] .pending-eval{background:oklch(0.25 0.06 75);color:oklch(0.85 0.15 75)}
-    .done-eval{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:oklch(0.95 0.05 150);color:oklch(0.4 0.16 150);border:1px solid oklch(0.85 0.12 150);margin-top:6px}
-    [data-theme="dark"] .done-eval{background:oklch(0.25 0.06 150);color:oklch(0.85 0.15 150)}
+    .ac-expand-btn{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:5px 10px;font-size:11px;font-weight:600;background:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--foreground);transition:all .15s}
+    .ac-expand-btn:hover{background:var(--accent);color:var(--accent-foreground)}
+    .ac-details{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:flex;flex-direction:column;gap:8px}
+    .ac-det-row{display:flex;flex-direction:column;gap:3px}
+    .ac-det-row label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore)}
+    .ac-det-row input,.ac-det-row textarea{font-family:inherit;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--background);color:var(--foreground);resize:vertical}
+    .ac-det-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+    .benef-q-btn{flex:1;min-width:36px;padding:6px;border:1px solid var(--border);background:var(--background);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--foreground)}
+    .benef-q-btn.active{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
   `;
   document.head.appendChild(st);
 
+  // Inline SVG icons (cleaner than emoji)
+  const ICN = {
+    map:    '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5l5-2 6 2 5-2v12l-5 2-6-2-5 2z"/><path d="M7 3v14"/><path d="M13 5v14"/></svg>',
+    cap:    '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l8-4 8 4-8 4z"/><path d="M5 9v4c0 1.5 2.5 3 5 3s5-1.5 5-3V9"/></svg>',
+    heart:  '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17s-6-3.7-6-9a3.5 3.5 0 0 1 6-2.5A3.5 3.5 0 0 1 16 8c0 5.3-6 9-6 9z"/></svg>',
+    case:   '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="16" height="11" rx="2"/><path d="M7 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+    hands:  '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l3-4 4 3 4-3 3 4-3 5H6z"/></svg>',
+    civic:  '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l8 4H2z"/><path d="M4 8v6M8 8v6M12 8v6M16 8v6"/><path d="M2 16h16"/></svg>',
+    scale:  '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v14"/><path d="M5 17h10"/><path d="M3 9l3-5 3 5z"/><path d="M11 9l3-5 3 5z"/></svg>',
+    leaf:   '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c0-7 5-13 14-13 0 9-6 14-14 13z"/><path d="M3 17l8-8"/></svg>',
+    shield: '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V5z"/></svg>',
+    pin:    '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-6 6-11a6 6 0 0 0-12 0c0 5 6 11 6 11z"/><circle cx="10" cy="7" r="2"/></svg>',
+  };
+
   const THEME_META = {
-    'Diagnostic de territoire': {color:'oklch(0.55 0.18 240)', icon:'🗺️'},
-    'Education / Parentalité':  {color:'oklch(0.62 0.22 340)', icon:'🎓'},
-    'Emancipation':             {color:'oklch(0.62 0.22 340)', icon:'🎓'},
-    'Santé':                    {color:'oklch(0.55 0.18 200)', icon:'❤️'},
-    'Santé vieillissement':     {color:'oklch(0.55 0.18 200)', icon:'❤️'},
-    'Emploi':                   {color:'oklch(0.52 0.16 150)', icon:'💼'},
-    'Emploi insertion':         {color:'oklch(0.52 0.16 150)', icon:'💼'},
-    'Cohésion sociale':         {color:'oklch(0.52 0.22 285)', icon:'🤝'},
-    'Citoyenneté':              {color:'oklch(0.76 0.17 75)',  icon:'🏛️'},
-    'Accès aux droits':         {color:'oklch(0.6 0.17 60)',   icon:'⚖️'},
-    'Transition écologique':    {color:'oklch(0.55 0.16 145)', icon:'🌱'},
-    'Tranquillité publique':    {color:'oklch(0.58 0.22 25)',  icon:'🛡️'},
+    'Diagnostic de territoire': {color:'oklch(0.55 0.18 240)', icon:ICN.map},
+    'Education / Parentalité':  {color:'oklch(0.62 0.22 340)', icon:ICN.cap},
+    'Emancipation':             {color:'oklch(0.62 0.22 340)', icon:ICN.cap},
+    'Santé':                    {color:'oklch(0.55 0.18 200)', icon:ICN.heart},
+    'Santé vieillissement':     {color:'oklch(0.55 0.18 200)', icon:ICN.heart},
+    'Emploi':                   {color:'oklch(0.52 0.16 150)', icon:ICN.case},
+    'Emploi insertion':         {color:'oklch(0.52 0.16 150)', icon:ICN.case},
+    'Cohésion sociale':         {color:'oklch(0.52 0.22 285)', icon:ICN.hands},
+    'Citoyenneté':              {color:'oklch(0.76 0.17 75)',  icon:ICN.civic},
+    'Accès aux droits':         {color:'oklch(0.6 0.17 60)',   icon:ICN.scale},
+    'Transition écologique':    {color:'oklch(0.55 0.16 145)', icon:ICN.leaf},
+    'Tranquillité publique':    {color:'oklch(0.58 0.22 25)',  icon:ICN.shield},
   };
   const THEME_ORDER = ['Diagnostic de territoire','Emancipation','Education / Parentalité','Santé vieillissement','Santé','Emploi insertion','Emploi','Cohésion sociale','Citoyenneté','Accès aux droits','Transition écologique','Tranquillité publique'];
 
@@ -4070,24 +4090,131 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       ? '<div class="done-eval"><svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 6 4 9 11 3"/></svg>Référentiel évalué</div>'
       : '<div class="pending-eval"><svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6" cy="6" r="5"/><line x1="6" y1="3.5" x2="6" y2="6.5"/><circle cx="6" cy="8" r="0.5" fill="currentColor"/></svg>En attente d\'évaluation</div>';
     const dateStr = a.date ? a.date.split('-').reverse().join('/') : '';
-    return `<div class="action-card" onclick="openActionDetail(${a.id})">
+    return `<div class="action-card">
       <div class="ac-bar" style="background:${a.gradient}"></div>
       <div class="ac-ref">
         <span>${getAssocName(a.assocId).toUpperCase()}</span>
         <span class="badge badge-${bc}">${a.statut}</span>
       </div>
-      <div class="ac-title">${a.titre}</div>
+      <div class="ac-title" style="cursor:pointer" onclick="openActionDetail(${a.id})">${a.titre}</div>
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
         ${(a.quartiers||[]).map(q=>`<span class="badge badge-gray">${q}</span>`).join('')}
         ${(a.ages||[]).map(ag=>`<span class="badge badge-blue">${ag}</span>`).join('')}
       </div>
       ${evalBadge}
       <div class="ac-footer" style="margin-top:8px">
-        <span>📅 ${dateStr} · ${a.heure||''}</span>
+        <span><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="vertical-align:-1px;margin-right:3px"><rect x="1.5" y="2.5" width="9" height="8" rx="1"/><line x1="1.5" y1="5" x2="10.5" y2="5"/></svg>${dateStr} · ${a.heure||''}</span>
         <span>${a.nb||0} part. · ${getBudgetTotal(a)} €</span>
+      </div>
+      <button class="ac-expand-btn" onclick="toggleActionDetails(${a.id},event)">
+        <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 4.5 6 7.5 9 4.5"/></svg>
+        <span>Détails & évaluation</span>
+      </button>
+      <div class="ac-details" id="acDet-${a.id}" style="display:none">
+        <div class="ac-det-row"><label>Date</label><input type="date" value="${a.date||''}" onchange="updActionField(${a.id},'date',this.value)"></div>
+        <div class="ac-det-row"><label>Horaire</label><input type="text" value="${a.heure||''}" onchange="updActionField(${a.id},'heure',this.value)"></div>
+        <div class="ac-det-row"><label>Lieu</label><input type="text" value="${a.lieu||''}" onchange="updActionField(${a.id},'lieu',this.value)"></div>
+        <div class="ac-det-row"><label>Participants</label><input type="number" value="${a.nb||0}" onchange="updActionField(${a.id},'nb',+this.value)"></div>
+        <div class="ac-det-row"><label>Description</label><textarea rows="2" onchange="updActionField(${a.id},'desc',this.value)">${(a.desc||'').replace(/</g,'&lt;')}</textarea></div>
+        <div class="ac-det-actions">
+          <button class="btn btn-outline btn-sm" onclick="evalReferentiel(${a.id},event)">
+            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 1l1.4 3 3.1.5-2.3 2.2.6 3.1L6 8.4 3.2 9.8l.6-3.1L1.5 4.5 4.6 4z"/></svg>
+            Évaluation référentiel
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="evalBeneficiaire(${a.id},event)">
+            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><path d="M2 11c0-2 2-3.5 4-3.5S10 9 10 11"/></svg>
+            Évaluation bénéficiaire
+          </button>
+        </div>
       </div>
     </div>`;
   }
+
+  window.toggleActionDetails = function(id, e){
+    if(e){ e.stopPropagation(); e.preventDefault(); }
+    const el = document.getElementById('acDet-'+id);
+    if(el) el.style.display = (el.style.display==='none'||!el.style.display) ? 'block' : 'none';
+  };
+  window.updActionField = function(id, key, val){
+    if(typeof ACTIONS==='undefined') return;
+    const a = ACTIONS.find(x=>x.id===id); if(a){ a[key]=val; }
+  };
+  window.evalReferentiel = function(id, e){
+    if(e){ e.stopPropagation(); e.preventDefault(); }
+    const a = ACTIONS.find(x=>x.id===id); if(!a) return;
+    if(typeof nav==='function') nav('qualite');
+    setTimeout(()=>{
+      const sa = document.getElementById('qualAssocSel');
+      if(sa){ sa.value = a.assocId; sa.dispatchEvent(new Event('change')); }
+      setTimeout(()=>{
+        const sac = document.getElementById('qualActionSel');
+        if(sac){ sac.value = a.id; sac.dispatchEvent(new Event('change')); }
+      }, 120);
+    }, 120);
+  };
+
+  // Bénéficiaire modal
+  const BENEF_QS = [
+    {k:'utilite', l:"L'action vous a-t-elle été utile ?"},
+    {k:'clarte', l:'Les objectifs étaient-ils clairs ?'},
+    {k:'qualite', l:"Qualité de l'accompagnement"},
+    {k:'satisfaction', l:'Satisfaction globale'},
+    {k:'reco', l:'Recommanderiez-vous cette action ?'},
+  ];
+  let benefCurrentId = null;
+  function ensureBenefModal(){
+    if(document.getElementById('benefModal')) return;
+    const div = document.createElement('div');
+    div.className = 'overlay'; div.id = 'benefModal';
+    div.addEventListener('click', function(e){ if(e.target===div) div.classList.remove('show'); });
+    div.innerHTML = `<div class="modal" style="max-width:560px">
+      <div class="modal-hdr">
+        <div class="modal-ttl">Évaluation bénéficiaire</div>
+        <button class="modal-close" onclick="document.getElementById('benefModal').classList.remove('show')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:12px;color:var(--muted-fore);margin-bottom:14px" id="benefAction"></div>
+        <div id="benefQs"></div>
+        <div style="font-size:11px;color:var(--muted-fore);margin-top:8px">Notation 1 (faible) → 5 (excellent)</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="document.getElementById('benefModal').classList.remove('show')">Annuler</button>
+        <button class="btn btn-primary" onclick="saveBenefEval()">Enregistrer</button>
+      </div>
+    </div>`;
+    div.querySelector('.modal').addEventListener('click', e=>e.stopPropagation());
+    document.body.appendChild(div);
+  }
+  window.evalBeneficiaire = function(id, e){
+    if(e){ e.stopPropagation(); e.preventDefault(); }
+    ensureBenefModal();
+    benefCurrentId = id;
+    const a = ACTIONS.find(x=>x.id===id);
+    document.getElementById('benefAction').textContent = a ? `${a.titre} — ${getAssocName(a.assocId)}` : '';
+    document.getElementById('benefQs').innerHTML = BENEF_QS.map(q=>`
+      <div style="margin-bottom:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">${q.l}</div>
+        <div style="display:flex;gap:6px" data-q="${q.k}">
+          ${[1,2,3,4,5].map(n=>`<button type="button" class="benef-q-btn" data-v="${n}" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${n}</button>`).join('')}
+        </div>
+      </div>`).join('');
+    document.getElementById('benefModal').classList.add('show');
+  };
+  window.saveBenefEval = function(){
+    if(!benefCurrentId) return;
+    const a = ACTIONS.find(x=>x.id===benefCurrentId); if(!a) return;
+    const res = {};
+    document.querySelectorAll('#benefQs [data-q]').forEach(row=>{
+      const k = row.getAttribute('data-q');
+      const sel = row.querySelector('button.active');
+      if(sel) res[k] = +sel.getAttribute('data-v');
+    });
+    a.surveyResult = Object.assign({}, a.surveyResult||{}, res);
+    document.getElementById('benefModal').classList.remove('show');
+    if(typeof showToast==='function') showToast('Évaluation bénéficiaire enregistrée');
+    try{ renderAllActions(); }catch(e){}
+    try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
+  };
 
   // Override renderActionsList to group by theme when full list (no limit)
   window.renderActionsList = function(cid, actions, limit){
@@ -4106,10 +4233,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       return (ix<0?999:ix) - (iy<0?999:iy);
     });
     el.innerHTML = ordered.map(t=>{
-      const meta = THEME_META[t] || {color:'oklch(0.5 0.05 285)', icon:'📌'};
+      const meta = THEME_META[t] || {color:'oklch(0.5 0.05 285)', icon:ICN.pin};
       return `<div class="theme-group">
         <div class="theme-group-hdr" style="border-left-color:${meta.color}">
-          <span style="font-size:18px">${meta.icon}</span>
+          <span class="tg-icn" style="color:${meta.color}">${meta.icon}</span>
           <span class="tg-name" style="color:${meta.color}">${t}</span>
           <span class="tg-count">${groups[t].length} action${groups[t].length>1?'s':''}</span>
         </div>
@@ -4120,12 +4247,37 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     }).join('');
   };
 
+  // Re-order Agenda page: list above calendar
+  function reorderAgenda(){
+    const agenda = document.getElementById('page-agenda');
+    if(!agenda || agenda.dataset.reordered) return;
+    const cards = agenda.querySelectorAll(':scope > .card');
+    if(cards.length>=2){
+      // cards[0]=calendar, cards[1]=list. Move list before calendar.
+      agenda.insertBefore(cards[1], cards[0]);
+      agenda.dataset.reordered = '1';
+    }
+  }
+
+  // Sidebar association filter (called from parent React sidebar)
+  window.setAssocFilter = function(name){
+    if(typeof ASSOCS==='undefined') return;
+    if(!name || /^toutes/i.test(name) || name==='__all'){
+      currentAssocId = null;
+    } else {
+      const a = ASSOCS.find(x=>x.nom.toUpperCase().indexOf(name.toUpperCase())>=0);
+      if(a) currentAssocId = a.id;
+    }
+    try{ renderAllActions(); }catch(e){}
+    try{ updateBadge(); }catch(e){}
+    try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
+  };
+
   // Merge "Utilité sociale" content into "Résultats & Impacts"
   const _origNav = window.nav;
   window.nav = function(id){
     if(id==='utilite') id='resultats';
     if(id==='ressources'){
-      // Build / show a simple Centre de Ressources page on the fly
       let p = document.getElementById('page-ressources');
       if(!p){
         p = document.createElement('div');
@@ -4141,18 +4293,18 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
           <div class="two-col">
             <div class="card"><div class="card-hdr"><div class="card-title">Guides du Contrat de Ville</div></div><div class="card-body">
               <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-                <li>📘 Guide du Référentiel Qualité v4.5</li>
-                <li>📗 Méthodologie d'évaluation d'utilité sociale</li>
-                <li>📙 Cadre logique action / résultat / impact</li>
-                <li>📕 Trame de bilan annuel</li>
+                <li>Guide du Référentiel Qualité v4.5</li>
+                <li>Méthodologie d'évaluation d'utilité sociale</li>
+                <li>Cadre logique action / résultat / impact</li>
+                <li>Trame de bilan annuel</li>
               </ul>
             </div></div>
             <div class="card"><div class="card-hdr"><div class="card-title">Boîte à outils</div></div><div class="card-body">
               <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-                <li>🧰 Modèles de questionnaires bénéficiaires</li>
-                <li>📊 Tableurs indicateurs QPV</li>
-                <li>🎓 Replays webinaires Contrat de Ville</li>
-                <li>🤝 Annuaire partenaires institutionnels</li>
+                <li>Modèles de questionnaires bénéficiaires</li>
+                <li>Tableurs indicateurs QPV</li>
+                <li>Replays webinaires Contrat de Ville</li>
+                <li>Annuaire partenaires institutionnels</li>
               </ul>
             </div></div>
           </div>`;
@@ -4160,6 +4312,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       }
     }
     const r = _origNav ? _origNav.apply(this, [id]) : undefined;
+    if(id==='agenda') reorderAgenda();
     if(id==='resultats'){
       try{ if(typeof renderUtilite==='function') renderUtilite(); }catch(e){}
       const page = document.getElementById('page-resultats');
@@ -4169,7 +4322,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
         wrap.id = 'mergedUtiliteWrap';
         wrap.style.marginTop = '24px';
         wrap.innerHTML = `<div style="font-family:Lexend,sans-serif;font-size:18px;font-weight:800;margin:6px 0 12px">Utilité sociale</div>`;
-        // Move utilite inner content into resultats page (after stats cards)
         const inner = util.querySelectorAll(':scope > *:not(.page-hdr)');
         inner.forEach(n=>wrap.appendChild(n));
         page.appendChild(wrap);
@@ -4177,7 +4329,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     }
     return r;
   };
-  // Hide "Utilité Sociale" nav button (now merged)
   try{
     document.querySelectorAll('.nav-btn').forEach(b=>{
       if((b.getAttribute('onclick')||'').includes("'utilite'")) b.style.display='none';
@@ -4190,10 +4341,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   }
   window.addEventListener('hashchange', applyHash);
   document.addEventListener('DOMContentLoaded', function(){
-    // Authentification requise (modalités de connexion du fichier d'origine).
-    // Pas d'auto-login : l'utilisateur choisit son rôle (Super Admin / Association).
     setTimeout(function(){
       try{ if(typeof renderAllActions==='function') renderAllActions(); }catch(e){}
+      reorderAgenda();
       applyHash();
     }, 100);
   });
