@@ -187,6 +187,7 @@ export function AppSidebar() {
         {renderGroup("Territoire", territoire)}
         {renderGroup("Principal", principal, associationsSelector)}
         {renderGroup("Évaluation", evaluation)}
+        {renderGroup("Ressource Documentaire", ressources)}
         {renderGroup("Administration", admin)}
       </SidebarContent>
       <SidebarFooter>
