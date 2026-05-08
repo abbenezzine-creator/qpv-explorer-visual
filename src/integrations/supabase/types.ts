@@ -14,7 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      thematic_responses: {
+        Row: {
+          answers: Json
+          common: Json
+          created_at: string
+          id: string
+          phase: string
+          theme_id: string | null
+          theme_name: string
+        }
+        Insert: {
+          answers?: Json
+          common?: Json
+          created_at?: string
+          id?: string
+          phase: string
+          theme_id?: string | null
+          theme_name: string
+        }
+        Update: {
+          answers?: Json
+          common?: Json
+          created_at?: string
+          id?: string
+          phase?: string
+          theme_id?: string | null
+          theme_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thematic_responses_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "thematic_themes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thematic_themes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          questions_after: Json
+          questions_before: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          questions_after?: Json
+          questions_before?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          questions_after?: Json
+          questions_before?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
