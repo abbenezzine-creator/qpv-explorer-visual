@@ -542,7 +542,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       <div class="topbar-right">
         <select class="year-sel" id="yearFilter" onchange="onYearChange()"></select>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted-fore)"><div class="live-dot"></div>En direct</div>
-        <button class="btn btn-primary" onclick="openAddActionModal()">
+        <button class="btn btn-primary" id="topNewActionBtn" onclick="openAddActionModal()">
           <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg>
           Nouvelle action
         </button>
@@ -1309,6 +1309,7 @@ function nav(id){
   if(id==='parametres') renderSettings();
   if(id==='documents') renderDocuments();
   if(id==='utilite') renderUtilite();
+  try { const nb=document.getElementById('topNewActionBtn'); if(nb) nb.style.display=(id==='dashboard'||id==='agenda')?'':'none'; } catch(e){}
 }
 
 // ========== SIDEBAR ==========
