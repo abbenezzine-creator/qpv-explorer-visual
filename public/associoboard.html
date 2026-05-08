@@ -4753,68 +4753,82 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     }, 120);
   };
 
-  // Bénéficiaire modal
-  const BENEF_QS = [
-    {k:'utilite', l:"L'action vous a-t-elle été utile ?"},
-    {k:'clarte', l:'Les objectifs étaient-ils clairs ?'},
-    {k:'qualite', l:"Qualité de l'accompagnement"},
-    {k:'satisfaction', l:'Satisfaction globale'},
-    {k:'reco', l:'Recommanderiez-vous cette action ?'},
-  ];
+  // Bénéficiaire — modal questionnaire (iframe sur public/questionnaire.html)
+  const THEME_TO_QKEY = {
+    'Emancipation':'emancipation','Education / Parentalité':'emancipation',
+    'Santé':'sante','Santé vieillissement':'sante',
+    'Emploi':'emploi','Emploi insertion':'emploi',
+    'Transition écologique':'transition',
+    'Tranquillité publique':'tranquillite',
+    'Cohésion sociale':'transversal','Citoyenneté':'transversal','Accès aux droits':'transversal','Diagnostic de territoire':'transversal'
+  };
   let benefCurrentId = null;
   function ensureBenefModal(){
     if(document.getElementById('benefModal')) return;
     const div = document.createElement('div');
-    div.className = 'overlay'; div.id = 'benefModal';
-    div.addEventListener('click', function(e){ if(e.target===div) div.classList.remove('show'); });
-    div.innerHTML = `<div class="modal" style="max-width:560px">
-      <div class="modal-hdr">
-        <div class="modal-ttl">Évaluation bénéficiaire</div>
-        <button class="modal-close" onclick="document.getElementById('benefModal').classList.remove('show')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div style="font-size:12px;color:var(--muted-fore);margin-bottom:14px" id="benefAction"></div>
-        <div id="benefQs"></div>
-        <div style="font-size:11px;color:var(--muted-fore);margin-top:8px">Notation 1 (faible) → 5 (excellent)</div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" onclick="document.getElementById('benefModal').classList.remove('show')">Annuler</button>
-        <button class="btn btn-primary" onclick="saveBenefEval()">Enregistrer</button>
-      </div>
-    </div>`;
-    div.querySelector('.modal').addEventListener('click', e=>e.stopPropagation());
+    div.id = 'benefModal';
+    div.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;padding:20px';
+    div.addEventListener('click', function(e){ if(e.target===div) closeBenefModal(); });
+    div.innerHTML = '<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.3)">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e5e7eb;background:linear-gradient(135deg,#1e40af,#2563eb);color:#fff">'
+      +'<div><div style="font-size:15px;font-weight:800">Évaluation bénéficiaire</div><div id="benefSub" style="font-size:12px;opacity:0.9;margin-top:2px"></div></div>'
+      +'<button onclick="closeBenefModal()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:34px;height:34px;border-radius:8px;font-size:18px;cursor:pointer">✕</button>'
+      +'</div>'
+      +'<iframe id="benefFrame" style="flex:1;border:none;width:100%" title="Questionnaire bénéficiaire"></iframe>'
+      +'</div>';
     document.body.appendChild(div);
   }
+  window.closeBenefModal = function(){
+    const m = document.getElementById('benefModal'); if(m) m.style.display = 'none';
+    benefCurrentId = null;
+  };
   window.evalBeneficiaire = function(id, e){
     if(e){ e.stopPropagation(); e.preventDefault(); }
     ensureBenefModal();
     benefCurrentId = id;
-    const a = ACTIONS.find(x=>x.id===id);
-    document.getElementById('benefAction').textContent = a ? `${a.titre} — ${getAssocName(a.assocId)}` : '';
-    document.getElementById('benefQs').innerHTML = BENEF_QS.map(q=>`
-      <div style="margin-bottom:14px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:6px">${q.l}</div>
-        <div style="display:flex;gap:6px" data-q="${q.k}">
-          ${[1,2,3,4,5].map(n=>`<button type="button" class="benef-q-btn" data-v="${n}" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${n}</button>`).join('')}
-        </div>
-      </div>`).join('');
-    document.getElementById('benefModal').classList.add('show');
-  };
-  window.saveBenefEval = function(){
-    if(!benefCurrentId) return;
-    const a = ACTIONS.find(x=>x.id===benefCurrentId); if(!a) return;
-    const res = {};
-    document.querySelectorAll('#benefQs [data-q]').forEach(row=>{
-      const k = row.getAttribute('data-q');
-      const sel = row.querySelector('button.active');
-      if(sel) res[k] = +sel.getAttribute('data-v');
+    const a = ACTIONS.find(x=>x.id===id); if(!a) return;
+    const qkey = THEME_TO_QKEY[a.theme] || 'transversal';
+    document.getElementById('benefSub').textContent = (a.titre||'') + ' — ' + getAssocName(a.assocId);
+    const params = new URLSearchParams({
+      embed:'1',
+      action: String(a.id),
+      title: a.titre || '',
+      asso: getAssocName(a.assocId) || '',
+      theme: qkey
     });
-    a.surveyResult = Object.assign({}, a.surveyResult||{}, res);
-    document.getElementById('benefModal').classList.remove('show');
-    if(typeof showToast==='function') showToast('Évaluation bénéficiaire enregistrée');
+    const fr = document.getElementById('benefFrame');
+    fr.src = 'questionnaire.html?' + params.toString();
+    fr.onload = function(){
+      try{
+        const responses = (a.surveyResponses || []);
+        fr.contentWindow.postMessage({ type:'aggregate-data', aggregate: { responses } }, '*');
+      }catch(err){}
+    };
+    document.getElementById('benefModal').style.display = 'flex';
+  };
+
+  // Réception des réponses agrégées en provenance de l'iframe
+  window.addEventListener('message', function(ev){
+    if(!ev.data || ev.data.type !== 'survey-complete') return;
+    const p = ev.data.payload; if(!p) return;
+    const a = ACTIONS.find(x=>x.id===benefCurrentId || String(x.id)===String(p.actionId));
+    if(!a) return;
+    a.surveyResponses = a.surveyResponses || [];
+    a.surveyResponses.push(p);
+    const arr = a.surveyResponses;
+    const avg = function(k){ return Math.round(arr.reduce((s,r)=>s+(r[k]||0),0)/arr.length); };
+    a.surveyResult = {
+      pct_avant: avg('pct_avant'),
+      pct_apres: avg('pct_apres'),
+      delta: avg('pct_apres') - avg('pct_avant'),
+      n: arr.length
+    };
+    if(typeof showToast==='function') showToast('Évaluation enregistrée · '+arr.length+' bénéf.');
+    closeBenefModal();
     try{ renderAllActions(); }catch(e){}
     try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
-  };
+    try{ if(typeof renderResultatsPage==='function') renderResultatsPage(); }catch(e){}
+  });
 
   // Override renderActionsList to group by theme when full list (no limit)
   window.renderActionsList = function(cid, actions, limit){
