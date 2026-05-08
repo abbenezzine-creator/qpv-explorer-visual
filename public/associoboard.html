@@ -4303,16 +4303,19 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   function hasBenefSurvey(a){ return !!(a && a.surveyResult && Object.keys(a.surveyResult).length); }
   window.renderEvalBlock = function(a){
     const done = evalStatus(a.id);
+    const cta = done ? 'Modifier l\'évaluation →' : 'Évaluer maintenant →';
     if(done){
       const pct = evalAvgPercent(a.id);
-      return `<div class="eval-block is-done">
+      return `<div class="eval-block is-done is-clickable" role="button" tabindex="0" onclick="event.stopPropagation();evalReferentiel(${a.id},event)" onkeydown="if(event.key==='Enter'){event.stopPropagation();evalReferentiel(${a.id},event)}">
         <div class="eval-icn"><svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg></div>
-        <div class="eval-txt"><div class="eval-lbl">Évaluation partenaire</div><div class="eval-val">Référentiel évalué · ${pct}%</div><div class="eval-bar"><span style="width:${pct}%"></span></div></div>
+        <div class="eval-txt"><div class="eval-lbl">Évaluation partenaires</div><div class="eval-val">Référentiel évalué · ${pct}%</div><div class="eval-bar"><span style="width:${pct}%"></span></div><div class="eval-cta">${cta}</div></div>
+        <div class="eval-arrow"><svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 2 10 7 5 12"/></svg></div>
       </div>`;
     }
-    return `<div class="eval-block is-pending">
+    return `<div class="eval-block is-pending is-clickable" role="button" tabindex="0" onclick="event.stopPropagation();evalReferentiel(${a.id},event)" onkeydown="if(event.key==='Enter'){event.stopPropagation();evalReferentiel(${a.id},event)}">
       <div class="eval-icn"><svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3.5l2 1.2"/></svg></div>
-      <div class="eval-txt"><div class="eval-lbl">Évaluation partenaire</div><div class="eval-val">En attente d'évaluation</div></div>
+      <div class="eval-txt"><div class="eval-lbl">Évaluation partenaires</div><div class="eval-val">En attente d'évaluation</div><div class="eval-cta">${cta}</div></div>
+      <div class="eval-arrow"><svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 2 10 7 5 12"/></svg></div>
     </div>`;
   };
   window.renderBenefBtn = function(a){
