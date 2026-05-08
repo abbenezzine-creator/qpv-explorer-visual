@@ -1598,7 +1598,8 @@ function renderActionsList(cid,actions,limit){
     const bc=TCOL[a.type]||'purple';
     const sr=a.surveyResult;
     const surveyPill=sr?`<div class="result-pill"><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="1 6 4 9 11 3"/></svg>Obj. ${Math.round((sr.obj||3)/5*100)}% · Sat. ${Math.round((sr.qac||8)/10*100)}%</div>`:'';
-    return `<div class="action-card" onclick="openActionDetail(${a.id})">
+    return `<div class="action-card" style="position:relative" onclick="openActionQualite(${a.id})">
+      <button type="button" class="btn btn-ghost btn-sm" style="position:absolute;top:8px;right:8px;font-size:10px;padding:3px 7px;z-index:2" onclick="event.stopPropagation();openActionDetail(${a.id})">Détail</button>
       <div class="ac-bar" style="background:${a.gradient}"></div>
       <div class="ac-ref">
         <span>${getAssocName(a.assocId).toUpperCase()}</span>
