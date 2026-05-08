@@ -3083,7 +3083,9 @@ async function importActionsXlsx(){
       const theme=_xlsxNorm(r[cThe])||'—';
       const assocId=_xlsxOrCreateAssoc(assoNom, theme);
       const obs=pubByRef[ref]?.obs||'';
-      const desc=(_xlsxNorm(r[cDes])||'')+(obs?'\n\nObservation : '+obs:'');
+      const synth=_xlsxNorm(r[cDes])||'';
+      const objs=_xlsxNorm(r[cObj])||'';
+      const desc=synth+(objs?(synth?'\n\n':'')+'Objectifs : '+objs:'')+(obs?'\n\nObservation : '+obs:'');
       const action={
         id:Number(ref),
         assocId,
