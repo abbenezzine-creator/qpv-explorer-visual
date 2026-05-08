@@ -63,14 +63,7 @@ const admin: NavItem[] = [
   { title: "Paramètres", to: "/app", search: { page: "parametres" }, icon: Settings },
 ];
 
-const ASSOCIATIONS = [
-  "Toutes les associations",
-  "ACTION",
-  "PASS'EMPLOI",
-  "ASELQO",
-  "Familles de France",
-  "Maison de l'Emploi",
-];
+const ALL_LABEL = "Toutes les associations";
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -155,15 +148,31 @@ export function AppSidebar() {
     }
   };
 
+  const [assocOptions, setAssocOptions] = useState<string[]>([ALL_LABEL]);
+  useEffect(() => {
+    if (!mounted) return;
+    const refresh = () => {
+      try {
+        const f = document.querySelector<HTMLIFrameElement>("iframe[title='AssocioBoard']");
+        const w = f?.contentWindow as (Window & { getAssociationsWithActions?: () => string[] }) | null;
+        const list = w?.getAssociationsWithActions?.() ?? [];
+        setAssocOptions([ALL_LABEL, ...list]);
+      } catch { /* noop */ }
+    };
+    refresh();
+    const id = window.setInterval(refresh, 2000);
+    return () => window.clearInterval(id);
+  }, [mounted]);
+
   const isSuperAdmin = user?.role === "superadmin";
   const associationsSelector = mounted && !collapsed && isSuperAdmin ? (
     <div className="px-2 pb-2">
-      <Select defaultValue="Toutes les associations" onValueChange={handleAssocChange}>
+      <Select defaultValue={ALL_LABEL} onValueChange={handleAssocChange}>
         <SelectTrigger className="h-8 text-xs">
           <SelectValue placeholder="Associations" />
         </SelectTrigger>
         <SelectContent>
-          {ASSOCIATIONS.map((a) => (
+          {assocOptions.map((a) => (
             <SelectItem key={a} value={a} className="text-xs">{a}</SelectItem>
           ))}
         </SelectContent>
