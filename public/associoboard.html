@@ -1713,24 +1713,65 @@ function addFonction(){
 function removeDynRow(btn){btn.closest('.dyn-row')?.remove();}
 function getFonctions(){return [...document.querySelectorAll('#fa-fonctions-list .dyn-row input')].map(i=>i.value.trim()).filter(Boolean);}
 
+// ========== LIEUX (multi) ==========
+function addLieuRow(value){
+  const list=document.getElementById('fa-lieux-list'); if(!list) return;
+  const row=document.createElement('div'); row.className='dyn-row';
+  row.innerHTML=`<input class="form-inp" placeholder="Salle, adresse complète…" value="${(value||'').replace(/"/g,'&quot;')}"/><button type="button" class="btn btn-ghost btn-sm map-btn" title="Voir sur la carte" onclick="openLieuMap(this)"><svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3l4-1.5 4 1.5 4-1.5v9l-4 1.5-4-1.5L1 12z"/><path d="M5 1.5v10M9 3v10"/></svg>Carte</button><button type="button" class="btn btn-ghost" onclick="removeDynRow(this)">✕</button>`;
+  list.appendChild(row);
+  syncLieuPrincipal();
+  row.querySelector('input').addEventListener('input',syncLieuPrincipal);
+}
+function getLieux(){return [...document.querySelectorAll('#fa-lieux-list .dyn-row input')].map(i=>i.value.trim()).filter(Boolean);}
+function syncLieuPrincipal(){const el=document.getElementById('fa-lieu'); if(el){const ls=getLieux(); el.value=ls[0]||'';}}
+function openLieuMap(btn){
+  const inp=btn.parentElement.querySelector('input');
+  const v=(inp?.value||'').trim();
+  if(!v){showToast('Renseignez d\'abord une adresse');return;}
+  window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(v),'_blank','noopener');
+}
+
 // ========== BUDGET TABLE ==========
 function addBudgetRow(){
   const tbody=document.getElementById('budgetRows');
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td><input placeholder="Financeur"/></td><td><input placeholder="Type"/></td><td><input type="number" placeholder="0" oninput="updateBudgetTotal()"/></td><td><button type="button" class="btn btn-ghost btn-sm" onclick="removeBudgetRow(this)">✕</button></td>`;
+  const yr=(typeof currentYear!=='undefined'?currentYear:new Date().getFullYear());
+  tr.innerHTML=`<td><input type="number" min="2000" max="2099" placeholder="${yr}" value="${yr}" class="bg-year" oninput="updateBudgetTotal()"/></td><td><input placeholder="Financeur"/></td><td><input placeholder="Type"/></td><td><input type="number" placeholder="0" oninput="updateBudgetTotal()"/></td><td><button type="button" class="btn btn-ghost btn-sm" onclick="removeBudgetRow(this)">✕</button></td>`;
   tbody.appendChild(tr);
 }
 function removeBudgetRow(btn){btn.closest('tr')?.remove();updateBudgetTotal();}
 function updateBudgetTotal(){
   const rows=[...document.querySelectorAll('#budgetRows tr')];
-  const total=rows.reduce((s,r)=>s+(parseFloat(r.querySelectorAll('input')[2]?.value)||0),0);
-  document.getElementById('budgetTotal').textContent=`Total : ${total} €`;
-  document.getElementById('budgetTotalCell').textContent=`${total} €`;
+  const byYear={};
+  let total=0;
+  rows.forEach(r=>{
+    const ins=r.querySelectorAll('input');
+    const yr=parseInt(ins[0]?.value)||0;
+    const m=parseFloat(ins[3]?.value)||0;
+    total+=m;
+    if(yr) byYear[yr]=(byYear[yr]||0)+m;
+  });
+  const t=document.getElementById('budgetTotal'); if(t) t.textContent=`Total : ${total} €`;
+  const c=document.getElementById('budgetTotalCell'); if(c) c.textContent=`${total} €`;
+  const wrap=document.getElementById('budgetByYear');
+  if(wrap){
+    const years=Object.keys(byYear).sort();
+    wrap.innerHTML=years.map((y,i)=>{
+      const prev=i>0?byYear[years[i-1]]:null;
+      let trend='';
+      if(prev!=null && prev>0){
+        const diff=byYear[y]-prev; const pct=Math.round(diff/prev*100);
+        const up=diff>=0;
+        trend=`<span style="margin-left:6px;font-size:10px;font-weight:700;color:${up?'oklch(0.5 0.16 155)':'oklch(0.58 0.22 25)'}">${up?'▲':'▼'} ${Math.abs(pct)}%</span>`;
+      }
+      return `<span class="year-chip"><strong>${y}</strong> · ${byYear[y]} €${trend}</span>`;
+    }).join('');
+  }
 }
 function getBudgetRows(){
   return [...document.querySelectorAll('#budgetRows tr')].map(r=>{
     const ins=r.querySelectorAll('input');
-    return {financeur:ins[0]?.value||'',type:ins[1]?.value||'',montant:parseFloat(ins[2]?.value)||0};
+    return {annee:parseInt(ins[0]?.value)||null,financeur:ins[1]?.value||'',type:ins[2]?.value||'',montant:parseFloat(ins[3]?.value)||0};
   }).filter(r=>r.financeur||r.montant);
 }
 
