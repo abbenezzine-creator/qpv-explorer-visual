@@ -838,9 +838,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
             <option value="">Naviguer vers un critère…</option>
             <option value="gc-guide">1. Guide</option>
             <option value="gc-abrev">2. Abréviations</option>
-            <option value="gc-synop">3. Tableau synoptique</option>
+            <option value="gc-synop">3. Tableau synoptique & grille de suivi</option>
             <option value="gc-notation">4. Système de notation</option>
-            <option value="gc-grille">5. Grille de suivi</option>
             <option value="gc-c1">C1 — Communication</option>
             <option value="gc-c2">C2 — Objectifs</option>
             <option value="gc-c3">C3 — Qualification</option>
@@ -3594,7 +3593,7 @@ function renderGuide() {
     +'</div></div></div>';
 
   // === 3. TABLEAU SYNOPTIQUE ===
-  html += sectionHdr('gc-synop','3.','Tableau synoptique des critères et indicateurs','oklch(0.52 0.16 150)');
+  html += sectionHdr('gc-synop','3.','Tableau synoptique des critères, indicateurs & grille de suivi','oklch(0.52 0.16 150)');
   const SYNOP = [
     {c:'C1',name:'COMMUNICATION',color:'oklch(0.52 0.22 285)',inds:[
       {n:1,t:'L\'organisme diffuse une information accessible au public, détaillée et vérifiable.',nc:'MINEURE'},
@@ -3648,22 +3647,30 @@ function renderGuide() {
       {n:'T',t:'Indicateur transversal : intégration de la dimension environnementale.',nc:'MINEURE'},
     ]},
   ];
+  html += '<p style="font-size:13px;color:var(--muted-fore);margin-bottom:14px">Tableau unique combinant les 30 indicateurs (avec leur type de non-conformité) et la grille de suivi à compléter lors de l\'auto-évaluation puis de l\'évaluation partenariale.</p>';
+  // (Notation cards inserted after the merged table — see below)
   html += '<div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'
     +'<thead><tr>'
     +'<th style="background:var(--muted);padding:9px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore);font-weight:700;border-bottom:2px solid var(--border);white-space:nowrap">N°</th>'
     +'<th style="background:var(--muted);padding:9px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore);font-weight:700;border-bottom:2px solid var(--border)">Indicateur</th>'
-    +'<th style="background:var(--muted);padding:9px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore);font-weight:700;border-bottom:2px solid var(--border);white-space:nowrap">Critère</th>'
     +'<th style="background:var(--muted);padding:9px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore);font-weight:700;border-bottom:2px solid var(--border);white-space:nowrap">NC Type</th>'
+    +'<th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--success);font-weight:700">C</th>'
+    +'<th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--destructive);font-weight:700">NCMA</th>'
+    +'<th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:oklch(0.6 0.17 60);font-weight:700">NCMI</th>'
+    +'<th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore);font-weight:700">NCO</th>'
     +'</tr></thead><tbody>';
   SYNOP.forEach(function(cr) {
-    html += '<tr><td colspan="4" style="background:'+cr.color+'14;padding:8px 12px;border-bottom:1px solid var(--border)">'
+    html += '<tr><td colspan="7" style="background:'+cr.color+'14;padding:8px 12px;border-bottom:1px solid var(--border)">'
       +'<span style="font-family:JetBrains Mono,monospace;font-size:11px;font-weight:800;color:'+cr.color+'">'+cr.c+'</span>'
       +'<span style="font-size:12px;font-weight:700;margin-left:10px">'+cr.name+'</span></td></tr>';
     cr.inds.forEach(function(ind) {
       html += '<tr><td style="padding:7px 12px;border-bottom:1px solid var(--border);font-family:JetBrains Mono,monospace;font-size:11px;font-weight:700;color:'+cr.color+';white-space:nowrap">'+ind.n+'</td>'
         +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);color:var(--muted-fore)">'+ind.t+'</td>'
-        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);white-space:nowrap;font-size:11px;color:'+cr.color+'">'+cr.c+'</td>'
-        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border)">'+NC_TAG[ind.nc]+'</td></tr>';
+        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border)">'+NC_TAG[ind.nc]+'</td>'
+        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:center">☐</td>'
+        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:center">☐</td>'
+        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:center">☐</td>'
+        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:center">☐</td></tr>';
     });
   });
   html += '</tbody></table></div>';
@@ -3685,31 +3692,6 @@ function renderGuide() {
   });
   html += '</div>';
 
-  // === 5. GRILLE ===
-  html += sectionHdr('gc-grille','5.','Grille de suivi (tableau d\'évaluation)','oklch(0.52 0.22 285)');
-  html += '<p style="font-size:13px;color:var(--muted-fore);margin-bottom:14px">Cette grille constitue le tableau de bord de l\'évaluation. Elle est remplie lors de l\'auto-évaluation (par l\'organisme) puis lors de l\'évaluation partenariale par le Pôle cohésion sociale.</p>';
-  html += '<div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'
-    +'<thead><tr><th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore)">N°</th>'
-    +'<th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore)">Indicateur</th>'
-    +'<th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--success)">C</th>'
-    +'<th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--destructive)">NCMA</th>'
-    +'<th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:oklch(0.6 0.17 60)">NCMI</th>'
-    +'<th style="background:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore)">NCO</th>'
-    +'</tr></thead><tbody>';
-  SYNOP.forEach(function(cr) {
-    html += '<tr><td colspan="6" style="background:'+cr.color+'12;padding:8px 12px;font-weight:700;border-bottom:1px solid var(--border);color:'+cr.color+';font-size:12px">'+cr.c+' — '+cr.name+'</td></tr>';
-    cr.inds.forEach(function(ind) {
-      html += '<tr><td style="padding:7px 12px;border-bottom:1px solid var(--border);font-family:JetBrains Mono,monospace;font-weight:700;color:'+cr.color+'">'+ind.n+'</td>'
-        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);color:var(--muted-fore)">'+ind.t+'</td>'
-        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:center">☐</td>'
-        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:center">☐</td>'
-        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:center">☐</td>'
-        +'<td style="padding:7px 12px;border-bottom:1px solid var(--border);text-align:center">☐</td></tr>';
-    });
-  });
-  html += '</tbody></table></div>';
-
-  // === 6. FICHES DÉTAILLÉES — one per critère ===
   const FICHES_DATA = [
     {id:'gc-c1',n:'C1',name:'Communication',color:C[0],inds:[
       {num:1,nc:'MINEURE',title:'Diffusion d\'une information accessible au public, détaillée et vérifiable sur les actions proposées',
