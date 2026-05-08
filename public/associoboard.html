@@ -1648,7 +1648,7 @@ function openActionDetail(id){
     <div class="info-block"><div class="info-lbl">Date début</div><div class="info-val">${a.date.split('-').reverse().join('/')}</div></div>
     <div class="info-block"><div class="info-lbl">Date fin</div><div class="info-val">${a.dateFin?a.dateFin.split('-').reverse().join('/'):'—'}</div></div>
     <div class="info-block"><div class="info-lbl">Horaires</div><div class="info-val">${a.heure}</div></div>
-    <div class="info-block"><div class="info-lbl">Lieu</div><div class="info-val">${a.lieu}</div></div>
+    <div class="info-block"><div class="info-lbl">Lieu(x)</div><div class="info-val" style="font-size:11px">${((a.lieux&&a.lieux.length)?a.lieux:[a.lieu]).filter(Boolean).map(l=>`<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(l)}" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;border-bottom:1px dashed currentColor;margin-right:8px">${l} ↗</a>`).join('')||'—'}</div></div>
     <div class="info-block"><div class="info-lbl">Participants</div><div class="info-val">${a.nb}</div></div>
     <div class="info-block"><div class="info-lbl">Tranches d'âge</div><div class="info-val" style="font-size:11px">${(a.ages||[]).join(', ')||'—'}</div></div>
     <div class="info-block"><div class="info-lbl">Jours</div><div class="info-val" style="font-size:11px">${(a.jours||[]).join(', ')||'—'}</div></div>
