@@ -109,20 +109,31 @@ export function AppSidebar() {
       <SidebarGroupContent>
         {extra}
         <SidebarMenu>
-          {items.map((it) => (
+          {items.map((it) => {
+            const active = isActive(it);
+            return (
             <SidebarMenuItem key={it.title}>
-              <SidebarMenuButton asChild isActive={isActive(it)}>
+              <SidebarMenuButton
+                asChild
+                isActive={active}
+                className={
+                  active
+                    ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary hover:bg-primary/15 hover:text-primary data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                    : ""
+                }
+              >
                 <Link
                   to={it.to}
                   search={it.search as never}
                   className="flex items-center gap-2"
                 >
-                  <it.icon className="h-4 w-4" />
+                  <it.icon className={`h-4 w-4 ${active ? "text-primary" : ""}`} />
                   {!collapsed && <span>{it.title}</span>}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          ))}
+            );
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
