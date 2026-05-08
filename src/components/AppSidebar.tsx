@@ -201,7 +201,7 @@ export function AppSidebar() {
         {renderGroup("Principal", principal, associationsSelector)}
         {renderGroup("Évaluation", evaluation)}
         {renderGroup("Ressource Documentaire", ressources)}
-        {renderGroup("Administration", admin)}
+        {isSuperAdmin && renderGroup("Administration", admin)}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
