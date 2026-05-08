@@ -4023,5 +4023,117 @@ function init(){
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('loginPage').classList.add('show');});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal','addActionModal','addAssocModal','addPartnerModal','uploadDocModal'].forEach(id=>{const m=document.getElementById(id);if(m)m.classList.remove('open');});document.body.style.overflow='';}});
 </script>
+<script>
+// === Lovable integration patch ===
+(function(){
+  var st = document.createElement('style');
+  st.textContent = `
+    .sidebar,#sbOverlay,.mob-toggle{display:none!important}
+    .main,.main.collapsed{margin-left:0!important}
+    .theme-group{margin-bottom:18px}
+    .theme-group-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--muted);border-radius:calc(var(--radius) - 2px);margin-bottom:10px;border-left:4px solid var(--primary)}
+    .theme-group-hdr .tg-name{font-family:'Lexend',sans-serif;font-weight:700;font-size:14px;flex:1}
+    .theme-group-hdr .tg-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-fore);background:var(--card);padding:3px 10px;border-radius:99px;border:1px solid var(--border)}
+    .theme-group-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+    .pending-eval{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:oklch(0.95 0.05 75);color:oklch(0.45 0.18 75);border:1px solid oklch(0.85 0.12 75);margin-top:6px}
+    [data-theme="dark"] .pending-eval{background:oklch(0.25 0.06 75);color:oklch(0.85 0.15 75)}
+    .done-eval{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:oklch(0.95 0.05 150);color:oklch(0.4 0.16 150);border:1px solid oklch(0.85 0.12 150);margin-top:6px}
+    [data-theme="dark"] .done-eval{background:oklch(0.25 0.06 150);color:oklch(0.85 0.15 150)}
+  `;
+  document.head.appendChild(st);
+
+  const THEME_META = {
+    'Diagnostic de territoire': {color:'oklch(0.55 0.18 240)', icon:'🗺️'},
+    'Education / Parentalité':  {color:'oklch(0.62 0.22 340)', icon:'🎓'},
+    'Emancipation':             {color:'oklch(0.62 0.22 340)', icon:'🎓'},
+    'Santé':                    {color:'oklch(0.55 0.18 200)', icon:'❤️'},
+    'Santé vieillissement':     {color:'oklch(0.55 0.18 200)', icon:'❤️'},
+    'Emploi':                   {color:'oklch(0.52 0.16 150)', icon:'💼'},
+    'Emploi insertion':         {color:'oklch(0.52 0.16 150)', icon:'💼'},
+    'Cohésion sociale':         {color:'oklch(0.52 0.22 285)', icon:'🤝'},
+    'Citoyenneté':              {color:'oklch(0.76 0.17 75)',  icon:'🏛️'},
+    'Accès aux droits':         {color:'oklch(0.6 0.17 60)',   icon:'⚖️'},
+    'Transition écologique':    {color:'oklch(0.55 0.16 145)', icon:'🌱'},
+    'Tranquillité publique':    {color:'oklch(0.58 0.22 25)',  icon:'🛡️'},
+  };
+  const THEME_ORDER = ['Diagnostic de territoire','Emancipation','Education / Parentalité','Santé vieillissement','Santé','Emploi insertion','Emploi','Cohésion sociale','Citoyenneté','Accès aux droits','Transition écologique','Tranquillité publique'];
+
+  function evalStatus(actionId){
+    if(typeof QUAL_EVALS==='undefined') return false;
+    return Object.keys(QUAL_EVALS).some(k=>k.startsWith(actionId+'_'));
+  }
+
+  function renderActionCard(a){
+    const bc = (typeof TCOL!=='undefined' && TCOL[a.type]) || 'purple';
+    const evaluated = evalStatus(a.id);
+    const evalBadge = evaluated
+      ? '<div class="done-eval"><svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 6 4 9 11 3"/></svg>Référentiel évalué</div>'
+      : '<div class="pending-eval"><svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6" cy="6" r="5"/><line x1="6" y1="3.5" x2="6" y2="6.5"/><circle cx="6" cy="8" r="0.5" fill="currentColor"/></svg>En attente d\'évaluation</div>';
+    const dateStr = a.date ? a.date.split('-').reverse().join('/') : '';
+    return `<div class="action-card" onclick="openActionDetail(${a.id})">
+      <div class="ac-bar" style="background:${a.gradient}"></div>
+      <div class="ac-ref">
+        <span>${getAssocName(a.assocId).toUpperCase()}</span>
+        <span class="badge badge-${bc}">${a.statut}</span>
+      </div>
+      <div class="ac-title">${a.titre}</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
+        ${(a.quartiers||[]).map(q=>`<span class="badge badge-gray">${q}</span>`).join('')}
+        ${(a.ages||[]).map(ag=>`<span class="badge badge-blue">${ag}</span>`).join('')}
+      </div>
+      ${evalBadge}
+      <div class="ac-footer" style="margin-top:8px">
+        <span>📅 ${dateStr} · ${a.heure||''}</span>
+        <span>${a.nb||0} part. · ${getBudgetTotal(a)} €</span>
+      </div>
+    </div>`;
+  }
+
+  // Override renderActionsList to group by theme when full list (no limit)
+  window.renderActionsList = function(cid, actions, limit){
+    const el = document.getElementById(cid); if(!el) return;
+    if(limit){
+      const list = actions.slice(0, limit);
+      if(!list.length){ el.innerHTML='<p style="color:var(--muted-fore);font-size:12px;padding:9px 0">Aucune action</p>'; return; }
+      el.innerHTML = list.map(renderActionCard).join('');
+      return;
+    }
+    if(!actions.length){ el.innerHTML='<p style="color:var(--muted-fore);font-size:12px;padding:9px 0">Aucune action</p>'; return; }
+    const groups = {};
+    actions.forEach(a=>{ const t = a.theme || 'Autres'; (groups[t] = groups[t] || []).push(a); });
+    const ordered = Object.keys(groups).sort((x,y)=>{
+      const ix = THEME_ORDER.indexOf(x), iy = THEME_ORDER.indexOf(y);
+      return (ix<0?999:ix) - (iy<0?999:iy);
+    });
+    el.innerHTML = ordered.map(t=>{
+      const meta = THEME_META[t] || {color:'oklch(0.5 0.05 285)', icon:'📌'};
+      return `<div class="theme-group">
+        <div class="theme-group-hdr" style="border-left-color:${meta.color}">
+          <span style="font-size:18px">${meta.icon}</span>
+          <span class="tg-name" style="color:${meta.color}">${t}</span>
+          <span class="tg-count">${groups[t].length} action${groups[t].length>1?'s':''}</span>
+        </div>
+        <div class="theme-group-list">
+          ${groups[t].map(renderActionCard).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  };
+
+  function applyHash(){
+    const m = (location.hash||'').match(/page=([a-z]+)/i);
+    if(m && typeof nav==='function'){ try{ nav(m[1]); }catch(e){} }
+  }
+  window.addEventListener('hashchange', applyHash);
+  document.addEventListener('DOMContentLoaded', function(){
+    // Authentification requise (modalités de connexion du fichier d'origine).
+    // Pas d'auto-login : l'utilisateur choisit son rôle (Super Admin / Association).
+    setTimeout(function(){
+      try{ if(typeof renderAllActions==='function') renderAllActions(); }catch(e){}
+      applyHash();
+    }, 100);
+  });
+})();
+</script>
 </body>
 </html>
