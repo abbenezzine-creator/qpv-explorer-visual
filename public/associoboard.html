@@ -1690,16 +1690,159 @@ function openActionDetail(id){
   openModal('actionDetailModal');
 }
 
-// ========== COPY ACTION ==========
+// ========== COPY / PASTE ACTION ==========
+const ACTION_CLIP_TAG='<<ASSOCIOBOARD_ACTION_V1>>';
+function _serializeActionPayload(p){
+  return `${p.titre||'(action)'}\n— Copié depuis AssocioBoard —\n\n${ACTION_CLIP_TAG}\n${JSON.stringify(p)}\n${ACTION_CLIP_TAG}`;
+}
+function _extractActionPayload(text){
+  if(!text) return null;
+  const re=new RegExp(ACTION_CLIP_TAG+'\\s*([\\s\\S]*?)\\s*'+ACTION_CLIP_TAG);
+  const m=text.match(re);
+  if(!m) return null;
+  try{ return JSON.parse(m[1]); } catch(e){ return null; }
+}
 function copyActionToClipboard(id){
   const a=ACTIONS.find(x=>x.id===id); if(!a) return;
-  const txt=`${a.titre}\n${getAssocName(a.assocId)} — ${a.type}\nDate: ${a.date} ${a.heure}\nLieu: ${a.lieu}\nParticipants: ${a.nb}\nTransches d'âge: ${(a.ages||[]).join(', ')}\nQuartiers: ${(a.quartiers||[]).join(', ')}\nIntervenants: ${(a.fonctions||[]).join(', ')}\nBudget total: ${getBudgetTotal(a)} €\n${a.desc}`;
-  navigator.clipboard.writeText(txt).then(()=>showToast('Copié dans le presse-papiers')).catch(()=>showToast('Copie non supportée'));
+  const payload={
+    titre:a.titre, type:a.type, theme:a.theme, annee:a.annee,
+    assocNom:getAssocName(a.assocId), assocId:a.assocId,
+    date:a.date, dateFin:a.dateFin||'', heure:a.heure,
+    jours:a.jours||[], recurrence:a.recurrence||'none',
+    recurrenceDetail:a.recurrenceDetail||'', recurrenceFin:a.recurrenceFin||'',
+    quartiers:a.quartiers||[], ages:a.ages||[],
+    fonctions:a.fonctions||[],
+    lieu:a.lieu||'', lieux:a.lieux||(a.lieu?[a.lieu]:[]),
+    nb:a.nb||0, statut:a.statut, desc:a.desc||'',
+    budgetLines:a.budgetLines||[],
+  };
+  navigator.clipboard.writeText(_serializeActionPayload(payload))
+    .then(()=>showToast('Action copiée — collez-la dans une autre action'))
+    .catch(()=>showToast('Copie non supportée'));
+}
+function _readForm(){
+  return {
+    titre:document.getElementById('fa-titre').value,
+    type:document.getElementById('fa-type').value,
+    theme:document.getElementById('fa-theme').value,
+    annee:parseInt(document.getElementById('fa-annee').value)||currentYear,
+    assocId:parseInt(document.getElementById('fa-assoc').value)||null,
+    assocNom:document.getElementById('fa-assoc').selectedOptions[0]?.textContent||'',
+    date:document.getElementById('fa-date').value,
+    dateFin:document.getElementById('fa-date-fin').value,
+    heureDebut:document.getElementById('fa-heure-debut').value,
+    heureFin:document.getElementById('fa-heure-fin').value,
+    jours:getMckValues('fa-jours-grid'),
+    recurrence:document.getElementById('fa-recurrence').value,
+    recurrenceDetail:document.getElementById('fa-recurrence-detail')?.value||'',
+    recurrenceFin:document.getElementById('fa-recurrence-fin')?.value||'',
+    quartiers:getMckValues('fa-quartiers-grid'),
+    ages:getMckValues('fa-ages-grid'),
+    fonctions:getFonctions(),
+    lieux:(typeof getLieux==='function'?getLieux():[document.getElementById('fa-lieu').value].filter(Boolean)),
+    nb:parseInt(document.getElementById('fa-nb').value)||0,
+    statut:document.getElementById('fa-statut').value,
+    desc:document.getElementById('fa-desc').value,
+    budgetLines:getBudgetRows(),
+  };
 }
 function copyFormToClipboard(){
-  const titre=document.getElementById('fa-titre').value;
-  if(!titre){showToast('Remplissez d\'abord le formulaire');return;}
-  navigator.clipboard.writeText(titre).then(()=>showToast('Titre copié')).catch(()=>{});
+  const p=_readForm();
+  if(!p.titre){showToast('Remplissez d\'abord le formulaire');return;}
+  navigator.clipboard.writeText(_serializeActionPayload(p))
+    .then(()=>showToast('Formulaire copié — collez-le ailleurs avec « Coller »'))
+    .catch(()=>showToast('Copie non supportée'));
+}
+function _setMckFromValues(gridId, values){
+  resetMck(gridId);
+  const set=new Set((values||[]).map(v=>String(v)));
+  document.querySelectorAll(`#${gridId} .mck`).forEach(label=>{
+    const inp=label.querySelector('input');
+    if(inp && set.has(inp.value)){ inp.checked=true; label.classList.add('sel'); }
+  });
+}
+function _applyPayloadToForm(p){
+  if(!p) return;
+  // Association — try by id, then by name
+  const aSel=document.getElementById('fa-assoc');
+  if(aSel){
+    let v='';
+    if(p.assocId && [...aSel.options].some(o=>o.value===String(p.assocId))) v=String(p.assocId);
+    else if(p.assocNom){
+      const match=[...aSel.options].find(o=>o.textContent.trim().toLowerCase()===String(p.assocNom).trim().toLowerCase());
+      if(match) v=match.value;
+    }
+    if(v) aSel.value=v;
+  }
+  const setVal=(id,val)=>{const e=document.getElementById(id); if(e && val!=null) e.value=val;};
+  setVal('fa-titre',p.titre);
+  setVal('fa-type',p.type);
+  setVal('fa-theme',p.theme);
+  setVal('fa-annee',p.annee);
+  setVal('fa-date',p.date);
+  setVal('fa-date-fin',p.dateFin);
+  // Heure : payload may contain heureDebut/heureFin OR a "HH:MM–HH:MM" string in `heure`
+  if(p.heureDebut||p.heureFin){
+    setVal('fa-heure-debut',p.heureDebut||'');
+    setVal('fa-heure-fin',p.heureFin||'');
+  } else if(p.heure){
+    const m=String(p.heure).match(/(\d{1,2}:\d{2})\s*[–-]\s*(\d{1,2}:\d{2})/);
+    if(m){ setVal('fa-heure-debut',m[1]); setVal('fa-heure-fin',m[2]); }
+  }
+  computeDuree();
+  setVal('fa-recurrence',p.recurrence||'none');
+  toggleRecurrenceDetail();
+  setVal('fa-recurrence-detail',p.recurrenceDetail);
+  setVal('fa-recurrence-fin',p.recurrenceFin);
+  setVal('fa-nb',p.nb);
+  setVal('fa-statut',p.statut);
+  setVal('fa-desc',p.desc);
+  _setMckFromValues('fa-jours-grid',p.jours);
+  _setMckFromValues('fa-quartiers-grid',p.quartiers);
+  _setMckFromValues('fa-ages-grid',p.ages);
+  // Fonctions
+  const fl=document.getElementById('fa-fonctions-list');
+  if(fl){
+    fl.innerHTML='';
+    const arr=(p.fonctions&&p.fonctions.length)?p.fonctions:[''];
+    arr.forEach(f=>{
+      const row=document.createElement('div'); row.className='dyn-row';
+      row.innerHTML=`<input class="form-inp" placeholder="ex : Éducateur spécialisé" value="${(f||'').replace(/"/g,'&quot;')}"/><button type="button" class="btn btn-ghost" onclick="removeDynRow(this)">✕</button>`;
+      fl.appendChild(row);
+    });
+  }
+  // Lieux
+  const ll=document.getElementById('fa-lieux-list');
+  if(ll){
+    ll.innerHTML='';
+    const arr=(p.lieux&&p.lieux.length)?p.lieux:(p.lieu?[p.lieu]:['']);
+    arr.forEach(l=>addLieuRow(l));
+    syncLieuPrincipal();
+  }
+  // Budget
+  const tb=document.getElementById('budgetRows');
+  if(tb){
+    tb.innerHTML='';
+    const yr=currentYear||new Date().getFullYear();
+    const lines=(p.budgetLines&&p.budgetLines.length)?p.budgetLines:[{annee:yr,financeur:'',type:'',montant:0}];
+    lines.forEach(b=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td><input type="number" min="2000" max="2099" value="${b.annee||yr}" class="bg-year" oninput="updateBudgetTotal()"/></td><td><input value="${(b.financeur||'').replace(/"/g,'&quot;')}"/></td><td><input value="${(b.type||'').replace(/"/g,'&quot;')}"/></td><td><input type="number" value="${b.montant||0}" oninput="updateBudgetTotal()"/></td><td><button type="button" class="btn btn-ghost btn-sm" onclick="removeBudgetRow(this)">✕</button></td>`;
+      tb.appendChild(tr);
+    });
+    updateBudgetTotal();
+  }
+}
+function pasteFormFromClipboard(){
+  if(!navigator.clipboard||!navigator.clipboard.readText){
+    showToast('Lecture du presse-papiers non supportée par ce navigateur');return;
+  }
+  navigator.clipboard.readText().then(txt=>{
+    const p=_extractActionPayload(txt);
+    if(!p){ showToast('Aucune action copiée détectée dans le presse-papiers'); return; }
+    _applyPayloadToForm(p);
+    showToast('Données collées dans le formulaire');
+  }).catch(()=>showToast('Impossible de lire le presse-papiers — autorisez l\'accès'));
 }
 
 // ========== MCK (multi-checkbox) ==========
