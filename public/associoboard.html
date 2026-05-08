@@ -1528,21 +1528,23 @@ function renderQualiteProgressDash(){
   const allInds = QUALITE_AXES.flatMap(ax => ax.criteria.map(c => ({axId:ax.id, color:ax.color, id:c.id, text:c.text})));
   const indsForCrit = critId==='ALL' ? allInds : allInds.filter(i=>i.axId===critId);
 
-  // Average per action across selected scope of indicators
+  // Average per action across selected scope of indicators (real evals only)
   const perAction = acts.map(a=>{
-    const vals = indsForCrit.map(i=>_qualScore(a.id, i.id));
-    const avg = vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
-    return {a, avg};
+    const vals = indsForCrit.map(i=>_qualScore(a.id, i.id)).filter(v=>v!=null);
+    const has = vals.length>0;
+    const avg = has ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
+    return {a, avg, has};
   }).sort((x,y)=>y.avg-x.avg);
 
-  // Average per indicator across scope of actions
+  // Average per indicator across scope of actions (real evals only)
   const perInd = indsForCrit.map(i=>{
-    const vals = acts.map(a=>_qualScore(a.id, i.id));
-    const avg = vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
+    const vals = acts.map(a=>_qualScore(a.id, i.id)).filter(v=>v!=null);
+    const avg = vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : null;
     return {...i, avg};
   });
 
-  const globalAvg = perAction.length ? Math.round(perAction.reduce((s,x)=>s+x.avg,0)/perAction.length) : 0;
+  const evaluated = perAction.filter(x=>x.has);
+  const globalAvg = evaluated.length ? Math.round(evaluated.reduce((s,x)=>s+x.avg,0)/evaluated.length) : 0;
   const isAdmin = currentUser?.role==='superadmin';
   const scopeName = isAdmin ? (currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Toutes les associations') : (ASSOCS.find(x=>x.id===currentUser?.assocId)?.nom||'');
   const critLabel = critId==='ALL' ? 'Tous critères' : (QUALITE_AXES.find(a=>a.id===critId)?.name||critId);
@@ -1550,12 +1552,12 @@ function renderQualiteProgressDash(){
   el.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px;border-bottom:1px dashed var(--border);margin-bottom:8px">
       <div style="font-size:11px;color:var(--muted-fore)">${scopeName} · <strong>${critLabel}</strong></div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg}%</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg||'—'}${globalAvg?'%':''}</div>
     </div>
     <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Moyenne par association</div>
     ${(() => {
       const byAssoc = {};
-      perAction.forEach(({a,avg})=>{ (byAssoc[a.assocId] ||= []).push(avg); });
+      perAction.forEach(({a,avg,has})=>{ if(!has) return; (byAssoc[a.assocId] ||= []).push(avg); });
       const rows = Object.keys(byAssoc).map(aid=>{
         const list=byAssoc[aid]; const m=Math.round(list.reduce((s,v)=>s+v,0)/list.length);
         return {aid:+aid, nom:getAssocName(+aid), avg:m, n:list.length};
