@@ -49,7 +49,6 @@ const principal: NavItem[] = [
 ];
 
 const evaluation: NavItem[] = [
-  { title: "Questionnaire", to: "/app", search: { page: "questionnaire" }, icon: ClipboardList },
   { title: "Résultats & Impacts", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
   { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
 ];
