@@ -1293,9 +1293,9 @@ function setupUserCtx(){
 }
 
 // ========== NAV ==========
-const PT={dashboard:'Tableau de Bord',agenda:'Agenda des Actions',qualite:'Référentiel Qualité',guide:'Guide du Référentiel',questionnaire:'Questionnaire Bénéficiaires',utilite:'Utilité Sociale',resultats:'Résultats & Impacts',documents:'Documents',parametres:'Paramètres',diagnostic:'Diagnostic Territorial'};
+const PT={dashboard:'Tableau de Bord',agenda:'Agenda des Actions',qualite:'Référentiel Qualité',guide:'Guide du Référentiel',questionnaire:'Questionnaire Bénéficiaires','questionnaire-thematique':'Questionnaire thématique',utilite:'Utilité Sociale',resultats:'Résultats & Impacts',documents:'Documents',parametres:'Paramètres',diagnostic:'Diagnostic Territorial'};
 function nav(id){
-  if(id==='parametres'&&currentUser?.role!=='superadmin'){showToast('Réservé au Super Administrateur');return;}
+  if((id==='parametres'||id==='questionnaire-thematique')&&currentUser?.role!=='superadmin'){showToast('Réservé au Super Administrateur');return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id)?.classList.add('active');
@@ -4523,6 +4523,56 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
         document.querySelector('.main-area')?.appendChild(p) || document.body.appendChild(p);
       }
     }
+    if(id==='questionnaire-thematique'){
+      let p = document.getElementById('page-questionnaire-thematique');
+      if(!p){
+        p = document.createElement('div');
+        p.className = 'page'; p.id = 'page-questionnaire-thematique';
+        const THEMES = ['Education / Parentalité','Emploi insertion','Santé','Cohésion sociale','Citoyenneté','Accès aux droits','Transition écologique','Tranquillité publique'];
+        p.innerHTML = `
+          <div class="page-hdr">
+            <div>
+              <div class="page-title">Questionnaire thématique</div>
+              <div class="page-sub">Administration — Construire et diffuser des questionnaires par thématique du Contrat de Ville</div>
+            </div>
+            <button class="btn btn-primary" onclick="alert('Création de questionnaire — à venir')"><span style="margin-right:6px">＋</span>Nouveau questionnaire</button>
+          </div>
+          <div class="card" style="margin-bottom:18px">
+            <div class="card-hdr"><div class="card-title">Filtrer par thématique</div></div>
+            <div class="card-body">
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <button class="badge badge-purple" style="cursor:pointer;border:none;font-family:inherit">Toutes</button>
+                ${THEMES.map(t=>`<button class="badge badge-gray" style="cursor:pointer;border:none;font-family:inherit">${t}</button>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="stats-grid" style="margin-bottom:18px">
+            <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Questionnaires actifs</div><div class="stat-val" style="color:var(--primary)">${THEMES.length}</div></div>
+            <div class="stat-card"><div class="stat-blob" style="background:var(--success)"></div><div class="stat-lbl">Réponses collectées</div><div class="stat-val" style="color:var(--success)">142</div></div>
+            <div class="stat-card"><div class="stat-blob" style="background:var(--info)"></div><div class="stat-lbl">Thématiques couvertes</div><div class="stat-val" style="color:var(--info)">${THEMES.length}</div></div>
+            <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Taux de complétion</div><div class="stat-val" style="color:oklch(0.6 0.17 60)">68%</div></div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Questionnaires par thématique</div></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+                ${THEMES.map(t=>`
+                  <div class="action-card" style="cursor:pointer">
+                    <div class="ac-bar" style="background:linear-gradient(135deg,var(--primary),oklch(0.62 0.22 340))"></div>
+                    <div class="ac-ref"><span>${t.toUpperCase()}</span><span class="badge badge-purple">Actif</span></div>
+                    <div class="ac-title">Questionnaire ${t}</div>
+                    <div style="font-size:12px;color:var(--muted-fore);margin:6px 0 10px">8 à 12 questions adaptées au contexte ${t.toLowerCase()}.</div>
+                    <div class="ac-footer">
+                      <span>${Math.floor(Math.random()*30+5)} réponses</span>
+                      <span><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();alert('Édition à venir')">Modifier</button></span>
+                    </div>
+                  </div>`).join('')}
+              </div>
+            </div>
+          </div>`;
+        document.querySelector('.main-area')?.appendChild(p) || document.body.appendChild(p);
+      }
+    }
     const r = _origNav ? _origNav.apply(this, [id]) : undefined;
     if(id==='agenda') reorderAgenda();
     if(id==='resultats'){
@@ -4551,7 +4601,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   }catch(e){}
 
   function applyHash(){
-    const m = (location.hash||'').match(/page=([a-z]+)/i);
+    const m = (location.hash||'').match(/page=([a-z-]+)/i);
     if(m && typeof nav==='function'){ try{ nav(m[1]); }catch(e){} }
   }
   window.addEventListener('hashchange', applyHash);

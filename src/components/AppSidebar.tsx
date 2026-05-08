@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Library,
+  ListChecks,
 } from "lucide-react";
 
 import {
@@ -59,6 +60,7 @@ const ressources: NavItem[] = [
 ];
 
 const admin: NavItem[] = [
+  { title: "Questionnaire thématique", to: "/app", search: { page: "questionnaire-thematique" }, icon: ListChecks },
   { title: "Paramètres", to: "/app", search: { page: "parametres" }, icon: Settings },
 ];
 
