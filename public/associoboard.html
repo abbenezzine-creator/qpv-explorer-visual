@@ -3060,7 +3060,7 @@ async function importActionsXlsx(){
       else { ACTIONS.push(action); added++; }
     }
     assocCreated=ASSOCS.length-beforeAssocs;
-    if(Number(action?.id)>=nextId) nextId=Math.max(nextId, ...ACTIONS.map(a=>a.id))+1;
+    if(ACTIONS.length){ nextId=Math.max(nextId, ...ACTIONS.map(a=>a.id||0))+1; }
     renderSettings(); updateAllSelects();
     if(typeof renderAllActions==='function') renderAllActions();
     if(typeof renderDashboard==='function') renderDashboard();
