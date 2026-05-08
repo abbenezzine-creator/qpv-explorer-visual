@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Library,
+  ListChecks,
 } from "lucide-react";
 
 import {
