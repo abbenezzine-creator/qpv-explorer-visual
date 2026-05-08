@@ -1723,18 +1723,57 @@ function openActionDetail(id){
       <tbody>${bl.map(r=>`<tr><td>${r.financeur}</td><td>${r.type}</td><td style="font-family:'JetBrains Mono',monospace;font-weight:700">${r.montant} €</td></tr>`).join('')}</tbody>
       <tfoot><tr class="budget-total-row"><td colspan="2" style="padding:6px 10px">TOTAL</td><td style="padding:6px 10px;color:var(--primary);font-family:'JetBrains Mono',monospace;font-weight:800">${total} €</td></tr></tfoot>
     </table></div>`:'<p style="color:var(--muted-fore);font-size:12px">Aucun financeur renseigné</p>';
-  // Survey result
+  // Résultats de l'évaluation bénéficiaires (alignés sur la fenêtre d'évaluation)
   const sr=a.surveyResult;
-  if(sr){
+  const nbResp=(a.surveyResponses||[]).length;
+  if(sr && (sr.pct_avant!=null || sr.pct_apres!=null)){
+    const av=sr.pct_avant||0, ap=sr.pct_apres||0, dl=(sr.delta!=null?sr.delta:(ap-av));
+    const dlColor = dl>=0 ? 'oklch(0.52 0.16 150)' : 'oklch(0.58 0.22 25)';
+    document.getElementById('detailIndicateurs').innerHTML=`
+      <div style="font-size:11px;color:var(--muted-fore);margin-bottom:8px">Moyenne sur ${nbResp} bénéficiaire${nbResp>1?'s':''} évalué${nbResp>1?'s':''}</div>
+      <div class="circ-grid">
+        ${circleChart(av,'Avant','oklch(0.6 0.17 240)',null)}
+        ${circleChart(ap,'Après','oklch(0.52 0.22 285)',null)}
+        ${circleChart(Math.max(0,Math.min(100,Math.abs(dl))),(dl>=0?'Progression +':'Régression −')+Math.abs(dl)+'%',dlColor,null)}
+      </div>`;
+  } else if (sr) {
+    // Anciens résultats (format legacy) — affichage de compatibilité
     document.getElementById('detailIndicateurs').innerHTML=`
       <div class="circ-grid">
-        ${circleChart(sr.conf_ap*10,'Confiance','oklch(0.52 0.22 285)',sr.conf_av*10)}
-        ${circleChart(sr.mai_ap*10,'Maîtrise','oklch(0.62 0.22 340)',sr.mai_av*10)}
+        ${circleChart((sr.conf_ap||0)*10,'Confiance','oklch(0.52 0.22 285)',(sr.conf_av||0)*10)}
+        ${circleChart((sr.mai_ap||0)*10,'Maîtrise','oklch(0.62 0.22 340)',(sr.mai_av||0)*10)}
         ${circleChart(Math.round((sr.obj||3)/5*100),'Objectifs','oklch(0.52 0.16 150)',null)}
         ${circleChart(Math.round((sr.qac||8)/10*100),'Satisfaction','oklch(0.6 0.17 240)',null)}
       </div>`;
   } else {
-    document.getElementById('detailIndicateurs').innerHTML='<p style="color:var(--muted-fore);font-size:12px">Aucune évaluation encore réalisée — <button class="btn btn-primary btn-sm" onclick="nav(\'questionnaire\');closeModal(\'actionDetailModal\')">Lancer le questionnaire</button></p>';
+    document.getElementById('detailIndicateurs').innerHTML='<p style="color:var(--muted-fore);font-size:12px">Aucune évaluation bénéficiaire encore réalisée.</p>';
+  }
+  // Évaluation du référentiel qualité
+  const refEl=document.getElementById('detailReferentiel');
+  if(refEl){
+    let refHtml='';
+    try{
+      const allInds=(typeof QUALITE_AXES!=='undefined')?QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>({axId:ax.id, axName:ax.name, color:ax.color, id:c.id}))):[];
+      const perAx={};
+      allInds.forEach(i=>{
+        const v=_qualScore(a.id, i.id);
+        if(v==null) return;
+        (perAx[i.axId]=perAx[i.axId]||{name:i.axName,color:i.color,vals:[]}).vals.push(v);
+      });
+      const axKeys=Object.keys(perAx);
+      if(axKeys.length){
+        const allVals=axKeys.flatMap(k=>perAx[k].vals);
+        const global=Math.round(allVals.reduce((s,v)=>s+v,0)/allVals.length);
+        refHtml=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="font-size:22px;font-weight:800;color:var(--accent-rose)">${global}%</div><div style="font-size:11px;color:var(--muted-fore)">Score qualité global · ${axKeys.length} critère${axKeys.length>1?'s':''} évalué${axKeys.length>1?'s':''}</div></div>`;
+        refHtml+='<div style="display:flex;flex-direction:column;gap:6px">'+axKeys.map(k=>{
+          const o=perAx[k]; const av=Math.round(o.vals.reduce((s,v)=>s+v,0)/o.vals.length);
+          return `<div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px"><span>${o.name}</span><strong style="color:${o.color}">${av}%</strong></div><div style="height:6px;border-radius:4px;background:var(--muted);overflow:hidden"><div style="width:${av}%;height:100%;background:${o.color}"></div></div></div>`;
+        }).join('')+'</div>';
+      } else {
+        refHtml='<p style="color:var(--muted-fore);font-size:12px">Aucune évaluation du référentiel qualité pour cette action.</p>';
+      }
+    }catch(e){ refHtml='<p style="color:var(--muted-fore);font-size:12px">—</p>'; }
+    refEl.innerHTML=refHtml;
   }
   // Doc
   const ds=document.getElementById('detailDocSection');
