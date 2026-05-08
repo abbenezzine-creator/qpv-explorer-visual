@@ -599,6 +599,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
           <div style="display:flex;gap:7px;flex-wrap:wrap">
             <select class="form-sel" style="width:auto;padding:4px 8px;font-size:12px" id="filterType" onchange="renderAllActions()"><option value="">Tous types</option><option>Formation</option><option>Accompagnement</option><option>Animation</option><option>Permanence</option></select>
             <select class="form-sel" style="width:auto;padding:4px 8px;font-size:12px" id="filterTheme" onchange="renderAllActions()"><option value="">Toutes thématiques</option><option>Education / Parentalité</option><option>Emploi</option><option>Santé</option><option>Cohésion sociale</option><option>Citoyenneté</option><option>Accès aux droits</option></select>
+            <select class="form-sel" style="width:auto;padding:4px 8px;font-size:12px" id="filterQpv" onchange="renderAllActions()"><option value="">Tous QPV</option><option>Argonne</option><option>La Source</option><option>Dauphine</option><option>Blossières</option></select>
+            <button type="button" class="btn btn-outline btn-sm" onclick="toggleAllThemes()" id="toggleAllThemesBtn" style="font-size:11px;padding:4px 8px">Tout dérouler</button>
           </div>
         </div>
         <div class="card-body" style="padding:8px 14px" id="allActionsList"></div>
