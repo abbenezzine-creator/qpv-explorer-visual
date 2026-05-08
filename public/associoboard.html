@@ -433,6 +433,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .cal-evt{font-size:9px;font-weight:600;border-radius:5px;padding:2px 5px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;line-height:1.5;max-width:100%;display:block}
 .cal-evt:hover{opacity:.8}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <svg class="grad-defs" xmlns="http://www.w3.org/2000/svg">
@@ -759,6 +760,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap"><input class="form-inp" id="gsCitizenUrl" placeholder="https://docs.google.com/spreadsheets/d/XXXX/pub?output=csv" style="flex:1;min-width:200px" oninput="localStorage.setItem('gs_citizen_url',this.value)"/><button class="btn btn-primary" onclick="saveCitizenUrl()">Enregistrer</button><div style="display:flex;align-items:center;gap:5px;font-size:12px"><div class="gs-dot ok" id="gsDotCitizen" style="display:none"></div><span id="gsStatusCitizen" style="color:var(--muted-fore)"></span></div></div>
     <p style="font-size:11px;color:var(--muted-fore);margin-top:7px">Publication du Sheet : Fichier → Partager → Publier sur le Web → Format CSV. Coller le lien ici.</p>
   </div>
+</div></div>
+<div class="card" style="margin-top:16px"><div class="card-hdr"><div class="card-title">Importer des fiches actions (Excel)</div></div><div class="card-body">
+  <div style="font-size:12px;color:var(--muted-fore);margin-bottom:10px">Importez un classeur Excel contenant les onglets <b>Tableau</b> (fiches actions), <b>publipostage</b> (informations financeurs synthétiques) et <b>Decision 2026</b> (montants attribués par financeur). Les associations manquantes seront créées automatiquement et les actions seront ajoutées ou mises à jour selon la référence (Ref).</div>
+  <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+    <input type="file" id="importXlsxFile" accept=".xlsx,.xls" class="form-inp" style="flex:1;min-width:240px"/>
+    <button class="btn btn-primary" onclick="importActionsXlsx()">Importer</button>
+  </div>
+  <div id="importXlsxStatus" style="margin-top:10px;font-size:12px;color:var(--muted-fore)"></div>
 </div></div>
     </div>
   <!-- DIAGNOSTIC TERRITORIAL -->
@@ -2929,7 +2938,140 @@ function renderSettings(){
   const ac=document.getElementById('accountsList');if(ac)ac.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">'+Object.entries(ACCOUNTS).map(([login,u])=>`<div style="background:var(--muted);border-radius:calc(var(--radius)-4px);padding:10px 12px;border:1px solid var(--border)"><div style="font-size:12px;font-weight:700">${login}</div><div style="font-size:11px;color:var(--muted-fore)">${u.role==='superadmin'?'Super Admin':getAssocName(u.assocId)}</div></div>`).join('')+'</div>';
 }
 
-// ========== SELECTS ==========
+// ========== IMPORT EXCEL — Fiches Actions ==========
+function _xlsxNorm(s){return (s==null?'':String(s)).trim();}
+function _xlsxFindCol(headers, candidates){
+  const norm = h => _xlsxNorm(h).toLowerCase().replace(/\s+/g,' ');
+  for(let i=0;i<headers.length;i++){
+    const h = norm(headers[i]);
+    for(const c of candidates){ if(h===c.toLowerCase() || h.indexOf(c.toLowerCase())>=0) return i; }
+  }
+  return -1;
+}
+function _xlsxParseQuartiers(s){
+  if(!s) return [];
+  const map = {argonne:'Argonne',blossi:'Blossières','la source':'La Source',source:'La Source',dauphine:'Dauphine'};
+  const out = new Set();
+  String(s).split(/[,;\/]/).forEach(part=>{
+    const p = part.trim().toLowerCase();
+    Object.entries(map).forEach(([k,v])=>{ if(p.indexOf(k)>=0) out.add(v); });
+  });
+  return [...out];
+}
+function _xlsxOrCreateAssoc(name, theme){
+  name = _xlsxNorm(name); if(!name) return null;
+  let a = ASSOCS.find(x=>x.nom.toLowerCase()===name.toLowerCase());
+  if(a) return a.id;
+  const colors=['blue','green','amber','purple','rose'];
+  const id=++nextId;
+  ASSOCS.push({id,nom:name,theme:theme||'—',color:colors[ASSOCS.length%colors.length]});
+  return id;
+}
+async function importActionsXlsx(){
+  const fileInput=document.getElementById('importXlsxFile');
+  const status=document.getElementById('importXlsxStatus');
+  const f=fileInput?.files?.[0];
+  if(!f){ if(status) status.textContent='Sélectionnez un fichier .xlsx'; return; }
+  if(typeof XLSX==='undefined'){ if(status) status.textContent='Librairie XLSX non chargée'; return; }
+  if(status) status.textContent='Lecture du classeur…';
+  try{
+    const buf=await f.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const findSheet=(names)=>{ for(const n of names){ const k=wb.SheetNames.find(x=>x.toLowerCase().trim()===n.toLowerCase()); if(k) return wb.Sheets[k]; } for(const n of names){ const k=wb.SheetNames.find(x=>x.toLowerCase().indexOf(n.toLowerCase())>=0); if(k) return wb.Sheets[k]; } return null; };
+    const shTab=findSheet(['Tableau','Tableau 2026']);
+    const shPub=findSheet(['publipostage','publipostage2']);
+    const shDec=findSheet(['Decision 2026','Decision','Décision 2026']);
+    if(!shTab){ if(status) status.textContent='Onglet "Tableau" introuvable'; return; }
+    const tabRows=XLSX.utils.sheet_to_json(shTab,{header:1,defval:''});
+    if(tabRows.length<2){ if(status) status.textContent='Onglet Tableau vide'; return; }
+    const head=tabRows[0];
+    const cRef=_xlsxFindCol(head,['ref']);
+    const cAsso=_xlsxFindCol(head,['libellé - demandeur','demandeur']);
+    const cTit=_xlsxFindCol(head,['intitulé - demande','intitule']);
+    const cThe=_xlsxFindCol(head,['thématique','thematique','dispositif']);
+    const cDes=_xlsxFindCol(head,['description']);
+    const cNb=_xlsxFindCol(head,['total bénéficiaires','bénéficiaires','beneficiaires']);
+    const cLieu=_xlsxFindCol(head,['communes concernées','communes']);
+    const cQrt=_xlsxFindCol(head,['quartiers concernés','quartiers']);
+    const cBud=_xlsxFindCol(head,['budget']);
+    const cFreq=_xlsxFindCol(head,['fréquence','frequence']);
+    const cAn=_xlsxFindCol(head,['exercice']);
+    // Decisions per Ref → budgetLines
+    const decByRef={};
+    if(shDec){
+      const decRows=XLSX.utils.sheet_to_json(shDec,{header:1,defval:''});
+      const dh=decRows[0]||[];
+      const dRef=_xlsxFindCol(dh,['ref']);
+      const dFin=_xlsxFindCol(dh,['financeur']);
+      const dTyp=_xlsxFindCol(dh,['type de financeur','type']);
+      const dMon=_xlsxFindCol(dh,['montant']);
+      for(let i=1;i<decRows.length;i++){
+        const r=decRows[i]; const ref=_xlsxNorm(r[dRef]); if(!ref) continue;
+        const m=Number(r[dMon])||0; if(!m) continue;
+        (decByRef[ref]=decByRef[ref]||[]).push({financeur:_xlsxNorm(r[dFin])||'—',type:_xlsxNorm(r[dTyp])||'Subvention',montant:m});
+      }
+    }
+    // Publipostage → fallback observation/preconisation
+    const pubByRef={};
+    if(shPub){
+      const pubRows=XLSX.utils.sheet_to_json(shPub,{header:1,defval:''});
+      const ph=pubRows[0]||[];
+      const pRef=_xlsxFindCol(ph,['ref']);
+      const pObs=_xlsxFindCol(ph,['observation']);
+      const pArb=_xlsxFindCol(ph,['arbitrage']);
+      for(let i=1;i<pubRows.length;i++){
+        const r=pubRows[i]; const ref=_xlsxNorm(r[pRef]); if(!ref) continue;
+        pubByRef[ref]={obs:_xlsxNorm(r[pObs]),arb:_xlsxNorm(r[pArb])};
+      }
+    }
+    const gradients=['linear-gradient(135deg,oklch(0.52 0.22 285),oklch(0.62 0.22 340))','linear-gradient(135deg,oklch(0.52 0.16 150),oklch(0.6 0.17 240))','linear-gradient(135deg,oklch(0.62 0.22 340),oklch(0.76 0.17 75))','linear-gradient(135deg,oklch(0.76 0.17 75),oklch(0.6 0.17 60))','linear-gradient(135deg,oklch(0.6 0.17 240),oklch(0.52 0.22 285))'];
+    let added=0,updated=0,assocCreated=0;
+    const beforeAssocs=ASSOCS.length;
+    for(let i=1;i<tabRows.length;i++){
+      const r=tabRows[i]; const ref=_xlsxNorm(r[cRef]); if(!ref || isNaN(Number(ref))) continue;
+      const assoNom=_xlsxNorm(r[cAsso]); const titre=_xlsxNorm(r[cTit])||('Action '+ref);
+      const theme=_xlsxNorm(r[cThe])||'—';
+      const assocId=_xlsxOrCreateAssoc(assoNom, theme);
+      const obs=pubByRef[ref]?.obs||'';
+      const desc=(_xlsxNorm(r[cDes])||'')+(obs?'\n\nObservation : '+obs:'');
+      const action={
+        id:Number(ref),
+        assocId,
+        titre,
+        type:'Action',
+        theme,
+        annee:Number(_xlsxNorm(r[cAn]))||new Date().getFullYear(),
+        quartiers:_xlsxParseQuartiers(r[cQrt]),
+        date:'', heure:'',
+        lieu:_xlsxNorm(r[cLieu]),
+        fonctions:[],
+        nb:Number(r[cNb])||0,
+        ages:[],
+        budgetLines:decByRef[ref]||[],
+        statut:_xlsxNorm(r[cFreq])||'Planifié',
+        desc,
+        gradient:gradients[(Number(ref)-1)%gradients.length],
+        fileData:null,fileType:null,fileName:null,surveyResult:null,
+        budgetTotal:Number(r[cBud])||0,
+        importedRef:ref,
+      };
+      const idx=ACTIONS.findIndex(x=>x.id===action.id);
+      if(idx>=0){ ACTIONS[idx]={...ACTIONS[idx],...action}; updated++; }
+      else { ACTIONS.push(action); added++; }
+    }
+    assocCreated=ASSOCS.length-beforeAssocs;
+    if(ACTIONS.length){ nextId=Math.max(nextId, ...ACTIONS.map(a=>a.id||0))+1; }
+    renderSettings(); updateAllSelects();
+    if(typeof renderAllActions==='function') renderAllActions();
+    if(typeof renderDashboard==='function') renderDashboard();
+    if(typeof renderCalendar==='function') renderCalendar();
+    if(status) status.innerHTML=`<span style="color:var(--success,green);font-weight:600">Import réussi.</span> ${added} action(s) ajoutée(s), ${updated} mise(s) à jour, ${assocCreated} association(s) créée(s).`;
+    showToast('Import terminé : '+(added+updated)+' actions');
+  }catch(e){
+    console.error(e);
+    if(status) status.textContent='Erreur : '+(e.message||e);
+  }
+}
 function popSel(id,items,vk,lk,ph){const s=document.getElementById(id);if(!s)return;s.innerHTML=`<option value="">${ph}</option>`+items.map(i=>`<option value="${i[vk]}">${i[lk]}</option>`).join('');}
 function updateAllSelects(){
   const isAdmin=currentUser?.role==='superadmin';
