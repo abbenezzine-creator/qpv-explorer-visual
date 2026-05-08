@@ -4120,6 +4120,70 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     }).join('');
   };
 
+  // Merge "Utilité sociale" content into "Résultats & Impacts"
+  const _origNav = window.nav;
+  window.nav = function(id){
+    if(id==='utilite') id='resultats';
+    if(id==='ressources'){
+      // Build / show a simple Centre de Ressources page on the fly
+      let p = document.getElementById('page-ressources');
+      if(!p){
+        p = document.createElement('div');
+        p.className = 'page'; p.id = 'page-ressources';
+        p.innerHTML = `
+          <div class="page-hdr"><div><div class="page-title">Centre de Ressources</div><div class="page-sub">Guides, modèles, supports d'accompagnement</div></div></div>
+          <div class="stats-grid" style="margin-bottom:18px">
+            <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Guides méthodo.</div><div class="stat-val" style="color:var(--primary)">12</div></div>
+            <div class="stat-card"><div class="stat-blob" style="background:var(--info)"></div><div class="stat-lbl">Modèles d'évaluation</div><div class="stat-val" style="color:var(--info)">8</div></div>
+            <div class="stat-card"><div class="stat-blob" style="background:var(--success)"></div><div class="stat-lbl">Replays formations</div><div class="stat-val" style="color:var(--success)">23</div></div>
+            <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Outils partagés</div><div class="stat-val" style="color:oklch(0.6 0.17 60)">17</div></div>
+          </div>
+          <div class="two-col">
+            <div class="card"><div class="card-hdr"><div class="card-title">Guides du Contrat de Ville</div></div><div class="card-body">
+              <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+                <li>📘 Guide du Référentiel Qualité v4.5</li>
+                <li>📗 Méthodologie d'évaluation d'utilité sociale</li>
+                <li>📙 Cadre logique action / résultat / impact</li>
+                <li>📕 Trame de bilan annuel</li>
+              </ul>
+            </div></div>
+            <div class="card"><div class="card-hdr"><div class="card-title">Boîte à outils</div></div><div class="card-body">
+              <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+                <li>🧰 Modèles de questionnaires bénéficiaires</li>
+                <li>📊 Tableurs indicateurs QPV</li>
+                <li>🎓 Replays webinaires Contrat de Ville</li>
+                <li>🤝 Annuaire partenaires institutionnels</li>
+              </ul>
+            </div></div>
+          </div>`;
+        document.querySelector('.main-area')?.appendChild(p) || document.body.appendChild(p);
+      }
+    }
+    const r = _origNav ? _origNav.apply(this, [id]) : undefined;
+    if(id==='resultats'){
+      try{ if(typeof renderUtilite==='function') renderUtilite(); }catch(e){}
+      const page = document.getElementById('page-resultats');
+      const util = document.getElementById('page-utilite');
+      if(page && util && !document.getElementById('mergedUtiliteWrap')){
+        const wrap = document.createElement('div');
+        wrap.id = 'mergedUtiliteWrap';
+        wrap.style.marginTop = '24px';
+        wrap.innerHTML = `<div style="font-family:Lexend,sans-serif;font-size:18px;font-weight:800;margin:6px 0 12px">Utilité sociale</div>`;
+        // Move utilite inner content into resultats page (after stats cards)
+        const inner = util.querySelectorAll(':scope > *:not(.page-hdr)');
+        inner.forEach(n=>wrap.appendChild(n));
+        page.appendChild(wrap);
+      }
+    }
+    return r;
+  };
+  // Hide "Utilité Sociale" nav button (now merged)
+  try{
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+      if((b.getAttribute('onclick')||'').includes("'utilite'")) b.style.display='none';
+    });
+  }catch(e){}
+
   function applyHash(){
     const m = (location.hash||'').match(/page=([a-z]+)/i);
     if(m && typeof nav==='function'){ try{ nav(m[1]); }catch(e){} }

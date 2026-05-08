@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Map,
@@ -6,15 +6,17 @@ import {
   Award,
   BookOpen,
   ClipboardList,
-  Heart,
   TrendingUp,
   FileText,
   Settings,
+  LogOut,
+  Library,
 } from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -24,6 +26,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type NavItem = { title: string; to: string; search?: Record<string, string>; icon: React.ComponentType<{ className?: string }> };
 
@@ -36,11 +45,11 @@ const principal: NavItem[] = [
   { title: "Actions", to: "/app", search: { page: "agenda" }, icon: CalendarDays },
   { title: "Référentiel Qualité", to: "/app", search: { page: "qualite" }, icon: Award },
   { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
+  { title: "Centre de Ressources", to: "/app", search: { page: "ressources" }, icon: Library },
 ];
 
 const evaluation: NavItem[] = [
   { title: "Questionnaire", to: "/app", search: { page: "questionnaire" }, icon: ClipboardList },
-  { title: "Utilité Sociale", to: "/app", search: { page: "utilite" }, icon: Heart },
   { title: "Documents", to: "/app", search: { page: "documents" }, icon: FileText },
   { title: "Résultats & Impacts", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
 ];
@@ -49,9 +58,19 @@ const admin: NavItem[] = [
   { title: "Paramètres", to: "/app", search: { page: "parametres" }, icon: Settings },
 ];
 
+const ASSOCIATIONS = [
+  "Toutes les associations",
+  "ACTION",
+  "PASS'EMPLOI",
+  "ASELQO",
+  "Familles de France",
+  "Maison de l'Emploi",
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const navigate = useNavigate();
   const path = useRouterState({ select: (r) => r.location.pathname });
   const search = useRouterState({ select: (r) => r.location.search as { page?: string } });
 
@@ -61,10 +80,23 @@ export function AppSidebar() {
     return search?.page === it.search.page;
   };
 
-  const renderGroup = (label: string, items: NavItem[]) => (
+  const handleLogout = () => {
+    try {
+      const f = document.querySelector<HTMLIFrameElement>("iframe[title='AssocioBoard']");
+      const w = f?.contentWindow as (Window & { logout?: () => void; currentUser?: unknown }) | null;
+      if (w?.logout) w.logout();
+      else if (w) w.location.reload();
+    } catch {
+      /* noop */
+    }
+    navigate({ to: "/" });
+  };
+
+  const renderGroup = (label: string, items: NavItem[], extra?: React.ReactNode) => (
     <SidebarGroup>
       <SidebarGroupLabel className="font-bold uppercase tracking-wider text-xs">{label}</SidebarGroupLabel>
       <SidebarGroupContent>
+        {extra}
         <SidebarMenu>
           {items.map((it) => (
             <SidebarMenuItem key={it.title}>
@@ -85,6 +117,21 @@ export function AppSidebar() {
     </SidebarGroup>
   );
 
+  const associationsSelector = !collapsed ? (
+    <div className="px-2 pb-2">
+      <Select defaultValue="Toutes les associations">
+        <SelectTrigger className="h-8 text-xs">
+          <SelectValue placeholder="Associations" />
+        </SelectTrigger>
+        <SelectContent>
+          {ASSOCIATIONS.map((a) => (
+            <SelectItem key={a} value={a} className="text-xs">{a}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  ) : null;
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -102,10 +149,20 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         {renderGroup("Territoire", territoire)}
-        {renderGroup("Principal", principal)}
+        {renderGroup("Principal", principal, associationsSelector)}
         {renderGroup("Évaluation", evaluation)}
         {renderGroup("Administration", admin)}
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleLogout} className="text-destructive hover:text-destructive">
+              <LogOut className="h-4 w-4" />
+              {!collapsed && <span>Déconnexion</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
