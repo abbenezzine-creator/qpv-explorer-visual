@@ -1829,11 +1829,8 @@ function renderQualite(){
         <div class="ref-crit-row">
           <span class="ref-crit-id" style="color:${ax.color}">${c.id}</span>
           <span class="ref-crit-txt">${c.text}</span>
-          <div class="ref-dots">
-            <div class="ref-dot" title="Non conforme" onclick="rateRef('${ax.id}','${c.id}',1)" id="rd-${c.id.replace('.','_')}-1"></div>
-            <div class="ref-dot" title="Partiellement" onclick="rateRef('${ax.id}','${c.id}',2)" id="rd-${c.id.replace('.','_')}-2"></div>
-            <div class="ref-dot" title="Conforme" onclick="rateRef('${ax.id}','${c.id}',3)" id="rd-${c.id.replace('.','_')}-3"></div>
-            <div class="ref-dot" title="Très conforme" onclick="rateRef('${ax.id}','${c.id}',4)" id="rd-${c.id.replace('.','_')}-4"></div>
+          <div class="ref-stars" id="rs-${c.id}">
+            ${[1,2,3,4,5].map(n=>`<button type="button" class="ref-star" title="${['Non conforme','Insuffisant','Partiellement','Conforme','Très conforme'][n-1]}" onclick="rateRef('${ax.id}','${c.id}',${n})">★</button>`).join('')}
           </div>
         </div>`).join('')}
       </div>
@@ -1841,6 +1838,14 @@ function renderQualite(){
   updateQualGlobalScore();
   popSel('qualAssocSel',ASSOCS,'id','nom','— Association —');
   popSel('qualPartnerSel',PARTNERS,'id','nom','— Partenaire —');
+}
+function paintStars(critId,val){
+  const row=document.getElementById('rs-'+critId); if(!row) return;
+  const stars=row.querySelectorAll('.ref-star');
+  stars.forEach((s,i)=>{
+    s.classList.remove('lvl-1','lvl-2','lvl-3','lvl-4','lvl-5');
+    if(val && i<val) s.classList.add('lvl-'+val);
+  });
 }
 function onQualAssocChange(){
   const aid=document.getElementById('qualAssocSel').value;
@@ -1871,7 +1876,7 @@ function updateEvalTabs(){
 function computeEvalScore(ratings){
   const all=Object.values(ratings||{});
   if(!all.length) return 0;
-  return Math.round(all.reduce((s,v)=>s+v,0)/all.length/4*100);
+  return Math.round(all.reduce((s,v)=>s+v,0)/all.length/5*100);
 }
 function loadEvalForEvaluator(){
   const key=getEvalKey();
@@ -1881,17 +1886,8 @@ function loadEvalForEvaluator(){
 function loadEvalForKey(key){
   currentEvalKey=key;
   const ratings=QUAL_EVALS[key]||{};
-  // Reset all dots
-  QUALITE_AXES.forEach(ax=>ax.criteria.forEach(c=>{
-    const k2=c.id.replace('.','_');
-    for(let i=1;i<=4;i++){const d=document.getElementById(`rd-${k2}-${i}`);if(d)d.className='ref-dot';}
-  }));
-  // Apply saved ratings
-  Object.entries(ratings).forEach(([critKey,val])=>{
-    const k2=critKey.replace('.','_');
-    const cls=val===1?'nc':val===2?'pc':val===3?'co':'tc';
-    for(let i=1;i<=4;i++){const d=document.getElementById(`rd-${k2}-${i}`);if(d){d.className='ref-dot';if(i<=val)d.classList.add(cls);}}
-  });
+  QUALITE_AXES.forEach(ax=>ax.criteria.forEach(c=>paintStars(c.id, ratings[c.id]||0)));
+  QUALITE_AXES.forEach(ax=>updateAxeScore(ax.id));
   updateQualGlobalScore();
   updateEvalTabs();
   document.querySelectorAll('.eval-tab').forEach(t=>{t.classList.toggle('active',t.getAttribute('onclick')?.includes("'"+key+"'"));});
@@ -1910,23 +1906,22 @@ function rateRef(axId,critId,val){
   if(!currentEvalKey){showToast('Sélectionnez action + partenaire d\'abord');return;}
   if(!QUAL_EVALS[currentEvalKey]) QUAL_EVALS[currentEvalKey]={};
   QUAL_EVALS[currentEvalKey][critId]=val;
-  const cls=val===1?'nc':val===2?'pc':val===3?'co':'tc';
-  const k2=critId.replace('.','_');
-  for(let i=1;i<=4;i++){const d=document.getElementById(`rd-${k2}-${i}`);if(d){d.className='ref-dot';if(i<=val)d.classList.add(cls);}}
+  paintStars(critId,val);
   updateAxeScore(axId); updateQualGlobalScore();
 }
 function updateAxeScore(axId){
   const ax=QUALITE_AXES.find(a=>a.id===axId); if(!ax) return;
   const ratings=QUAL_EVALS[currentEvalKey]||{};
   const vals=ax.criteria.map(c=>ratings[c.id]).filter(v=>v!==undefined);
-  if(!vals.length) return;
   const el=document.getElementById('sc-'+axId);
-  if(el) el.textContent=Math.round(vals.reduce((s,v)=>s+v,0)/vals.length/4*100)+'%';
+  if(!el) return;
+  if(!vals.length){ el.textContent='—'; return; }
+  el.textContent=Math.round(vals.reduce((s,v)=>s+v,0)/vals.length/5*100)+'%';
 }
 function updateQualGlobalScore(){
   const all=Object.values(QUAL_EVALS[currentEvalKey]||{});
   if(!all.length){document.getElementById('qualGlobalScore').textContent='—';return;}
-  document.getElementById('qualGlobalScore').textContent=Math.round(all.reduce((s,v)=>s+v,0)/all.length/4*100)+'%';
+  document.getElementById('qualGlobalScore').textContent=Math.round(all.reduce((s,v)=>s+v,0)/all.length/5*100)+'%';
 }
 function saveQualite(){
   if(SCRIPT_URL) gsPost('Qualité',{horodatage:new Date().toLocaleString('fr-FR'),key:currentEvalKey,scores:JSON.stringify(QUAL_EVALS[currentEvalKey]||{})});
