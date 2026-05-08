@@ -16,6 +16,30 @@ import { fetchCitizenSurvey } from "@/lib/citizen-survey.functions";
 import { QPVSelector } from "@/components/dashboard/QPVSelector";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard, GraduationCap, HeartPulse, Briefcase, Leaf, ShieldCheck, Users,
+  type LucideIcon,
+} from "lucide-react";
+
+const TAB_ICONS: Record<string, LucideIcon> = {
+  synthese: LayoutDashboard,
+  emancipation: GraduationCap,
+  sante: HeartPulse,
+  emploi: Briefcase,
+  transition: Leaf,
+  tranquillite: ShieldCheck,
+  citoyen: Users,
+};
+
+const TAB_HINTS: Record<string, string> = {
+  synthese: "Vue d'ensemble",
+  emancipation: "Éducation · Culture",
+  sante: "Soins · Vieillissement",
+  emploi: "Insertion · Formation",
+  transition: "Énergie · Mobilité",
+  tranquillite: "Sécurité · Médiation",
+  citoyen: "Voix des habitants",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -139,35 +163,83 @@ function Tabs({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
     { key: "citoyen", label: "Participation citoyenne" },
   ];
   return (
-    <nav className="flex flex-wrap gap-2 rounded-2xl border border-border bg-card/60 p-1.5 shadow-sm backdrop-blur">
+    <nav
+      role="tablist"
+      aria-label="Sections du diagnostic"
+      className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-gradient-to-br from-card to-card/40 p-2 shadow-sm backdrop-blur sm:grid-cols-4 lg:grid-cols-7"
+    >
       {items.map((it) => {
         const active = tab === it.key;
+        const Icon = TAB_ICONS[it.key] ?? LayoutDashboard;
+        const color = it.color ?? "var(--primary)";
         return (
           <button
             key={it.key}
+            role="tab"
+            aria-selected={active}
             onClick={() => onChange(it.key)}
             className={cn(
-              "group relative inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all",
+              "group relative flex flex-col items-start gap-1.5 overflow-hidden rounded-xl border px-3 py-2.5 text-left transition-all duration-200",
               active
-                ? "text-white shadow-md"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                ? "border-transparent text-white shadow-lg ring-1 ring-black/5 scale-[1.02]"
+                : "border-border/60 bg-card/60 text-foreground hover:-translate-y-0.5 hover:border-border hover:shadow-md",
             )}
-            style={active ? { background: it.color ?? "var(--primary)" } : undefined}
+            style={
+              active
+                ? {
+                    background: `linear-gradient(135deg, ${color} 0%, color-mix(in oklab, ${color} 70%, black) 100%)`,
+                  }
+                : undefined
+            }
           >
+            {/* accent bar */}
             <span
-              className="h-2 w-2 rounded-full transition-all"
-              style={{
-                background: active ? "rgba(255,255,255,0.95)" : (it.color ?? "var(--primary)"),
-                boxShadow: active ? "0 0 0 3px rgba(255,255,255,0.25)" : "none",
-              }}
+              aria-hidden
+              className={cn(
+                "absolute inset-x-0 top-0 h-[3px] transition-opacity",
+                active ? "opacity-0" : "opacity-80",
+              )}
+              style={{ background: color }}
             />
-            {it.label}
+            <span className="flex w-full items-center justify-between gap-2">
+              <span
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
+                  active ? "bg-white/20 text-white" : "text-foreground",
+                )}
+                style={
+                  active
+                    ? undefined
+                    : { background: `color-mix(in oklab, ${color} 14%, transparent)`, color }
+                }
+              >
+                <Icon className="h-4 w-4" strokeWidth={2.25} />
+              </span>
+              <span
+                className={cn(
+                  "text-[10px] font-bold uppercase tracking-widest tabular-nums",
+                  active ? "text-white/80" : "text-muted-foreground",
+                )}
+              >
+                {String(items.findIndex((x) => x.key === it.key) + 1).padStart(2, "0")}
+              </span>
+            </span>
+            <span className="flex flex-col leading-tight">
+              <span className="text-sm font-semibold">{it.label}</span>
+              <span
+                className={cn(
+                  "text-[11px] font-medium",
+                  active ? "text-white/85" : "text-muted-foreground",
+                )}
+              >
+                {TAB_HINTS[it.key] ?? ""}
+              </span>
+            </span>
           </button>
         );
       })}
     </nav>
   );
-
 }
 
 /* ======================== SYNTHÈSE ======================== */
