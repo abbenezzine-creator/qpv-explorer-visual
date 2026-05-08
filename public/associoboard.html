@@ -1923,7 +1923,7 @@ function renderQualite(){
     </div>`).join('');
   updateQualGlobalScore();
   popSel('qualAssocSel',ASSOCS,'id','nom','— Association —');
-  popSel('qualPartnerSel',PARTNERS,'id','nom','— Partenaire —');
+  popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
 }
 function paintStars(critId,val){
   const row=document.getElementById('rs-'+critId); if(!row) return;
@@ -2746,7 +2746,7 @@ function updateAllSelects(){
   const fa=document.getElementById('fa-assoc');
   if(fa) fa.innerHTML='<option value="">— Choisir —</option>'+ASSOCS.map(a=>`<option value="${a.id}">${a.nom}</option>`).join('');
   popSel('qualAssocSel',ASSOCS,'id','nom','— Association —');
-  popSel('qualPartnerSel',PARTNERS,'id','nom','— Partenaire —');
+  popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
   popSel('qActionSel',filteredActions(),'id','titre','— Sélectionner —');
 }
 function switchAssociation(val){currentAssocId=val?parseInt(val):null;const a=ASSOCS.find(x=>x.id===currentAssocId);document.getElementById('dashAssocName').textContent=a?a.nom:'Toutes les associations';renderDashboard();renderCalendar();renderAllActions();updateBadge();}
