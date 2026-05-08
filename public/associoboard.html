@@ -4243,6 +4243,39 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     if(typeof QUAL_EVALS==='undefined') return false;
     return Object.keys(QUAL_EVALS).some(k=>k.startsWith(actionId+'_'));
   }
+  function evalAvgPercent(actionId){
+    try{
+      if(typeof QUALITE_AXES==='undefined' || typeof _qualScore!=='function') return 0;
+      const inds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
+      const vals = inds.map(id=>_qualScore(actionId, id));
+      if(!vals.length) return 0;
+      return Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
+    }catch(e){ return 0; }
+  }
+  function hasBenefSurvey(a){ return !!(a && a.surveyResult && Object.keys(a.surveyResult).length); }
+  window.renderEvalBlock = function(a){
+    const done = evalStatus(a.id);
+    if(done){
+      const pct = evalAvgPercent(a.id);
+      return `<div class="eval-block is-done">
+        <div class="eval-icn"><svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 6 11 12 3"/></svg></div>
+        <div class="eval-txt"><div class="eval-lbl">Évaluation partenaire</div><div class="eval-val">Référentiel évalué · ${pct}%</div><div class="eval-bar"><span style="width:${pct}%"></span></div></div>
+      </div>`;
+    }
+    return `<div class="eval-block is-pending">
+      <div class="eval-icn"><svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3.5l2 1.2"/></svg></div>
+      <div class="eval-txt"><div class="eval-lbl">Évaluation partenaire</div><div class="eval-val">En attente d'évaluation</div></div>
+    </div>`;
+  };
+  window.renderBenefBtn = function(a){
+    const urgent = !hasBenefSurvey(a);
+    const lbl = urgent ? 'Évaluer les bénéficiaires' : 'Mettre à jour l\'évaluation bénéficiaires';
+    return `<button type="button" class="btn-benef${urgent?' is-urgent':''}" onclick="event.stopPropagation();evalBeneficiaire(${a.id},event)">
+      <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="5" r="2.3"/><path d="M2.5 12.5c0-2.3 2-4 4.5-4s4.5 1.7 4.5 4"/></svg>
+      <span>${lbl}</span>
+    </button>`;
+  };
+
 
   function renderActionCard(a){
     const bc = (typeof TCOL!=='undefined' && TCOL[a.type]) || 'purple';
