@@ -3499,7 +3499,7 @@ function renderCitizenEval() {
 }
 
 function aggregateCitizenData() {
-  const keys = ['Argonne','Source','Dauphine','Fleury','SJR','SJB'];
+  const keys = ['Argonne','Source','Dauphine'];
   const total = keys.reduce((s,k) => s + CITIZEN_2023[k].n, 0);
   const wavg = (field) => Math.round(keys.reduce((s,k) => s + CITIZEN_2023[k][field] * CITIZEN_2023[k].n, 0) / total);
   const avgSat = (ind) => {
