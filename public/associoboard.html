@@ -1827,7 +1827,11 @@ function openAddActionModal(){
   // Reset
   resetMck('fa-quartiers-grid'); resetMck('fa-ages-grid');
   document.getElementById('fa-fonctions-list').innerHTML='<div class="dyn-row"><input class="form-inp" placeholder="ex : Éducateur spécialisé"/><button type="button" class="btn btn-ghost" onclick="removeDynRow(this)">✕</button></div>';
-  document.getElementById('budgetRows').innerHTML='<tr><td><input placeholder="Financeur"/></td><td><input placeholder="Type"/></td><td><input type="number" placeholder="0" oninput="updateBudgetTotal()"/></td><td><button type="button" class="btn btn-ghost btn-sm" onclick="removeBudgetRow(this)">✕</button></td></tr>';
+  const yr=currentYear||new Date().getFullYear();
+  document.getElementById('budgetRows').innerHTML=`<tr><td><input type="number" min="2000" max="2099" value="${yr}" class="bg-year" oninput="updateBudgetTotal()"/></td><td><input placeholder="Financeur"/></td><td><input placeholder="Type"/></td><td><input type="number" placeholder="0" oninput="updateBudgetTotal()"/></td><td><button type="button" class="btn btn-ghost btn-sm" onclick="removeBudgetRow(this)">✕</button></td></tr>`;
+  // Reset lieux list
+  document.getElementById('fa-lieux-list').innerHTML='<div class="dyn-row"><input class="form-inp" placeholder="Salle, adresse complète…"/><button type="button" class="btn btn-ghost btn-sm map-btn" title="Voir sur la carte" onclick="openLieuMap(this)"><svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3l4-1.5 4 1.5 4-1.5v9l-4 1.5-4-1.5L1 12z"/><path d="M5 1.5v10M9 3v10"/></svg>Carte</button><button type="button" class="btn btn-ghost" onclick="removeDynRow(this)">✕</button></div>';
+  document.querySelectorAll('#fa-lieux-list .dyn-row input').forEach(i=>i.addEventListener('input',syncLieuPrincipal));
   updateBudgetTotal();
   pendingFile={data:null,type:null,name:null};
   document.getElementById('fa-img-prev').style.display='none';
