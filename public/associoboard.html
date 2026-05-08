@@ -1498,9 +1498,18 @@ function renderDashboard(){
 // ========== QUALITY PROGRESS IN DASHBOARD — scoped by user / association ==========
 // Deterministic pseudo-score per (actionId, indicatorId) so the demo data feels stable.
 function _qualScore(actionId, indId){
-  const s = String(actionId)+'|'+String(indId);
-  let h=0; for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; }
-  return 55 + (h % 41); // 55..95
+  // Real partner evaluations: average of all evaluators who rated this indicator (1-5 → 0-100)
+  if (typeof QUAL_EVALS !== 'undefined') {
+    const prefix = String(actionId)+'_';
+    const vals = [];
+    Object.keys(QUAL_EVALS).forEach(k=>{
+      if(!k.startsWith(prefix)) return;
+      const r = QUAL_EVALS[k] && QUAL_EVALS[k][indId];
+      if(typeof r === 'number' && r>0) vals.push(r);
+    });
+    if(vals.length) return Math.round(vals.reduce((s,v)=>s+v,0)/vals.length/5*100);
+  }
+  return null; // not evaluated yet
 }
 function _scopedActionsForQual(){
   const isAdmin = currentUser?.role==='superadmin';
