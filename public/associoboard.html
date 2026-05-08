@@ -4409,6 +4409,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     try{ if(typeof renderDocuments==='function') renderDocuments(); }catch(e){}
   };
 
+  // Returns names of associations that have at least one action
+  window.getAssociationsWithActions = function(){
+    try {
+      if(typeof ASSOCS==='undefined' || typeof ACTIONS==='undefined') return [];
+      return ASSOCS.filter(a => ACTIONS.some(x=>x.assocId===a.id)).map(a=>a.nom);
+    } catch(e){ return []; }
+  };
+
   // Merge "Utilité sociale" content into "Résultats & Impacts"
   const _origNav = window.nav;
   window.nav = function(id){
