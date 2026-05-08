@@ -708,25 +708,41 @@ function CitoyenPane() {
 
           <Section title="Cadre de vie & sécurité" subtitle="Sentiment de sécurité, exposition à la délinquance">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <Panel title="Sentiment de sécurité" hint="par quartier · % de réponses">
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart
-                    data={data.securite.map((s) => ({
-                      q: s.quartier,
-                      Oui: pct(s.oui, s.total),
-                      Non: pct(s.non, s.total),
-                    }))}
-                    margin={{ left: 0, right: 8, top: 8 }}
-                  >
-                    <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="q" stroke="var(--muted-foreground)" tick={{ fontSize: 9 }} angle={-15} textAnchor="end" height={60} interval={0} />
-                    <YAxis stroke="var(--muted-foreground)" unit="%" tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => `${v}%`} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="Oui" stackId="a" fill="var(--success)" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="Non" stackId="a" fill="var(--destructive)" />
-                  </BarChart>
-                </ResponsiveContainer>
+              <Panel title="Sentiment de sécurité" hint="% d'habitants se sentant en sécurité, par quartier">
+                <div className="flex flex-col gap-2.5 py-2">
+                  {[...data.securite]
+                    .map((s) => ({ q: s.quartier, val: pct(s.oui, s.total), n: s.total }))
+                    .sort((a, b) => b.val - a.val)
+                    .map((row) => {
+                      const color = row.val >= 70 ? "var(--success)" : row.val >= 50 ? "var(--axis-emploi)" : row.val >= 35 ? "var(--hot)" : "var(--destructive)";
+                      return (
+                        <div key={row.q} className="group">
+                          <div className="mb-1 flex items-center justify-between text-xs">
+                            <span className="font-medium text-foreground">{row.q}</span>
+                            <span className="tabular-nums text-muted-foreground">
+                              <span className="text-sm font-semibold text-foreground">{row.val}%</span>
+                              <span className="ml-1.5 opacity-60">· {row.n} rép.</span>
+                            </span>
+                          </div>
+                          <div className="relative h-3 overflow-hidden rounded-full bg-muted/60 ring-1 ring-border/40">
+                            <div
+                              className="h-full rounded-full shadow-sm transition-all duration-500"
+                              style={{
+                                width: `${row.val}%`,
+                                background: `linear-gradient(90deg, color-mix(in oklab, ${color} 70%, transparent), ${color})`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-border/50 pt-3 text-[10px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: "var(--success)" }} />≥ 70%</span>
+                    <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: "var(--axis-emploi)" }} />50–69%</span>
+                    <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: "var(--hot)" }} />35–49%</span>
+                    <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: "var(--destructive)" }} />&lt; 35%</span>
+                  </div>
+                </div>
               </Panel>
 
               <Panel title="Exposition à la délinquance (CV7)" hint="12 derniers mois">
