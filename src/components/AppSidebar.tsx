@@ -156,7 +156,7 @@ export function AppSidebar() {
   };
 
   const isSuperAdmin = user?.role === "superadmin";
-  const associationsSelector = !collapsed && isSuperAdmin ? (
+  const associationsSelector = mounted && !collapsed && isSuperAdmin ? (
     <div className="px-2 pb-2">
       <Select defaultValue="Toutes les associations" onValueChange={handleAssocChange}>
         <SelectTrigger className="h-8 text-xs">
