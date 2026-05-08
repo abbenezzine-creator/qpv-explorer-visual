@@ -85,8 +85,11 @@ export function AppSidebar() {
     return search?.page === it.search.page;
   };
 
-  const [user, setUserState] = useState<AbUser | null>(() => getUser());
+  const [user, setUserState] = useState<AbUser | null>(null);
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setMounted(true);
+    setUserState(getUser());
     const sync = () => setUserState(getUser());
     window.addEventListener("ab-auth-change", sync);
     window.addEventListener("storage", sync);
@@ -153,7 +156,7 @@ export function AppSidebar() {
   };
 
   const isSuperAdmin = user?.role === "superadmin";
-  const associationsSelector = !collapsed && isSuperAdmin ? (
+  const associationsSelector = mounted && !collapsed && isSuperAdmin ? (
     <div className="px-2 pb-2">
       <Select defaultValue="Toutes les associations" onValueChange={handleAssocChange}>
         <SelectTrigger className="h-8 text-xs">
