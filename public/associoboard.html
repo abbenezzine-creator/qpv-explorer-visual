@@ -4747,49 +4747,23 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       if(!p){
         p = document.createElement('div');
         p.className = 'page'; p.id = 'page-questionnaire-thematique';
-        const THEMES = ['Education / Parentalité','Emploi insertion','Santé','Cohésion sociale','Citoyenneté','Accès aux droits','Transition écologique','Tranquillité publique'];
         p.innerHTML = `
           <div class="page-hdr">
             <div>
               <div class="page-title">Questionnaire thématique</div>
-              <div class="page-sub">Administration — Construire et diffuser des questionnaires par thématique du Contrat de Ville</div>
-            </div>
-            <button class="btn btn-primary" onclick="alert('Création de questionnaire — à venir')"><span style="margin-right:6px">＋</span>Nouveau questionnaire</button>
-          </div>
-          <div class="card" style="margin-bottom:18px">
-            <div class="card-hdr"><div class="card-title">Filtrer par thématique</div></div>
-            <div class="card-body">
-              <div style="display:flex;flex-wrap:wrap;gap:8px">
-                <button class="badge badge-purple" style="cursor:pointer;border:none;font-family:inherit">Toutes</button>
-                ${THEMES.map(t=>`<button class="badge badge-gray" style="cursor:pointer;border:none;font-family:inherit">${t}</button>`).join('')}
-              </div>
+              <div class="page-sub">Tronc commun + questions par thématique d'action — réponses sauvegardées et analysées</div>
             </div>
           </div>
-          <div class="stats-grid" style="margin-bottom:18px">
-            <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Questionnaires actifs</div><div class="stat-val" style="color:var(--primary)">${THEMES.length}</div></div>
-            <div class="stat-card"><div class="stat-blob" style="background:var(--success)"></div><div class="stat-lbl">Réponses collectées</div><div class="stat-val" style="color:var(--success)">142</div></div>
-            <div class="stat-card"><div class="stat-blob" style="background:var(--info)"></div><div class="stat-lbl">Thématiques couvertes</div><div class="stat-val" style="color:var(--info)">${THEMES.length}</div></div>
-            <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Taux de complétion</div><div class="stat-val" style="color:oklch(0.6 0.17 60)">68%</div></div>
+          <div class="phase-tabs" style="margin-bottom:18px">
+            <button class="phase-tab active" data-qt="fill" onclick="qtTab('fill')">Remplir un questionnaire</button>
+            <button class="phase-tab" data-qt="manage" onclick="qtTab('manage')">Gérer les thématiques</button>
+            <button class="phase-tab" data-qt="results" onclick="qtTab('results')">Résultats & analyses</button>
           </div>
-          <div class="card">
-            <div class="card-hdr"><div class="card-title">Questionnaires par thématique</div></div>
-            <div class="card-body">
-              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
-                ${THEMES.map(t=>`
-                  <div class="action-card" style="cursor:pointer">
-                    <div class="ac-bar" style="background:linear-gradient(135deg,var(--primary),oklch(0.62 0.22 340))"></div>
-                    <div class="ac-ref"><span>${t.toUpperCase()}</span><span class="badge badge-purple">Actif</span></div>
-                    <div class="ac-title">Questionnaire ${t}</div>
-                    <div style="font-size:12px;color:var(--muted-fore);margin:6px 0 10px">8 à 12 questions adaptées au contexte ${t.toLowerCase()}.</div>
-                    <div class="ac-footer">
-                      <span>${Math.floor(Math.random()*30+5)} réponses</span>
-                      <span><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();alert('Édition à venir')">Modifier</button></span>
-                    </div>
-                  </div>`).join('')}
-              </div>
-            </div>
-          </div>`;
+          <div id="qtPaneFill"></div>
+          <div id="qtPaneManage" style="display:none"></div>
+          <div id="qtPaneResults" style="display:none"></div>`;
         document.getElementById('mainArea')?.appendChild(p) || document.body.appendChild(p);
+        if(typeof initThematicQuestionnaire==='function') initThematicQuestionnaire();
       }
     }
     const r = _origNav ? _origNav.apply(this, [id]) : undefined;
@@ -4831,6 +4805,310 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       applyHash();
     }, 100);
   });
+})();
+</script>
+
+<script>
+/* ============ Questionnaire Thématique — Lovable Cloud ============ */
+(function(){
+  const SUPA_URL = 'https://kokimozvfaksyhmlhgfv.supabase.co';
+  const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtva2ltb3p2ZmFrc3lobWxoZ2Z2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTkzODAsImV4cCI6MjA5MzgzNTM4MH0.20lZMEDazB26p8Vdz13yklnAJLOcrFsR1HMOMZrfTnU';
+  const H = { 'apikey': SUPA_KEY, 'Authorization':'Bearer '+SUPA_KEY, 'Content-Type':'application/json' };
+
+  const QPV = ["L'Argonne","Les Blossières","Dauphine","La Source"];
+  const AGES = ["Moins de 18 ans","18-25 ans","26-40 ans","41-60 ans","Plus de 60 ans"];
+  const GENRES = ["Fille / Femme","Garçon / Homme","Autre / Ne se prononce pas"];
+  const BAILLEURS = ["Résidences de l'Orléanais","3F","France Loire","Valloire Habitat","Logem Loiret","Pierres et Lumières","Autre"];
+
+  let THEMES = [];
+  let RESPONSES = [];
+  let currentThemeId = null;
+
+  async function api(path, opts){
+    const res = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: H, ...opts });
+    if(!res.ok){ console.error('API', res.status, await res.text()); return null; }
+    const txt = await res.text();
+    return txt ? JSON.parse(txt) : null;
+  }
+
+  async function loadThemes(){
+    THEMES = (await api('thematic_themes?select=*&order=created_at.asc')) || [];
+  }
+  async function loadResponses(){
+    RESPONSES = (await api('thematic_responses?select=*&order=created_at.desc&limit=2000')) || [];
+  }
+
+  window.qtTab = function(tab){
+    document.querySelectorAll('[data-qt]').forEach(b=>b.classList.toggle('active', b.dataset.qt===tab));
+    ['fill','manage','results'].forEach(t=>{
+      const el = document.getElementById('qtPane'+t.charAt(0).toUpperCase()+t.slice(1));
+      if(el) el.style.display = (t===tab)?'block':'none';
+    });
+    if(tab==='fill') renderFill();
+    if(tab==='manage') renderManage();
+    if(tab==='results') renderResults();
+  };
+
+  window.initThematicQuestionnaire = async function(){
+    await loadThemes();
+    qtTab('fill');
+  };
+
+  /* -------- FILL -------- */
+  function commonForm(){
+    return `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hdr"><div class="card-title">Tronc commun</div></div>
+        <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
+          <div><label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Tranche d'âge</label>
+            <select class="form-sel" id="qcAge"><option value="">—</option>${AGES.map(a=>`<option>${a}</option>`).join('')}</select></div>
+          <div><label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Genre</label>
+            <select class="form-sel" id="qcGenre"><option value="">—</option>${GENRES.map(a=>`<option>${a}</option>`).join('')}</select></div>
+          <div><label style="font-size:12px;font-weight:700;color:var(--muted-fore)">QPV de résidence</label>
+            <select class="form-sel" id="qcQpv"><option value="">—</option>${QPV.map(a=>`<option>${a}</option>`).join('')}</select></div>
+          <div><label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Vous habitez un logement social ?</label>
+            <select class="form-sel" id="qcSocial" onchange="document.getElementById('qcBail').style.display=this.value==='Oui'?'block':'none'">
+              <option value="">—</option><option>Oui</option><option>Non</option></select></div>
+          <div id="qcBail" style="display:none"><label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Bailleur</label>
+            <select class="form-sel" id="qcBailleur"><option value="">—</option>${BAILLEURS.map(a=>`<option>${a}</option>`).join('')}</select></div>
+        </div>
+      </div>`;
+  }
+
+  function renderQuestion(q, prefix){
+    const id = `q_${prefix}_${q.id}`;
+    if(q.type==='text') return `<div class="q-item"><div class="q-question">${q.label}</div><textarea class="form-ta" id="${id}" placeholder="Votre réponse…"></textarea></div>`;
+    if(q.type==='single') return `<div class="q-item"><div class="q-question">${q.label}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${(q.options||[]).map((o,i)=>`<label class="chk-item" style="cursor:pointer"><input type="radio" name="${id}" value="${o}" style="accent-color:var(--primary)"><span>${o}</span></label>`).join('')}</div></div>`;
+    if(q.type==='multi') return `<div class="q-item"><div class="q-question">${q.label}</div>
+      <div class="chk-grid">${(q.options||[]).map(o=>`<label class="chk-item"><input type="checkbox" name="${id}" value="${o}" style="accent-color:var(--primary)"><span>${o}</span></label>`).join('')}</div></div>`;
+    return '';
+  }
+
+  function collectAnswers(qs, prefix){
+    const out = {};
+    (qs||[]).forEach(q=>{
+      const id = `q_${prefix}_${q.id}`;
+      if(q.type==='text'){ const el=document.getElementById(id); out[q.id] = el?el.value.trim():''; }
+      else if(q.type==='single'){ const el=document.querySelector(`input[name="${id}"]:checked`); out[q.id] = el?el.value:''; }
+      else if(q.type==='multi'){ out[q.id] = Array.from(document.querySelectorAll(`input[name="${id}"]:checked`)).map(e=>e.value); }
+    });
+    return out;
+  }
+
+  function collectCommon(){
+    return {
+      age: document.getElementById('qcAge')?.value || '',
+      genre: document.getElementById('qcGenre')?.value || '',
+      qpv: document.getElementById('qcQpv')?.value || '',
+      logement_social: document.getElementById('qcSocial')?.value || '',
+      bailleur: document.getElementById('qcBailleur')?.value || ''
+    };
+  }
+
+  function renderFill(){
+    const pane = document.getElementById('qtPaneFill'); if(!pane) return;
+    if(!THEMES.length){ pane.innerHTML = `<div class="card"><div class="card-body">Aucune thématique. Créez-en une dans l'onglet « Gérer les thématiques ».</div></div>`; return; }
+    if(!currentThemeId) currentThemeId = THEMES[0].id;
+    const t = THEMES.find(x=>x.id===currentThemeId) || THEMES[0];
+    pane.innerHTML = `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hdr"><div class="card-title">Choix de la thématique</div></div>
+        <div class="card-body" style="display:flex;gap:14px;align-items:end;flex-wrap:wrap">
+          <div style="flex:1;min-width:240px">
+            <label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Action / thématique</label>
+            <select class="form-sel" id="qfTheme" onchange="window.__qtSetTheme(this.value)">
+              ${THEMES.map(x=>`<option value="${x.id}" ${x.id===t.id?'selected':''}>${x.name}</option>`).join('')}
+            </select>
+            ${t.description?`<div style="font-size:12px;color:var(--muted-fore);margin-top:6px">${t.description}</div>`:''}
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Phase</label>
+            <select class="form-sel" id="qfPhase" onchange="window.__qtRefreshFill()">
+              <option value="avant">Avant l'action</option>
+              <option value="apres">Après l'action</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      ${commonForm()}
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hdr"><div class="card-title" id="qfPhaseTtl">Questions — Avant l'action</div></div>
+        <div class="card-body" id="qfQuestions"></div>
+      </div>
+      <button class="submit-btn" onclick="window.__qtSubmit()">Envoyer la réponse</button>
+      <div id="qfStatus" style="margin-top:10px;font-size:13px"></div>`;
+    window.__qtRefreshFill();
+  }
+
+  window.__qtSetTheme = function(id){ currentThemeId = id; renderFill(); };
+  window.__qtRefreshFill = function(){
+    const t = THEMES.find(x=>x.id===currentThemeId); if(!t) return;
+    const phase = document.getElementById('qfPhase').value;
+    const qs = phase==='avant' ? t.questions_before : t.questions_after;
+    document.getElementById('qfPhaseTtl').textContent = 'Questions — '+(phase==='avant'?'Avant l\'action':'Après l\'action');
+    document.getElementById('qfQuestions').innerHTML = (qs||[]).length
+      ? qs.map(q=>renderQuestion(q,phase)).join('')
+      : `<div style="color:var(--muted-fore);font-size:13px">Aucune question ${phase==='avant'?'avant':'après'} configurée pour cette thématique.</div>`;
+  };
+
+  window.__qtSubmit = async function(){
+    const t = THEMES.find(x=>x.id===currentThemeId); if(!t) return;
+    const phase = document.getElementById('qfPhase').value;
+    const common = collectCommon();
+    if(!common.age || !common.genre || !common.qpv){
+      document.getElementById('qfStatus').innerHTML = '<span style="color:var(--danger)">Merci de compléter le tronc commun (âge, genre, QPV).</span>';
+      return;
+    }
+    const qs = phase==='avant' ? t.questions_before : t.questions_after;
+    const answers = collectAnswers(qs, phase);
+    const payload = { theme_id:t.id, theme_name:t.name, phase, common, answers };
+    const res = await fetch(SUPA_URL+'/rest/v1/thematic_responses', { method:'POST', headers:{...H,'Prefer':'return=minimal'}, body: JSON.stringify(payload) });
+    const status = document.getElementById('qfStatus');
+    if(res.ok){ status.innerHTML = '<span style="color:var(--success)">✓ Réponse enregistrée. Merci !</span>'; setTimeout(()=>renderFill(), 1200); }
+    else { status.innerHTML = '<span style="color:var(--danger)">Erreur d\'enregistrement.</span>'; }
+  };
+
+  /* -------- MANAGE -------- */
+  function renderManage(){
+    const pane = document.getElementById('qtPaneManage'); if(!pane) return;
+    pane.innerHTML = `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hdr"><div class="card-title">Nouvelle thématique</div></div>
+        <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+          <div><label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Nom</label><input class="form-inp" id="qmName" placeholder="Ex : Santé"/></div>
+          <div style="grid-column:1/-1"><label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Description</label><input class="form-inp" id="qmDesc" placeholder="Objectif de la thématique"/></div>
+          <div style="grid-column:1/-1">
+            <label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Questions AVANT l'action (JSON)</label>
+            <textarea class="form-ta" id="qmBefore" style="min-height:110px;font-family:'JetBrains Mono',monospace;font-size:12px" placeholder='[{"id":"q1","label":"...","type":"single","options":["A","B"]}]'>[]</textarea>
+          </div>
+          <div style="grid-column:1/-1">
+            <label style="font-size:12px;font-weight:700;color:var(--muted-fore)">Questions APRÈS l'action (JSON)</label>
+            <textarea class="form-ta" id="qmAfter" style="min-height:110px;font-family:'JetBrains Mono',monospace;font-size:12px" placeholder='[{"id":"q1","label":"...","type":"text"}]'>[]</textarea>
+          </div>
+          <div style="grid-column:1/-1;font-size:11px;color:var(--muted-fore)">Types: <strong>single</strong> (choix unique), <strong>multi</strong> (cases), <strong>text</strong> (libre). Chaque question : <code>id</code>, <code>label</code>, <code>type</code>, <code>options</code> (sauf text).</div>
+          <div><button class="btn btn-primary" onclick="window.__qtCreateTheme()">Créer la thématique</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">Thématiques existantes (${THEMES.length})</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+          ${THEMES.map(t=>{
+            const nb = (t.questions_before||[]).length, na = (t.questions_after||[]).length;
+            const count = RESPONSES.filter(r=>r.theme_id===t.id).length;
+            return `<div class="action-card">
+              <div class="ac-bar" style="background:linear-gradient(135deg,var(--primary),oklch(0.62 0.22 340))"></div>
+              <div class="ac-title">${t.name}</div>
+              <div style="font-size:12px;color:var(--muted-fore);margin:4px 0 8px">${t.description||''}</div>
+              <div style="font-size:12px;display:flex;justify-content:space-between"><span>${nb} avant • ${na} après</span><span>${count} réponses</span></div>
+              <div style="margin-top:8px;display:flex;gap:6px"><button class="btn btn-outline btn-sm" onclick="window.__qtDeleteTheme('${t.id}')">Supprimer</button></div>
+            </div>`;
+          }).join('') || '<div style="color:var(--muted-fore);font-size:13px">Aucune thématique.</div>'}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  window.__qtCreateTheme = async function(){
+    const name = document.getElementById('qmName').value.trim();
+    if(!name) return alert('Nom requis');
+    let qb=[], qa=[];
+    try{ qb = JSON.parse(document.getElementById('qmBefore').value||'[]'); }catch(e){ return alert('JSON Avant invalide'); }
+    try{ qa = JSON.parse(document.getElementById('qmAfter').value||'[]'); }catch(e){ return alert('JSON Après invalide'); }
+    const r = await fetch(SUPA_URL+'/rest/v1/thematic_themes', { method:'POST', headers:{...H,'Prefer':'return=minimal'}, body: JSON.stringify({ name, description: document.getElementById('qmDesc').value.trim(), questions_before: qb, questions_after: qa }) });
+    if(r.ok){ await loadThemes(); renderManage(); } else alert('Erreur : '+await r.text());
+  };
+  window.__qtDeleteTheme = async function(id){
+    if(!confirm('Supprimer cette thématique et toutes ses réponses ?')) return;
+    const r = await fetch(SUPA_URL+'/rest/v1/thematic_themes?id=eq.'+id, { method:'DELETE', headers: H });
+    if(r.ok){ await loadThemes(); await loadResponses(); renderManage(); }
+  };
+
+  /* -------- RESULTS -------- */
+  async function renderResults(){
+    const pane = document.getElementById('qtPaneResults'); if(!pane) return;
+    pane.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted-fore)">Chargement…</div>';
+    await loadResponses();
+    if(!THEMES.length){ pane.innerHTML = '<div class="card"><div class="card-body">Aucune thématique.</div></div>'; return; }
+
+    const total = RESPONSES.length;
+    const totalAvant = RESPONSES.filter(r=>r.phase==='avant').length;
+    const totalApres = RESPONSES.filter(r=>r.phase==='apres').length;
+
+    pane.innerHTML = `
+      <div class="stats-grid" style="margin-bottom:18px">
+        <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Réponses totales</div><div class="stat-val" style="color:var(--primary)">${total}</div></div>
+        <div class="stat-card"><div class="stat-blob" style="background:var(--info)"></div><div class="stat-lbl">Avant action</div><div class="stat-val" style="color:var(--info)">${totalAvant}</div></div>
+        <div class="stat-card"><div class="stat-blob" style="background:var(--success)"></div><div class="stat-lbl">Après action</div><div class="stat-val" style="color:var(--success)">${totalApres}</div></div>
+        <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Thématiques</div><div class="stat-val" style="color:oklch(0.6 0.17 60)">${THEMES.length}</div></div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hdr"><div class="card-title">Filtrer par thématique</div></div>
+        <div class="card-body"><select class="form-sel" id="qrTheme" onchange="window.__qtRenderResultsTheme()" style="max-width:360px">
+          ${THEMES.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}
+        </select></div>
+      </div>
+      <div id="qrThemeBlock"></div>`;
+    window.__qtRenderResultsTheme();
+  }
+
+  window.__qtRenderResultsTheme = function(){
+    const id = document.getElementById('qrTheme').value;
+    const t = THEMES.find(x=>x.id===id); if(!t) return;
+    const all = RESPONSES.filter(r=>r.theme_id===id);
+    const avant = all.filter(r=>r.phase==='avant');
+    const apres = all.filter(r=>r.phase==='apres');
+
+    const block = document.getElementById('qrThemeBlock');
+    block.innerHTML = `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hdr"><div class="card-title">Profil des répondants — ${t.name} (${all.length})</div></div>
+        <div class="card-body">${profileHtml(all)}</div>
+      </div>
+      ${phaseResultsCard('Avant l\'action', t.questions_before, avant)}
+      ${phaseResultsCard('Après l\'action', t.questions_after, apres)}`;
+  };
+
+  function profileHtml(rows){
+    if(!rows.length) return '<div style="color:var(--muted-fore)">Aucune réponse.</div>';
+    function dist(field){ const m={}; rows.forEach(r=>{ const v=r.common?.[field]||'—'; m[v]=(m[v]||0)+1; }); return m; }
+    function html(title, m){
+      const tot = Object.values(m).reduce((a,b)=>a+b,0);
+      return `<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">${title}</div>
+        ${Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{const p=Math.round(v*100/tot);return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px"><span style="flex:1">${k}</span><div style="width:120px;height:8px;background:var(--muted);border-radius:4px;overflow:hidden"><div style="width:${p}%;height:100%;background:var(--primary)"></div></div><span style="font-family:'JetBrains Mono',monospace;font-weight:700;min-width:40px;text-align:right">${p}%</span></div>`;}).join('')}</div>`;
+    }
+    return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px">
+      ${html('Tranche d\'âge', dist('age'))}
+      ${html('Genre', dist('genre'))}
+      ${html('QPV', dist('qpv'))}
+      ${html('Logement social', dist('logement_social'))}
+      ${html('Bailleur', dist('bailleur'))}
+    </div>`;
+  }
+
+  function phaseResultsCard(title, questions, rows){
+    if(!questions || !questions.length) return '';
+    return `<div class="card" style="margin-bottom:14px">
+      <div class="card-hdr"><div class="card-title">${title} — ${rows.length} réponse${rows.length>1?'s':''}</div></div>
+      <div class="card-body">${questions.map(q=>questionResultHtml(q, rows)).join('') || '<div style="color:var(--muted-fore)">Aucune donnée.</div>'}</div>
+    </div>`;
+  }
+
+  function questionResultHtml(q, rows){
+    const vals = rows.map(r=>r.answers?.[q.id]).filter(v=>v!==undefined && v!==null && v!=='' && !(Array.isArray(v)&&!v.length));
+    if(!vals.length) return `<div style="margin-bottom:14px"><div style="font-weight:700;font-size:13px">${q.label}</div><div style="color:var(--muted-fore);font-size:12px">Aucune réponse</div></div>`;
+    if(q.type==='text'){
+      return `<div style="margin-bottom:14px"><div style="font-weight:700;font-size:13px;margin-bottom:6px">${q.label}</div>
+        ${vals.slice(0,8).map(v=>`<div style="font-size:12px;color:var(--muted-fore);background:var(--muted);border-radius:8px;padding:6px 10px;margin:4px 0">« ${String(v).replace(/</g,'&lt;')} »</div>`).join('')}
+        ${vals.length>8?`<div style="font-size:11px;color:var(--muted-fore)">+${vals.length-8} autres</div>`:''}</div>`;
+    }
+    const counts = {};
+    vals.forEach(v=>{ const arr = Array.isArray(v)?v:[v]; arr.forEach(x=>{ counts[x]=(counts[x]||0)+1; }); });
+    const tot = q.type==='multi' ? vals.length : Object.values(counts).reduce((a,b)=>a+b,0);
+    return `<div style="margin-bottom:14px"><div style="font-weight:700;font-size:13px;margin-bottom:6px">${q.label}${q.type==='multi'?' <span style="color:var(--muted-fore);font-weight:400">(plusieurs choix possibles)</span>':''}</div>
+      ${Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{const p=Math.round(v*100/tot);return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px"><span style="flex:1">${k}</span><div style="width:160px;height:8px;background:var(--muted);border-radius:4px;overflow:hidden"><div style="width:${p}%;height:100%;background:linear-gradient(90deg,var(--primary),oklch(0.62 0.22 340))"></div></div><span style="font-family:'JetBrains Mono',monospace;font-weight:700;min-width:60px;text-align:right">${p}% (${v})</span></div>`;}).join('')}</div>`;
+  }
 })();
 </script>
 </body>
