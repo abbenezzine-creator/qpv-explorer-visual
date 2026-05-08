@@ -1293,7 +1293,7 @@ function setupUserCtx(){
 }
 
 // ========== NAV ==========
-const PT={dashboard:'Tableau de Bord',agenda:'Agenda des Actions',qualite:'Référentiel Qualité',guide:'Guide du Référentiel',questionnaire:'Questionnaire Bénéficiaires',utilite:'Utilité Sociale',resultats:'Résultats & Impacts',documents:'Documents',parametres:'Paramètres',diagnostic:'Diagnostic Territorial'};
+const PT={dashboard:'Tableau de Bord',agenda:'Agenda des Actions',qualite:'Référentiel Qualité',guide:'Guide du Référentiel',questionnaire:'Questionnaire Bénéficiaires','questionnaire-thematique':'Questionnaire thématique',utilite:'Utilité Sociale',resultats:'Résultats & Impacts',documents:'Documents',parametres:'Paramètres',diagnostic:'Diagnostic Territorial'};
 function nav(id){
   if(id==='parametres'&&currentUser?.role!=='superadmin'){showToast('Réservé au Super Administrateur');return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
