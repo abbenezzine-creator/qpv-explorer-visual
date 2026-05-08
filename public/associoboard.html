@@ -1565,6 +1565,12 @@ function renderActionsList(cid,actions,limit){
         ${(a.ages||[]).map(ag=>`<span class="badge badge-blue">${ag}</span>`).join('')}
       </div>
       ${surveyPill}
+      ${(() => {
+        const inds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
+        const vals = inds.map(id => (typeof _qualScore==='function' ? _qualScore(a.id,id) : 75));
+        const avg = Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
+        return `<div class="result-pill" style="background:oklch(0.96 0.04 285);color:var(--primary);border-color:oklch(0.85 0.08 285)"><svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>Moyenne qualité · ${avg}%</div>`;
+      })()}
       <div class="ac-footer">
         <span>${a.date.split('-').reverse().join('/')} · ${a.heure}</span>
         <span>${a.nb} participants · ${getBudgetTotal(a)} €</span>
