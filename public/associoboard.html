@@ -4359,16 +4359,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
         <div class="ac-det-row"><label>Lieu</label><input type="text" value="${a.lieu||''}" onchange="updActionField(${a.id},'lieu',this.value)"></div>
         <div class="ac-det-row"><label>Participants</label><input type="number" value="${a.nb||0}" onchange="updActionField(${a.id},'nb',+this.value)"></div>
         <div class="ac-det-row"><label>Description</label><textarea rows="2" onchange="updActionField(${a.id},'desc',this.value)">${(a.desc||'').replace(/</g,'&lt;')}</textarea></div>
-        <div class="ac-det-actions">
-          <button class="btn btn-outline btn-sm" onclick="evalReferentiel(${a.id},event)">
-            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 1l1.4 3 3.1.5-2.3 2.2.6 3.1L6 8.4 3.2 9.8l.6-3.1L1.5 4.5 4.6 4z"/></svg>
-            Évaluation référentiel
-          </button>
-          <button class="btn btn-primary btn-sm" onclick="evalBeneficiaire(${a.id},event)">
-            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="4" r="2"/><path d="M2 11c0-2 2-3.5 4-3.5S10 9 10 11"/></svg>
-            Évaluation bénéficiaire
-          </button>
-        </div>
       </div>
     </div>`;
   }
