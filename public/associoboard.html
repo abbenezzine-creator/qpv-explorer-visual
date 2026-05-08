@@ -1942,9 +1942,25 @@ function onQualAssocChange(){
 function onQualActionChange(){updateEvalTabs();}
 function getEvalKey(){
   const aid=document.getElementById('qualActionSel').value;
-  const pid=document.getElementById('qualPartnerSel').value;
-  if(!aid||!pid) return null;
+  const pid=document.getElementById('qualPartnerSel').value || 'anon';
+  if(!aid) return null;
   return `${aid}_${pid}`;
+}
+function openActionQualite(actionId){
+  try { nav('qualite'); } catch(e){}
+  setTimeout(()=>{
+    const a = ACTIONS.find(x=>x.id===actionId); if(!a) return;
+    const sa = document.getElementById('qualAssocSel');
+    const sac = document.getElementById('qualActionSel');
+    if(sa){ sa.value = String(a.assocId); onQualAssocChange(); }
+    if(sac){ sac.value = String(a.id); onQualActionChange(); }
+    // default to anonymous evaluator
+    const sp = document.getElementById('qualPartnerSel'); if(sp) sp.value='';
+    const key = `${a.id}_anon`;
+    if(!QUAL_EVALS[key]) QUAL_EVALS[key]={};
+    currentEvalKey = key;
+    loadEvalForKey(key);
+  }, 80);
 }
 function updateEvalTabs(){
   const actionId=document.getElementById('qualActionSel').value;
