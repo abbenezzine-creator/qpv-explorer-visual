@@ -611,7 +611,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualAssocSel" onchange="onQualAssocChange()"><option value="">— Association —</option></select>
         <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualActionSel" onchange="onQualActionChange()"><option value="">— Action —</option></select>
         <span style="font-size:12px;color:var(--muted-fore);margin-left:auto">Évaluateur :</span>
-        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualPartnerSel" onchange="loadEvalForEvaluator()"><option value="">— Partenaire —</option></select>
+        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualPartnerSel" onchange="loadEvalForEvaluator()"><option value="">Anonyme (par défaut)</option></select>
         <button class="btn btn-outline btn-sm" onclick="addEvaluator()">+ Nouvel évaluateur</button>
       </div>
       <div class="eval-tabs" id="evalTabs"></div>
@@ -1598,7 +1598,8 @@ function renderActionsList(cid,actions,limit){
     const bc=TCOL[a.type]||'purple';
     const sr=a.surveyResult;
     const surveyPill=sr?`<div class="result-pill"><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="1 6 4 9 11 3"/></svg>Obj. ${Math.round((sr.obj||3)/5*100)}% · Sat. ${Math.round((sr.qac||8)/10*100)}%</div>`:'';
-    return `<div class="action-card" onclick="openActionDetail(${a.id})">
+    return `<div class="action-card" style="position:relative" onclick="openActionQualite(${a.id})">
+      <button type="button" class="btn btn-ghost btn-sm" style="position:absolute;top:8px;right:8px;font-size:10px;padding:3px 7px;z-index:2" onclick="event.stopPropagation();openActionDetail(${a.id})">Détail</button>
       <div class="ac-bar" style="background:${a.gradient}"></div>
       <div class="ac-ref">
         <span>${getAssocName(a.assocId).toUpperCase()}</span>
@@ -1922,7 +1923,7 @@ function renderQualite(){
     </div>`).join('');
   updateQualGlobalScore();
   popSel('qualAssocSel',ASSOCS,'id','nom','— Association —');
-  popSel('qualPartnerSel',PARTNERS,'id','nom','— Partenaire —');
+  popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
 }
 function paintStars(critId,val){
   const row=document.getElementById('rs-'+critId); if(!row) return;
@@ -1941,9 +1942,25 @@ function onQualAssocChange(){
 function onQualActionChange(){updateEvalTabs();}
 function getEvalKey(){
   const aid=document.getElementById('qualActionSel').value;
-  const pid=document.getElementById('qualPartnerSel').value;
-  if(!aid||!pid) return null;
+  const pid=document.getElementById('qualPartnerSel').value || 'anon';
+  if(!aid) return null;
   return `${aid}_${pid}`;
+}
+function openActionQualite(actionId){
+  try { nav('qualite'); } catch(e){}
+  setTimeout(()=>{
+    const a = ACTIONS.find(x=>x.id===actionId); if(!a) return;
+    const sa = document.getElementById('qualAssocSel');
+    const sac = document.getElementById('qualActionSel');
+    if(sa){ sa.value = String(a.assocId); onQualAssocChange(); }
+    if(sac){ sac.value = String(a.id); onQualActionChange(); }
+    // default to anonymous evaluator
+    const sp = document.getElementById('qualPartnerSel'); if(sp) sp.value='';
+    const key = `${a.id}_anon`;
+    if(!QUAL_EVALS[key]) QUAL_EVALS[key]={};
+    currentEvalKey = key;
+    loadEvalForKey(key);
+  }, 80);
 }
 function updateEvalTabs(){
   const actionId=document.getElementById('qualActionSel').value;
@@ -1952,8 +1969,8 @@ function updateEvalTabs(){
   const tabs=document.getElementById('evalTabs');
   if(!keys.length){tabs.innerHTML='<span style="font-size:12px;color:var(--muted-fore)">Aucune évaluation pour cette action</span>';return;}
   tabs.innerHTML=keys.map(k=>{
-    const pid=parseInt(k.split('_')[1]);
-    const pName=PARTNERS.find(p=>p.id===pid)?.nom||`Partenaire ${pid}`;
+    const pidStr=k.split('_')[1];
+    const pName = pidStr==='anon' ? 'Anonyme' : (PARTNERS.find(p=>p.id===parseInt(pidStr))?.nom || `Partenaire ${pidStr}`);
     const sc=computeEvalScore(QUAL_EVALS[k]);
     return `<button class="eval-tab${currentEvalKey===k?' active':''}" onclick="loadEvalForKey('${k}')">${pName} — ${sc}%</button>`;
   }).join('');
@@ -1988,11 +2005,16 @@ function addEvaluator(){
   showToast('Évaluateur ajouté — vous pouvez noter');
 }
 function rateRef(axId,critId,val){
-  if(!currentEvalKey){showToast('Sélectionnez action + partenaire d\'abord');return;}
+  if(!currentEvalKey){
+    // fallback: anonymous evaluator on selected action
+    const aid=document.getElementById('qualActionSel')?.value;
+    if(!aid){showToast('Sélectionnez une action');return;}
+    currentEvalKey = `${aid}_anon`;
+  }
   if(!QUAL_EVALS[currentEvalKey]) QUAL_EVALS[currentEvalKey]={};
   QUAL_EVALS[currentEvalKey][critId]=val;
   paintStars(critId,val);
-  updateAxeScore(axId); updateQualGlobalScore();
+  updateAxeScore(axId); updateQualGlobalScore(); updateEvalTabs();
 }
 function updateAxeScore(axId){
   const ax=QUALITE_AXES.find(a=>a.id===axId); if(!ax) return;
@@ -2724,7 +2746,7 @@ function updateAllSelects(){
   const fa=document.getElementById('fa-assoc');
   if(fa) fa.innerHTML='<option value="">— Choisir —</option>'+ASSOCS.map(a=>`<option value="${a.id}">${a.nom}</option>`).join('');
   popSel('qualAssocSel',ASSOCS,'id','nom','— Association —');
-  popSel('qualPartnerSel',PARTNERS,'id','nom','— Partenaire —');
+  popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
   popSel('qActionSel',filteredActions(),'id','titre','— Sélectionner —');
 }
 function switchAssociation(val){currentAssocId=val?parseInt(val):null;const a=ASSOCS.find(x=>x.id===currentAssocId);document.getElementById('dashAssocName').textContent=a?a.nom:'Toutes les associations';renderDashboard();renderCalendar();renderAllActions();updateBadge();}

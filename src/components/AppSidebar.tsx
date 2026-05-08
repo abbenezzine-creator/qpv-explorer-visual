@@ -3,7 +3,7 @@ import {
   LayoutDashboard,
   Map,
   CalendarDays,
-  Award,
+  
   BookOpen,
   ClipboardList,
   TrendingUp,
@@ -51,7 +51,6 @@ const evaluation: NavItem[] = [
   { title: "Questionnaire", to: "/app", search: { page: "questionnaire" }, icon: ClipboardList },
   { title: "Résultats & Impacts", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
   { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
-  { title: "Référentiel Qualité", to: "/app", search: { page: "qualite" }, icon: Award },
 ];
 
 const ressources: NavItem[] = [
