@@ -4503,7 +4503,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     const bc = (typeof TCOL!=='undefined' && TCOL[a.type]) || 'purple';
     const dateStr = a.date ? a.date.split('-').reverse().join('/') : '';
     return `<div class="action-card" style="position:relative" onclick="openActionQualite(${a.id})">
-      <button type="button" class="btn btn-ghost btn-sm" style="position:absolute;top:8px;right:8px;font-size:10px;padding:3px 7px;z-index:2" onclick="event.stopPropagation();openActionDetail(${a.id})">Détail</button>
       <div class="ac-bar" style="background:${a.gradient}"></div>
       <div class="ac-ref">
         <span>${getAssocName(a.assocId).toUpperCase()}</span>
@@ -4513,6 +4512,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
         ${(a.quartiers||[]).map(q=>`<span class="badge badge-gray">${q}</span>`).join('')}
         ${(a.ages||[]).map(ag=>`<span class="badge badge-blue">${ag}</span>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:6px">
+        <button type="button" class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px" onclick="event.stopPropagation();openActionDetail(${a.id})">
+          <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="4.5"/><circle cx="6" cy="6" r="1.2" fill="currentColor"/></svg>
+          Voir le détail
+        </button>
       </div>
       ${renderEvalBlock(a)}
       ${renderBenefBtn(a)}
