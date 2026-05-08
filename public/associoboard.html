@@ -1032,9 +1032,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
           </div>
         </div>
       </div>
+      <div class="form-row full">
+        <div class="form-grp">
+          <label class="form-lbl section-lbl"><span class="sec-ic" style="background:linear-gradient(135deg,oklch(0.6 0.17 240),oklch(0.55 0.18 200))"><svg viewBox="0 0 14 14" width="9" height="9" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 13s5-5 5-9a5 5 0 0 0-10 0c0 4 5 9 5 9z"/><circle cx="7" cy="4" r="1.5"/></svg></span>Lieux de l'action <button type="button" class="dyn-add" onclick="addLieuRow()"><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>Ajouter un lieu</button></label>
+          <div class="dyn-list" id="fa-lieux-list">
+            <div class="dyn-row"><input class="form-inp" placeholder="Salle, adresse complète…"/><button type="button" class="btn btn-ghost btn-sm map-btn" title="Voir sur la carte" onclick="openLieuMap(this)"><svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3l4-1.5 4 1.5 4-1.5v9l-4 1.5-4-1.5L1 12z"/><path d="M5 1.5v10M9 3v10"/></svg>Carte</button><button type="button" class="btn btn-ghost" onclick="removeDynRow(this)">✕</button></div>
+          </div>
+        </div>
+      </div>
       <div class="form-row">
-        <div class="form-grp"><label class="form-lbl">Lieu</label><input class="form-inp" id="fa-lieu" placeholder="Salle, adresse…"/></div>
         <div class="form-grp"><label class="form-lbl">Statut</label><select class="form-sel" id="fa-statut"><option>Planifié</option><option>En cours</option><option>Récurrent</option><option>Terminé</option></select></div>
+        <div class="form-grp"><label class="form-lbl">Lieu principal (raccourci)</label><input class="form-inp" id="fa-lieu" placeholder="Auto depuis le 1er lieu" readonly style="cursor:default;background:var(--muted)"/></div>
       </div>
       <div class="form-row full"><div class="form-grp"><label class="form-lbl">Description & Objectifs</label><textarea class="form-ta" id="fa-desc" placeholder="Décrivez l'action…"></textarea></div></div>
 
