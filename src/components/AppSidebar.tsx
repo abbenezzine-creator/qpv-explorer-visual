@@ -63,14 +63,7 @@ const admin: NavItem[] = [
   { title: "Paramètres", to: "/app", search: { page: "parametres" }, icon: Settings },
 ];
 
-const ASSOCIATIONS = [
-  "Toutes les associations",
-  "ACTION",
-  "PASS'EMPLOI",
-  "ASELQO",
-  "Familles de France",
-  "Maison de l'Emploi",
-];
+const ALL_LABEL = "Toutes les associations";
 
 export function AppSidebar() {
   const { state } = useSidebar();
