@@ -4254,6 +4254,33 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     .btn-benef.is-urgent:hover{background:oklch(0.55 0.24 25);border-color:oklch(0.55 0.24 25);color:#fff}
     @keyframes benefSoftPulse{0%,100%{box-shadow:0 0 0 0 color-mix(in oklab,var(--primary) 35%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in oklab,var(--primary) 0%,transparent)}}
     @keyframes benefRedBlink{0%,100%{background:oklch(0.62 0.24 25);box-shadow:0 0 0 0 oklch(0.62 0.24 25 / .6)}50%{background:oklch(0.5 0.24 25);box-shadow:0 0 0 8px oklch(0.62 0.24 25 / 0)}}
+    /* Clickable eval-block */
+    .eval-block.is-clickable{cursor:pointer;transition:all .18s;user-select:none;position:relative}
+    .eval-block.is-clickable:hover{transform:translateY(-1px);box-shadow:0 6px 20px -8px color-mix(in oklab,var(--primary) 30%,transparent)}
+    .eval-block.is-clickable:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .eval-block .eval-cta{margin-top:6px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--primary);opacity:.85}
+    .eval-block.is-pending .eval-cta{color:oklch(0.45 0.18 55)}
+    .eval-block.is-done .eval-cta{color:oklch(0.4 0.16 155)}
+    .eval-block .eval-arrow{flex-shrink:0;display:flex;align-items:center;color:var(--muted-fore);opacity:.6;transition:transform .18s,opacity .18s}
+    .eval-block.is-clickable:hover .eval-arrow{transform:translateX(3px);opacity:1}
+    /* Map button on lieu rows */
+    .map-btn{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:4px 8px;border:1px solid var(--border);background:linear-gradient(135deg,oklch(0.97 0.02 240),oklch(0.96 0.03 200));color:oklch(0.42 0.18 240);border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .map-btn:hover{background:linear-gradient(135deg,oklch(0.6 0.17 240),oklch(0.55 0.18 200));color:#fff;border-color:transparent;transform:translateY(-1px)}
+    /* Modal polish — section labels with icon chips */
+    .form-lbl.section-lbl{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--foreground);margin-bottom:2px}
+    .form-lbl.section-lbl .sec-ic{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:6px;flex-shrink:0;box-shadow:0 2px 6px -2px color-mix(in oklab,var(--primary) 40%,transparent)}
+    .form-lbl.section-lbl .dyn-add{margin-left:auto}
+    /* Year chip in budget summary */
+    .year-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;background:linear-gradient(135deg,oklch(0.97 0.03 285),oklch(0.96 0.04 240));border:1px solid color-mix(in oklab,var(--primary) 18%,transparent);font-size:11px;font-weight:600;color:var(--foreground);font-family:'JetBrains Mono',monospace}
+    .year-chip strong{color:var(--primary);font-weight:800}
+    /* Modal — refined header & section dividers */
+    #addActionModal .modal{max-width:780px}
+    #addActionModal .modal-hdr{background:linear-gradient(135deg,oklch(0.98 0.015 285),oklch(0.97 0.02 240));border-bottom:1px solid color-mix(in oklab,var(--primary) 14%,transparent)}
+    #addActionModal .modal-ttl{background:linear-gradient(135deg,oklch(0.52 0.22 285),oklch(0.6 0.17 240));-webkit-background-clip:text;background-clip:text;color:transparent;font-size:16px}
+    #addActionModal .form-grp .form-inp:focus,#addActionModal .form-grp .form-sel:focus,#addActionModal .form-grp .form-ta:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in oklab,var(--primary) 14%,transparent),0 4px 12px -6px color-mix(in oklab,var(--primary) 30%,transparent)}
+    #addActionModal .budget-tbl thead th{background:linear-gradient(135deg,oklch(0.97 0.025 285),oklch(0.96 0.03 240))}
+    #addActionModal .budget-total-row td{background:linear-gradient(135deg,oklch(0.97 0.04 285),oklch(0.96 0.05 240));font-weight:800}
+    #addActionModal .bg-year{font-family:'JetBrains Mono',monospace;font-weight:700;text-align:center;color:var(--primary)}
   `;
   document.head.appendChild(st);
 
