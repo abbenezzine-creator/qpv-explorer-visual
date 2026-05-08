@@ -1309,6 +1309,7 @@ function nav(id){
   if(id==='parametres') renderSettings();
   if(id==='documents') renderDocuments();
   if(id==='utilite') renderUtilite();
+  try { const nb=document.getElementById('topNewActionBtn'); if(nb) nb.style.display=(id==='dashboard'||id==='agenda')?'':'none'; } catch(e){}
 }
 
 // ========== SIDEBAR ==========
