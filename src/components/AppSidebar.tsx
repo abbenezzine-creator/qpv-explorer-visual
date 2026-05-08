@@ -85,8 +85,11 @@ export function AppSidebar() {
     return search?.page === it.search.page;
   };
 
-  const [user, setUserState] = useState<AbUser | null>(() => getUser());
+  const [user, setUserState] = useState<AbUser | null>(null);
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setMounted(true);
+    setUserState(getUser());
     const sync = () => setUserState(getUser());
     window.addEventListener("ab-auth-change", sync);
     window.addEventListener("storage", sync);
