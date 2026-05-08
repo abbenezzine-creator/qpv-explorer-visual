@@ -4023,5 +4023,32 @@ function init(){
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('loginPage').classList.add('show');});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal','addActionModal','addAssocModal','addPartnerModal','uploadDocModal'].forEach(id=>{const m=document.getElementById(id);if(m)m.classList.remove('open');});document.body.style.overflow='';}});
 </script>
+
+<script>
+// === Lovable integration patch ===
+(function(){
+  function applyHash(){
+    const m = (location.hash||'').match(/page=([a-z]+)/i);
+    if(m && typeof nav==='function'){ try{ nav(m[1]); }catch(e){} }
+  }
+  window.addEventListener('hashchange', applyHash);
+  document.addEventListener('DOMContentLoaded', function(){
+    // auto-login as admin so the embed is usable directly
+    const params = new URLSearchParams(location.search);
+    const noLogin = params.get('login') === '1';
+    if(noLogin) return;
+    setTimeout(function(){
+      try{
+        const u=document.getElementById('loginUser');
+        const p=document.getElementById('loginPwd');
+        if(!u||!p) return;
+        u.value='admin'; p.value='admin2025';
+        if(typeof doLogin==='function') doLogin();
+        setTimeout(applyHash, 80);
+      }catch(e){}
+    }, 50);
+  });
+})();
+</script>
 </body>
 </html>
