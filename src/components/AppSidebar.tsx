@@ -5,7 +5,6 @@ import {
   CalendarDays,
   
   BookOpen,
-  ClipboardList,
   TrendingUp,
   FileText,
   Settings,
