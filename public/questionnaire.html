@@ -2521,7 +2521,138 @@ function resetForm() {
   }
 }
 
+// =================================================================
+// MODE EMBED (modal iframe) — pré-sélection thématique + postMessage
+// =================================================================
+const EMBED = (function(){
+  const p = new URLSearchParams(location.search);
+  return {
+    embed: p.get('embed') === '1',
+    actionId: p.get('action') || null,
+    actionTitle: p.get('title') || '',
+    assoName: p.get('asso') || '',
+    theme: p.get('theme') || null,
+    sous: p.get('sous') || null,
+    aggregate: null
+  };
+})();
+
+function applyEmbedMode(){
+  if(!EMBED.embed) return;
+  const step0 = document.querySelector('.step[data-step="0"]');
+  if(step0) step0.remove();
+  const steps = document.querySelectorAll('.step');
+  steps.forEach((s,i)=> s.dataset.step = String(i));
+  state.totalSteps = steps.length;
+  state.step = 0;
+  steps.forEach((s,i)=> s.classList.toggle('active', i===0));
+
+  const hidden = document.createElement('div'); hidden.style.display='none';
+  hidden.innerHTML = '<input name="asso" value="'+EMBED.assoName.replace(/"/g,'&quot;')+'">'
+    +'<input name="action" value="'+EMBED.actionTitle.replace(/"/g,'&quot;')+'">'
+    +'<input name="date_debut" value=""><input name="age" value=""><input name="quartier" value="">'
+    +'<input name="genre" value=""><input name="bailleur" value="">';
+  document.body.appendChild(hidden);
+
+  if(EMBED.theme && THEMATIQUES[EMBED.theme]){
+    setTimeout(function(){
+      selectThematique(EMBED.theme);
+      document.querySelectorAll('.thematique-card').forEach(function(el){
+        if(el.dataset.key !== EMBED.theme){
+          el.style.opacity='0.35'; el.style.pointerEvents='none';
+        }
+      });
+      if(EMBED.sous && THEMATIQUES[EMBED.theme].sous[EMBED.sous]){
+        setTimeout(function(){ selectSousThematique(EMBED.sous); }, 80);
+      }
+    }, 50);
+  }
+  updateProgress();
+
+  const last = document.querySelector('.step:last-child .actions-final');
+  if(last){
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-success';
+    btn.innerHTML = '✓ Enregistrer pour cette action';
+    btn.onclick = sendToParent;
+    last.insertBefore(btn, last.firstChild);
+  }
+}
+
+function buildAggregatePayload(){
+  const d = state.data;
+  return {
+    actionId: EMBED.actionId,
+    thematique: d.thematique,
+    sous_thematique: d.sous_thematique,
+    pct_avant: d.pct_avant,
+    pct_apres: d.pct_apres,
+    freins: d.freins.slice(),
+    actions: d.actions.slice(),
+    competences: d.competences.slice(),
+    freins_leves: d.freins_leves.slice(),
+    resultats: d.resultats.slice(),
+    delta: d.pct_apres - d.pct_avant,
+    ts: Date.now()
+  };
+}
+
+function sendToParent(){
+  if(!window.parent || window.parent === window) return;
+  window.parent.postMessage({ type:'survey-complete', payload: buildAggregatePayload() }, '*');
+}
+
+window.addEventListener('message', function(e){
+  if(!e.data || e.data.type !== 'aggregate-data') return;
+  EMBED.aggregate = e.data.aggregate;
+  if(state.step === state.totalSteps - 1) renderAggregate();
+});
+
+function ensureAggregateBlock(){
+  if(document.getElementById('aggBlock')) return;
+  const wrap = document.querySelector('.resultat-wrap');
+  if(!wrap) return;
+  const div = document.createElement('div');
+  div.id = 'aggBlock';
+  div.style.cssText = 'background:#fff;border-radius:16px;padding:24px;margin-top:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04)';
+  div.innerHTML = '<div style="text-align:center;font-size:13px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px">Moyenne des bénéficiaires de cette action</div><div id="aggBody"></div>';
+  wrap.appendChild(div);
+}
+
+function renderAggregate(){
+  ensureAggregateBlock();
+  const body = document.getElementById('aggBody');
+  if(!body) return;
+  const a = EMBED.aggregate;
+  const cur = buildAggregatePayload();
+  const all = (a && a.responses ? a.responses.concat([cur]) : [cur]);
+  const n = all.length;
+  const avg = function(k){ return Math.round(all.reduce(function(s,r){return s+(r[k]||0);},0)/n); };
+  const moy = function(k){ return Math.round(all.reduce(function(s,r){return s+((r[k]||[]).length||0);},0)/n*10)/10; };
+  const avantM = avg('pct_avant'), apresM = avg('pct_apres');
+  const deltaM = apresM - avantM;
+  body.innerHTML =
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px">'
+    +'<div style="text-align:center;padding:14px;background:linear-gradient(135deg,#eff6ff,#f5f3ff);border-radius:12px"><div style="font-size:32px;font-weight:800;color:#2563eb;line-height:1">'+n+'</div><div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-top:4px">Bénéficiaires<br>évalués</div></div>'
+    +'<div style="text-align:center;padding:14px;background:#fef2f2;border-radius:12px"><div style="font-size:32px;font-weight:800;color:#dc2626;line-height:1">'+avantM+'%</div><div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-top:4px">Moyenne<br>avant</div></div>'
+    +'<div style="text-align:center;padding:14px;background:#ecfdf5;border-radius:12px"><div style="font-size:32px;font-weight:800;color:#059669;line-height:1">'+apresM+'%</div><div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-top:4px">Moyenne<br>après</div></div>'
+    +'<div style="text-align:center;padding:14px;background:'+(deltaM>=0?'#ecfdf5':'#fef2f2')+';border-radius:12px"><div style="font-size:32px;font-weight:800;color:'+(deltaM>=0?'#059669':'#dc2626')+';line-height:1">'+(deltaM>=0?'+':'')+deltaM+'</div><div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-top:4px">Progression<br>moyenne (pts)</div></div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">'
+    +[['Freins levés', moy('freins_leves'), '#dc2626'],['Actions suivies', moy('actions'), '#7c3aed'],['Compétences acquises', moy('competences'), '#ea580c'],['Résultats obtenus', moy('resultats'), '#059669']].map(function(r){
+      return '<div style="padding:12px;border:1px solid var(--bordure);border-radius:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:'+r[2]+';line-height:1">'+r[1]+'</div><div style="font-size:11px;color:var(--gris);font-weight:600;margin-top:4px">'+r[0]+' / bénéf.</div></div>';
+    }).join('')
+    +'</div>';
+}
+
+const _origRenderParcours = renderParcours;
+renderParcours = function(){
+  _origRenderParcours.apply(this, arguments);
+  if(EMBED.embed) renderAggregate();
+};
+
 init();
+applyEmbedMode();
 </script>
 </body>
 </html>
