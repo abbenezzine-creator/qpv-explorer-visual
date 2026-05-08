@@ -33,7 +33,7 @@ const territoire: NavItem[] = [
 
 const principal: NavItem[] = [
   { title: "Tableau de bord", to: "/app", search: { page: "dashboard" }, icon: LayoutDashboard },
-  { title: "Agenda actions", to: "/app", search: { page: "agenda" }, icon: CalendarDays },
+  { title: "Actions", to: "/app", search: { page: "agenda" }, icon: CalendarDays },
   { title: "Référentiel Qualité", to: "/app", search: { page: "qualite" }, icon: Award },
   { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
 ];
@@ -41,8 +41,8 @@ const principal: NavItem[] = [
 const evaluation: NavItem[] = [
   { title: "Questionnaire", to: "/app", search: { page: "questionnaire" }, icon: ClipboardList },
   { title: "Utilité Sociale", to: "/app", search: { page: "utilite" }, icon: Heart },
-  { title: "Résultats & Impacts", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
   { title: "Documents", to: "/app", search: { page: "documents" }, icon: FileText },
+  { title: "Résultats & Impacts", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
 ];
 
 const admin: NavItem[] = [
