@@ -325,6 +325,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .ref-dot.pc{background:var(--warning);border-color:var(--warning)}
 .ref-dot.co{background:var(--info);border-color:var(--info)}
 .ref-dot.tc{background:var(--success);border-color:var(--success)}
+.ref-stars{display:inline-flex;gap:3px;flex-shrink:0;align-items:center}
+.ref-star{font-size:20px;line-height:1;color:oklch(0.85 0.02 285);cursor:pointer;transition:transform .15s,color .15s;user-select:none;background:none;border:none;padding:0}
+.ref-star:hover{transform:scale(1.2)}
+[data-theme="dark"] .ref-star{color:oklch(0.4 0.02 285)}
+.ref-star.lvl-1{color:oklch(0.6 0.24 25)}
+.ref-star.lvl-2{color:oklch(0.7 0.2 40)}
+.ref-star.lvl-3{color:oklch(0.78 0.16 90)}
+.ref-star.lvl-4{color:oklch(0.7 0.18 145)}
+.ref-star.lvl-5{color:oklch(0.6 0.2 150)}
+.ref-star-leg{font-size:16px;line-height:1;margin-right:4px}
 .ref-leg{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:9px 13px;background:var(--muted);border-radius:calc(var(--radius)-2px)}
 .ref-leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted-fore)}
 .ref-leg-dot{width:9px;height:9px;border-radius:50%}
@@ -605,10 +615,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       </div>
       <div class="eval-tabs" id="evalTabs"></div>
       <div class="ref-leg">
-        <div class="ref-leg-item"><div class="ref-leg-dot" style="background:var(--destructive)"></div>Non conforme</div>
-        <div class="ref-leg-item"><div class="ref-leg-dot" style="background:var(--warning)"></div>Partiellement</div>
-        <div class="ref-leg-item"><div class="ref-leg-dot" style="background:var(--info)"></div>Conforme</div>
-        <div class="ref-leg-item"><div class="ref-leg-dot" style="background:var(--success)"></div>Très conforme</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.6 0.24 25)">★</span>Non conforme</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.7 0.2 40)">★</span>Insuffisant</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.78 0.16 90)">★</span>Partiellement</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.7 0.18 145)">★</span>Conforme</div>
+        <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.6 0.2 150)">★</span>Très conforme</div>
         <div style="margin-left:auto;font-size:12px;color:var(--muted-fore)">Score global : <strong id="qualGlobalScore" style="color:var(--primary);font-family:'JetBrains Mono',monospace">—</strong></div>
       </div>
       <div class="ref-grid" id="refGrid"></div>
@@ -1164,14 +1175,59 @@ let DOCUMENTS = [
   {id:2,assocId:2,nom:"Bilan d'activité 2024",cat:'Bilan',visib:'assoc',assocVis:[2],date:'2025-01-15'},
   {id:3,assocId:null,nom:'Guide Contrat de Ville 2024–2030',cat:'Guide',visib:'admin',assocVis:[],date:'2024-12-01'},
 ];
+// Aligned with Guide du Référentiel — Tableau synoptique (10 critères / 30 indicateurs)
 const QUALITE_AXES = [
-  {id:'C1',name:'C1 — Lisibilité & Information',color:'oklch(0.52 0.22 285)',criteria:[{id:'1.1',text:'Information claire sur objectifs, public cible et modalités'},{id:'1.2',text:'Indicateurs de résultats définis et communiqués'},{id:'1.3',text:'Accessibilité aux publics en situation de fragilité'}]},
-  {id:'C2',name:'C2 — Analyse des besoins',color:'oklch(0.62 0.22 340)',criteria:[{id:'2.1',text:'Analyse des besoins du territoire avant conception'},{id:'2.2',text:'Objectifs opérationnels définis et mesurables'},{id:'2.3',text:'Contenu cohérent avec les orientations du Contrat de Ville'}]},
-  {id:'C3',name:'C3 — Mise en œuvre',color:'oklch(0.52 0.16 150)',criteria:[{id:'3.1',text:'Action mise en œuvre conformément au calendrier'},{id:'3.2',text:'Accompagnement individuel et suivi de progression'},{id:'3.3',text:'Mesures contre les abandons'},{id:'3.4',text:'Évaluation des acquis en cours et en fin d\'action'}]},
-  {id:'C4',name:'C4 — Ressources & Moyens',color:'oklch(0.76 0.17 75)',criteria:[{id:'4.1',text:'Moyens humains adaptés'},{id:'4.2',text:'Locaux et équipements appropriés'},{id:'4.3',text:'Gestion budgétaire transparente'}]},
-  {id:'C5',name:'C5 — Compétences',color:'oklch(0.6 0.17 240)',criteria:[{id:'5.1',text:'Intervenants compétents bénéficiant de formation continue'},{id:'5.2',text:'Partenariats locaux mobilisés'},{id:'5.3',text:'Participation aux instances du Contrat de Ville'}]},
-  {id:'C6',name:'C6 — Ancrage Territorial',color:'oklch(0.62 0.22 340)',criteria:[{id:'6.1',text:'Veille sur les besoins des QPV exploitée'},{id:'6.2',text:'Pratiques innovantes développées'},{id:'6.3',text:'Contribution à la cohésion sociale'}]},
-  {id:'C7',name:'C7 — Amélioration Continue',color:'oklch(0.52 0.16 150)',criteria:[{id:'7.1',text:'Appréciations des parties prenantes recueillies'},{id:'7.2',text:'Réclamations traitées avec réponses formalisées'},{id:'7.3',text:'Mesures d\'amélioration mises en œuvre'}]},
+  {id:'C1',name:'C1 — COMMUNICATION',color:'oklch(0.52 0.22 285)',criteria:[
+    {id:'1',text:"L'organisme diffuse une information accessible au public, détaillée et vérifiable."},
+    {id:'2',text:"L'organisme diffuse des indicateurs de résultats adaptés à la nature des actions."},
+    {id:'3',text:"L'organisme met en avant les commanditaires et financeurs sur ses supports."},
+  ]},
+  {id:'C2',name:'C2 — OBJECTIFS',color:'oklch(0.62 0.22 340)',criteria:[
+    {id:'4',text:'Analyse du besoin du bénéficiaire en lien avec les commanditaires et financeurs.'},
+    {id:'5',text:'Définition des objectifs opérationnels et évaluables.'},
+    {id:'6',text:'Établissement des contenus et des modalités de mise en œuvre.'},
+    {id:'7',text:"Procédures de positionnement et d'évaluation des bénéficiaires."},
+  ]},
+  {id:'C3',name:'C3 — QUALIFICATION & COMPÉTENCES',color:'oklch(0.52 0.16 150)',criteria:[
+    {id:'8',text:"Qualifications indispensables à l'activité (diplôme, agrément, etc.)."},
+    {id:'9',text:'Formation relative aux valeurs de la République et à la laïcité (VRL).'},
+    {id:'10',text:'Compétences des intervenants internes et/ou externes évaluées.'},
+    {id:'11',text:'Développement des compétences des salariés adapté aux prestations.'},
+  ]},
+  {id:'C4',name:'C4 — MODALITÉS & DÉROULÉ',color:'oklch(0.76 0.17 75)',criteria:[
+    {id:'12',text:'Information des bénéficiaires des conditions de déroulement.'},
+    {id:'13',text:"Information des bénéficiaires des modalités de l'action."},
+  ]},
+  {id:'C5',name:'C5 — CONFORMITÉ & VEILLE LÉGALE',color:'oklch(0.6 0.17 240)',criteria:[
+    {id:'14',text:"Agréments relatifs à la conformité de l'organisme."},
+    {id:'15',text:'Veille réglementaire active.'},
+  ]},
+  {id:'C6',name:'C6 — MOYENS PÉDAGOGIQUES & ÉDUCATIFS',color:'oklch(0.52 0.22 285)',criteria:[
+    {id:'16',text:'Moyens humains et techniques adaptés, environnement approprié.'},
+    {id:'17',text:'Mobilisation et coordination des intervenants.'},
+    {id:'18',text:'Ressources pédagogiques mises à disposition des bénéficiaires.'},
+    {id:'19',text:'Référent handicap, appui mobilité, conseil de perfectionnement.'},
+    {id:'20',text:'Projet formalisé (éducatif, pédagogique, social, culturel…).'},
+  ]},
+  {id:'C7',name:'C7 — GESTION FINANCIÈRE',color:'oklch(0.62 0.22 340)',criteria:[
+    {id:'21',text:'Tableau de résultat analytique sur les actions subventionnées.'},
+    {id:'22',text:'Tableau récapitulatif sur la répartition des moyens humains.'},
+  ]},
+  {id:'C8',name:"C8 — ÉVALUATION & MESURE D'IMPACT",color:'oklch(0.52 0.16 150)',criteria:[
+    {id:'23',text:"Outils d'évaluation sur les objectifs opérationnels."},
+    {id:'24',text:"Outils d'évaluation sur le personnel."},
+    {id:'25',text:"Outils d'évaluation et/ou label qualité."},
+  ]},
+  {id:'C9',name:'C9 — AMÉLIORATION CONTINUE',color:'oklch(0.76 0.17 75)',criteria:[
+    {id:'26',text:'Évaluation de satisfaction à destination des bénéficiaires.'},
+    {id:'27',text:'Évaluation de satisfaction à destination des commanditaires.'},
+    {id:'28',text:'Évaluation de satisfaction à destination des partenaires.'},
+    {id:'29',text:"Évaluation sur l'utilité sociale de l'action."},
+    {id:'30',text:'Évaluation des écarts et amélioration continue.'},
+  ]},
+  {id:'C10',name:'C10 — TRANSITION ÉCOLOGIQUE',color:'oklch(0.52 0.16 150)',criteria:[
+    {id:'T',text:'Indicateur transversal : intégration de la dimension environnementale.'},
+  ]},
 ];
 
 // ========== STATE ==========
@@ -1773,11 +1829,8 @@ function renderQualite(){
         <div class="ref-crit-row">
           <span class="ref-crit-id" style="color:${ax.color}">${c.id}</span>
           <span class="ref-crit-txt">${c.text}</span>
-          <div class="ref-dots">
-            <div class="ref-dot" title="Non conforme" onclick="rateRef('${ax.id}','${c.id}',1)" id="rd-${c.id.replace('.','_')}-1"></div>
-            <div class="ref-dot" title="Partiellement" onclick="rateRef('${ax.id}','${c.id}',2)" id="rd-${c.id.replace('.','_')}-2"></div>
-            <div class="ref-dot" title="Conforme" onclick="rateRef('${ax.id}','${c.id}',3)" id="rd-${c.id.replace('.','_')}-3"></div>
-            <div class="ref-dot" title="Très conforme" onclick="rateRef('${ax.id}','${c.id}',4)" id="rd-${c.id.replace('.','_')}-4"></div>
+          <div class="ref-stars" id="rs-${c.id}">
+            ${[1,2,3,4,5].map(n=>`<button type="button" class="ref-star" title="${['Non conforme','Insuffisant','Partiellement','Conforme','Très conforme'][n-1]}" onclick="rateRef('${ax.id}','${c.id}',${n})">★</button>`).join('')}
           </div>
         </div>`).join('')}
       </div>
@@ -1785,6 +1838,14 @@ function renderQualite(){
   updateQualGlobalScore();
   popSel('qualAssocSel',ASSOCS,'id','nom','— Association —');
   popSel('qualPartnerSel',PARTNERS,'id','nom','— Partenaire —');
+}
+function paintStars(critId,val){
+  const row=document.getElementById('rs-'+critId); if(!row) return;
+  const stars=row.querySelectorAll('.ref-star');
+  stars.forEach((s,i)=>{
+    s.classList.remove('lvl-1','lvl-2','lvl-3','lvl-4','lvl-5');
+    if(val && i<val) s.classList.add('lvl-'+val);
+  });
 }
 function onQualAssocChange(){
   const aid=document.getElementById('qualAssocSel').value;
@@ -1815,7 +1876,7 @@ function updateEvalTabs(){
 function computeEvalScore(ratings){
   const all=Object.values(ratings||{});
   if(!all.length) return 0;
-  return Math.round(all.reduce((s,v)=>s+v,0)/all.length/4*100);
+  return Math.round(all.reduce((s,v)=>s+v,0)/all.length/5*100);
 }
 function loadEvalForEvaluator(){
   const key=getEvalKey();
@@ -1825,17 +1886,8 @@ function loadEvalForEvaluator(){
 function loadEvalForKey(key){
   currentEvalKey=key;
   const ratings=QUAL_EVALS[key]||{};
-  // Reset all dots
-  QUALITE_AXES.forEach(ax=>ax.criteria.forEach(c=>{
-    const k2=c.id.replace('.','_');
-    for(let i=1;i<=4;i++){const d=document.getElementById(`rd-${k2}-${i}`);if(d)d.className='ref-dot';}
-  }));
-  // Apply saved ratings
-  Object.entries(ratings).forEach(([critKey,val])=>{
-    const k2=critKey.replace('.','_');
-    const cls=val===1?'nc':val===2?'pc':val===3?'co':'tc';
-    for(let i=1;i<=4;i++){const d=document.getElementById(`rd-${k2}-${i}`);if(d){d.className='ref-dot';if(i<=val)d.classList.add(cls);}}
-  });
+  QUALITE_AXES.forEach(ax=>ax.criteria.forEach(c=>paintStars(c.id, ratings[c.id]||0)));
+  QUALITE_AXES.forEach(ax=>updateAxeScore(ax.id));
   updateQualGlobalScore();
   updateEvalTabs();
   document.querySelectorAll('.eval-tab').forEach(t=>{t.classList.toggle('active',t.getAttribute('onclick')?.includes("'"+key+"'"));});
@@ -1854,23 +1906,22 @@ function rateRef(axId,critId,val){
   if(!currentEvalKey){showToast('Sélectionnez action + partenaire d\'abord');return;}
   if(!QUAL_EVALS[currentEvalKey]) QUAL_EVALS[currentEvalKey]={};
   QUAL_EVALS[currentEvalKey][critId]=val;
-  const cls=val===1?'nc':val===2?'pc':val===3?'co':'tc';
-  const k2=critId.replace('.','_');
-  for(let i=1;i<=4;i++){const d=document.getElementById(`rd-${k2}-${i}`);if(d){d.className='ref-dot';if(i<=val)d.classList.add(cls);}}
+  paintStars(critId,val);
   updateAxeScore(axId); updateQualGlobalScore();
 }
 function updateAxeScore(axId){
   const ax=QUALITE_AXES.find(a=>a.id===axId); if(!ax) return;
   const ratings=QUAL_EVALS[currentEvalKey]||{};
   const vals=ax.criteria.map(c=>ratings[c.id]).filter(v=>v!==undefined);
-  if(!vals.length) return;
   const el=document.getElementById('sc-'+axId);
-  if(el) el.textContent=Math.round(vals.reduce((s,v)=>s+v,0)/vals.length/4*100)+'%';
+  if(!el) return;
+  if(!vals.length){ el.textContent='—'; return; }
+  el.textContent=Math.round(vals.reduce((s,v)=>s+v,0)/vals.length/5*100)+'%';
 }
 function updateQualGlobalScore(){
   const all=Object.values(QUAL_EVALS[currentEvalKey]||{});
   if(!all.length){document.getElementById('qualGlobalScore').textContent='—';return;}
-  document.getElementById('qualGlobalScore').textContent=Math.round(all.reduce((s,v)=>s+v,0)/all.length/4*100)+'%';
+  document.getElementById('qualGlobalScore').textContent=Math.round(all.reduce((s,v)=>s+v,0)/all.length/5*100)+'%';
 }
 function saveQualite(){
   if(SCRIPT_URL) gsPost('Qualité',{horodatage:new Date().toLocaleString('fr-FR'),key:currentEvalKey,scores:JSON.stringify(QUAL_EVALS[currentEvalKey]||{})});
