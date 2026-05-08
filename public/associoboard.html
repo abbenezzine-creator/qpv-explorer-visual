@@ -3557,7 +3557,7 @@ function aggregateMap(field, keys, total) {
 
 // recompute aggregate implication/oui correctly
 function aggregateCitizenDataFixed() {
-  const keys = ['Argonne','Source','Dauphine','Fleury','SJR','SJB'];
+  const keys = ['Argonne','Source','Dauphine'];
   const total = keys.reduce((s,k) => s + CITIZEN_2023[k].n, 0);
   const oui = Math.round(keys.reduce((s,k) => s + CITIZEN_2023[k].implication.oui * CITIZEN_2023[k].n, 0) / total);
   return {oui:oui, non:100-oui};
