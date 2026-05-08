@@ -1596,8 +1596,6 @@ function renderActionsList(cid,actions,limit){
   if(!list.length){el.innerHTML='<p style="color:var(--muted-fore);font-size:12px;padding:9px 0">Aucune action</p>';return;}
   el.innerHTML=list.map(a=>{
     const bc=TCOL[a.type]||'purple';
-    const sr=a.surveyResult;
-    const surveyPill=sr?`<div class="result-pill"><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="1 6 4 9 11 3"/></svg>Obj. ${Math.round((sr.obj||3)/5*100)}% · Sat. ${Math.round((sr.qac||8)/10*100)}%</div>`:'';
     return `<div class="action-card" style="position:relative" onclick="openActionQualite(${a.id})">
       <button type="button" class="btn btn-ghost btn-sm" style="position:absolute;top:8px;right:8px;font-size:10px;padding:3px 7px;z-index:2" onclick="event.stopPropagation();openActionDetail(${a.id})">Détail</button>
       <div class="ac-bar" style="background:${a.gradient}"></div>
@@ -1610,14 +1608,9 @@ function renderActionsList(cid,actions,limit){
         ${(a.quartiers||[]).map(q=>`<span class="badge badge-gray">${q}</span>`).join('')}
         ${(a.ages||[]).map(ag=>`<span class="badge badge-blue">${ag}</span>`).join('')}
       </div>
-      ${surveyPill}
-      ${(() => {
-        const inds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
-        const vals = inds.map(id => (typeof _qualScore==='function' ? _qualScore(a.id,id) : 75));
-        const avg = Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
-        return `<div class="result-pill" style="background:oklch(0.96 0.04 285);color:var(--primary);border-color:oklch(0.85 0.08 285)"><svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>Moyenne qualité · ${avg}%</div>`;
-      })()}
-      <div class="ac-footer">
+      ${typeof renderEvalBlock==='function'?renderEvalBlock(a):''}
+      ${typeof renderBenefBtn==='function'?renderBenefBtn(a):''}
+      <div class="ac-footer" style="margin-top:8px">
         <span>${a.date.split('-').reverse().join('/')} · ${a.heure}</span>
         <span>${a.nb} participants · ${getBudgetTotal(a)} €</span>
       </div>
