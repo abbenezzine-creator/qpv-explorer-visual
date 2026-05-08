@@ -1465,18 +1465,19 @@ function renderDashboard(){
   const isAdmin=currentUser?.role==='superadmin';
   const allActsYear=ACTIONS.filter(a=>!a.annee||a.annee===currentYear);
   const totalActions=isAdmin?allActsYear.length:acts.length;
-  const totalBenef=isAdmin?allActsYear.reduce((s,a)=>s+(a.nb||0),0):acts.reduce((s,a)=>s+(a.nb||0),0);
-  const filteredBenef=acts.reduce((s,a)=>s+(a.nb||0),0);
+  const _avgBenef = (arr)=> arr.length ? Math.round(arr.reduce((s,a)=>s+(a.nb||0),0)/arr.length) : 0;
+  const totalBenef = isAdmin ? _avgBenef(allActsYear) : _avgBenef(acts);
+  const filteredBenef = _avgBenef(acts);
   // Score qualité scoped to current association (or moyenne globale si superadmin sans sélection)
   const scopedActs = (typeof _scopedActionsForQual==='function') ? _scopedActionsForQual() : acts;
   const allInds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
   let qualScorePct = 0;
   if (scopedActs.length && allInds.length) {
     const perActAvg = scopedActs.map(a => {
-      const vals = allInds.map(id => _qualScore(a.id, id));
-      return vals.reduce((s,v)=>s+v,0)/vals.length;
-    });
-    qualScorePct = Math.round(perActAvg.reduce((s,v)=>s+v,0)/perActAvg.length);
+      const vals = allInds.map(id => _qualScore(a.id, id)).filter(v=>v!=null);
+      return vals.length ? vals.reduce((s,v)=>s+v,0)/vals.length : null;
+    }).filter(v=>v!=null);
+    qualScorePct = perActAvg.length ? Math.round(perActAvg.reduce((s,v)=>s+v,0)/perActAvg.length) : 0;
   }
   const qualScopeLbl = isAdmin ? (currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Moy. toutes associations') : 'Moy. '+(ASSOCS.find(x=>x.id===currentUser?.assocId)?.nom||'');
   const el=document.getElementById('dashStats');
