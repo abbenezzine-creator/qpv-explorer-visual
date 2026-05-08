@@ -4279,23 +4279,21 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
 
   function renderActionCard(a){
     const bc = (typeof TCOL!=='undefined' && TCOL[a.type]) || 'purple';
-    const evaluated = evalStatus(a.id);
-    const evalBadge = evaluated
-      ? '<div class="done-eval"><svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 6 4 9 11 3"/></svg>Référentiel évalué</div>'
-      : '<div class="pending-eval"><svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6" cy="6" r="5"/><line x1="6" y1="3.5" x2="6" y2="6.5"/><circle cx="6" cy="8" r="0.5" fill="currentColor"/></svg>En attente d\'évaluation</div>';
     const dateStr = a.date ? a.date.split('-').reverse().join('/') : '';
-    return `<div class="action-card">
+    return `<div class="action-card" style="position:relative" onclick="openActionQualite(${a.id})">
+      <button type="button" class="btn btn-ghost btn-sm" style="position:absolute;top:8px;right:8px;font-size:10px;padding:3px 7px;z-index:2" onclick="event.stopPropagation();openActionDetail(${a.id})">Détail</button>
       <div class="ac-bar" style="background:${a.gradient}"></div>
       <div class="ac-ref">
         <span>${getAssocName(a.assocId).toUpperCase()}</span>
         <span class="badge badge-${bc}">${a.statut}</span>
       </div>
-      <div class="ac-title" style="cursor:pointer" onclick="openActionDetail(${a.id})">${a.titre}</div>
+      <div class="ac-title">${a.titre}</div>
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
         ${(a.quartiers||[]).map(q=>`<span class="badge badge-gray">${q}</span>`).join('')}
         ${(a.ages||[]).map(ag=>`<span class="badge badge-blue">${ag}</span>`).join('')}
       </div>
-      ${evalBadge}
+      ${renderEvalBlock(a)}
+      ${renderBenefBtn(a)}
       <div class="ac-footer" style="margin-top:8px">
         <span><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="vertical-align:-1px;margin-right:3px"><rect x="1.5" y="2.5" width="9" height="8" rx="1"/><line x1="1.5" y1="5" x2="10.5" y2="5"/></svg>${dateStr} · ${a.heure||''}</span>
         <span>${a.nb||0} part. · ${getBudgetTotal(a)} €</span>
