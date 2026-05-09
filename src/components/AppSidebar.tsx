@@ -12,6 +12,7 @@ import {
   Library,
   ListChecks,
   DatabaseBackup,
+  Plug,
 } from "lucide-react";
 
 import {
@@ -61,6 +62,7 @@ const ressources: NavItem[] = [
 const admin: NavItem[] = [
   { title: "Paramètres", to: "/app", search: { page: "parametres" }, icon: Settings },
   { title: "Sauvegarde & restauration", to: "/app", search: { page: "sauvegarde" }, icon: DatabaseBackup },
+  { title: "Connexion", to: "/app", search: { page: "connexion" }, icon: Plug },
   { title: "Questionnaire thématique", to: "/app", search: { page: "questionnaire-thematique" }, icon: ListChecks },
 ];
 
