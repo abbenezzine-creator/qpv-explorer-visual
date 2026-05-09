@@ -1516,10 +1516,12 @@ function onGlobalThemeChange(){
   currentSousTheme='';
   refreshSousThemeSel();
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
+  try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
 }
 function onGlobalSousThemeChange(){
   currentSousTheme=document.getElementById('globalSousThemeSel').value;
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
+  try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
 }
 
 function filteredActions(){
