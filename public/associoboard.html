@@ -416,7 +416,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .q-wrap{max-width:700px}
 .sb-overlay{display:none;position:fixed;inset:0;background:oklch(0 0 0/.5);z-index:99}
 .sb-overlay.show{display:block}
-@media(max-width:1024px){
+@media(max-width:1280px){
   .sidebar{transform:translateX(-100%);box-shadow:var(--shadow-glow)}
   .sidebar.collapsed{width:260px}
   .sidebar.mobile-open{transform:translateX(0)}
@@ -527,9 +527,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 12l4-4-4-4"/><line x1="14" y1="8" x2="5" y2="8"/><path d="M5 14H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h2"/></svg>
       </button>
     </div>
-    <div class="sb-assoc-wrap" id="assocSelWrap">
-      <select class="sb-assoc-sel" id="assocGlobalSel" onchange="switchAssociation(this.value)"><option value="">— Toutes les associations —</option></select>
-    </div>
     <div class="sb-nav">
       <div class="sb-nav-lbl">Territoire</div>
       <button class="nav-btn" onclick="nav('diagnostic')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="9" r="7.5"/><line x1="9" y1="1.5" x2="9" y2="16.5"/><path d="M1.5 9h15"/><path d="M4 4s2 2 5 2 5-2 5-2"/><path d="M4 14s2-2 5-2 5 2 5 2"/></svg><span class="nav-lbl">Diagnostic Territorial</span></button>
@@ -562,7 +559,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       </button>
       <div class="topbar-title" id="pageTitle">Tableau de Bord</div>
       <div class="topbar-right">
+        <span id="assocSelWrap" style="display:none">
+          <select class="year-sel" id="assocGlobalSel" onchange="switchAssociation(this.value)" style="max-width:180px"><option value="">— Toutes les associations —</option></select>
+        </span>
         <select class="year-sel" id="yearFilter" onchange="onYearChange()"></select>
+        <select class="year-sel" id="globalThemeSel" onchange="onGlobalThemeChange()"><option value="">Toutes thématiques</option></select>
+        <select class="year-sel" id="globalSousThemeSel" onchange="onGlobalSousThemeChange()"><option value="">Toutes sous-thématiques</option></select>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted-fore)"><div class="live-dot"></div>En direct</div>
         <button class="btn btn-primary" id="topNewActionBtn" onclick="openAddActionModal()">
           <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg>
@@ -801,7 +803,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
           <div class="page-sub">Engagements Quartiers 2030 — Orléans Métropole · 5 axes · INSEE, CAF, ARS, Préfecture</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <select class="form-sel" id="diagQPV" onchange="renderDiag()" style="padding:6px 10px;font-size:13px">
+          <select class="form-sel" id="diagQPV" onchange="onDiagYear(diagYear)" style="padding:6px 10px;font-size:13px">
             <option value="argonne">L'Argonne</option>
             <option value="lasource">La Source</option>
             <option value="dauphine">Dauphine</option>
@@ -811,6 +813,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
             <span style="font-size:11px;color:var(--muted-fore);font-weight:600">Année :</span>
             <span id="diagYearLbl" style="font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--primary);min-width:40px;text-align:center">2024</span>
             <input type="range" min="2014" max="2024" step="1" value="2024" id="diagYearSlider" oninput="onDiagYear(this.value)" style="width:120px"/>
+            <span id="diagYearStatus" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:oklch(0.52 0.16 150/.12);color:oklch(0.42 0.18 150)">Données ✓</span>
           </div>
         </div>
       </div>
@@ -1333,7 +1336,7 @@ function setupUserCtx(){
   document.getElementById('sbAvatar').style.background=u.color||'oklch(0.52 0.22 285)';
   const isAdmin=u.role==='superadmin';
   document.querySelectorAll('.nav-admin-only').forEach(el=>el.classList.toggle('show',isAdmin));
-  document.getElementById('assocSelWrap').style.display=isAdmin?'block':'none';
+  document.getElementById('assocSelWrap').style.display=isAdmin?'inline-flex':'none';
   if(!isAdmin){currentAssocId=u.assocId;document.getElementById('dashAssocName').textContent=getAssocName(u.assocId);}
   else{currentAssocId=null;document.getElementById('dashAssocName').textContent='Toutes les associations';}
 }
@@ -1349,7 +1352,7 @@ function nav(id){
   document.querySelectorAll('.nav-btn').forEach(b=>{if(b.getAttribute('onclick')?.includes("'"+id+"'"))b.classList.add('active');});
   closeSidebar();
   if(id==='qualite') renderQualite();
-  if(id==='diagnostic'){renderDiag();renderCitizenEval();}
+  if(id==='diagnostic'){renderDiag();renderCitizenEval();try{onDiagYear(document.getElementById('diagYearSlider').value);}catch(e){}}
   if(id==='guide') renderGuide();
   if(id==='resultats') renderResultatsPage();
   if(id==='parametres') renderSettings();
@@ -1365,7 +1368,7 @@ function applyCollapse(){
   const hide=collapsed;
   document.getElementById('sbLogoTxt').style.display=hide?'none':'';
   document.getElementById('sbUserInfo').style.display=hide?'none':'';
-  document.getElementById('assocSelWrap').style.display=hide?'none':(currentUser?.role==='superadmin'?'block':'none');
+  // assocSelWrap moved to topbar — visibility handled by setupUserCtx only
   document.querySelectorAll('.nav-lbl,.nav-badge,.sb-nav-lbl,.theme-lbl').forEach(el=>{if(el)el.style.display=hide?'none':'';});
 }
 function toggleCollapse(){collapsed=!collapsed;localStorage.setItem('sb-col',collapsed?'1':'0');applyCollapse();}
@@ -1380,6 +1383,43 @@ const TCOL={Formation:'purple',Accompagnement:'amber',Animation:'rose',Permanenc
 function getAssocName(id){return ASSOCS.find(x=>x.id===id)?.nom||'—';}
 function getAssocColor(id){return ASSOCS.find(x=>x.id===id)?.color||'purple';}
 function cv(c){return CMAP[c]||CMAP.purple;}
+// ===== GLOBAL THEME / SOUS-THEME FILTERS =====
+const SOUS_THEMES = {
+  'Education / Parentalité':['Soutien scolaire','Parentalité','Petite enfance','Périscolaire'],
+  'Emploi':['Insertion professionnelle','Formation','Création d\'activité','Mobilité'],
+  'Emploi & Développement':['Insertion professionnelle','Formation','Création d\'activité','Mobilité'],
+  'Santé':['Prévention','Accès aux soins','Santé mentale','Nutrition'],
+  'Cohésion sociale':['Lien social','Médiation','Vivre-ensemble','Solidarité'],
+  'Citoyenneté':['Engagement','Participation','Mémoire','Laïcité'],
+  'Accès aux droits':['Numérique','Juridique','Logement','Démarches admin.'],
+  'Transition écologique':['Mobilité douce','Énergie','Alimentation','Recyclage'],
+  'Prévention':['Délinquance','Addictions','Violences','Décrochage'],
+  'Culture':['Pratique artistique','Diffusion','Patrimoine','Langues']
+};
+let currentTheme='', currentSousTheme='';
+function initGlobalThemeSel(){
+  const ts=document.getElementById('globalThemeSel'); if(!ts) return;
+  const themes=Object.keys(SOUS_THEMES);
+  ts.innerHTML='<option value="">Toutes thématiques</option>'+themes.map(t=>`<option value="${t}">${t}</option>`).join('');
+  refreshSousThemeSel();
+}
+function refreshSousThemeSel(){
+  const ss=document.getElementById('globalSousThemeSel'); if(!ss) return;
+  const opts=currentTheme&&SOUS_THEMES[currentTheme]?SOUS_THEMES[currentTheme]:[];
+  ss.innerHTML='<option value="">'+(currentTheme?'Toutes sous-thématiques':'— Choisir thématique —')+'</option>'+opts.map(s=>`<option value="${s}">${s}</option>`).join('');
+  ss.disabled=!currentTheme;
+}
+function onGlobalThemeChange(){
+  currentTheme=document.getElementById('globalThemeSel').value;
+  currentSousTheme='';
+  refreshSousThemeSel();
+  try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
+}
+function onGlobalSousThemeChange(){
+  currentSousTheme=document.getElementById('globalSousThemeSel').value;
+  try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
+}
+
 function filteredActions(){
   const ft=document.getElementById('filterType')?.value;
   const fth=document.getElementById('filterTheme')?.value;
@@ -1390,6 +1430,8 @@ function filteredActions(){
     if(a.annee&&a.annee!==currentYear) return false;
     if(ft&&a.type!==ft) return false;
     if(fth&&a.theme!==fth) return false;
+    if(currentTheme&&a.theme!==currentTheme) return false;
+    if(currentSousTheme&&a.sousTheme!==currentSousTheme) return false;
     if(fq&&!(a.quartiers||[]).includes(fq)) return false;
     return true;
   });
@@ -3292,6 +3334,16 @@ let diagAxis='emancipation';
 function onDiagYear(val){
   diagYear=parseInt(val);
   document.getElementById('diagYearLbl').textContent=diagYear;
+  // Indicate data availability for the chosen year
+  try{
+    const qpvKey=document.getElementById('diagQPV')?.value||'argonne';
+    const has=QPV_INDS.some(i=>i.s&&i.s[qpvKey]&&i.s[qpvKey][diagYear]!=null);
+    const st=document.getElementById('diagYearStatus');
+    if(st){
+      if(has){st.textContent='Données ✓';st.style.background='oklch(0.52 0.16 150/.12)';st.style.color='oklch(0.42 0.18 150)';}
+      else{st.textContent='Aucune donnée — valeur la plus récente affichée';st.style.background='oklch(0.58 0.22 25/.12)';st.style.color='var(--destructive)';}
+    }
+  }catch(e){}
   renderDiag();
 }
 
@@ -4597,6 +4649,7 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 // ========== INIT ==========
 function init(){
   initYearFilter();
+  initGlobalThemeSel();
   document.getElementById('dashYear').textContent=currentYear;
   updateAllSelects();
   renderDashboard(); renderCalendar(); renderAllActions(); updateBadge();
