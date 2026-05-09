@@ -5539,10 +5539,25 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   }
 
   // Auto-login from React parent (bypasses HTML login screen)
-  window.autoLogin = function(loginId){
-    if(!loginId || typeof ACCOUNTS==='undefined') return false;
-    const acc = ACCOUNTS[loginId];
-    if(!acc) return false;
+  // opts: { role, nom, assocId } — provided when the Supabase user isn't in the local ACCOUNTS map
+  window.autoLogin = function(loginId, opts){
+    if(!loginId) return false;
+    let acc = (typeof ACCOUNTS!=='undefined') ? ACCOUNTS[loginId] : null;
+    if(!acc){
+      // Synthesize an account from the Supabase profile/role passed by the React parent
+      const role = (opts && opts.role) || 'viewer';
+      const mappedRole = (role === 'superadmin') ? 'superadmin'
+                        : (role === 'admin_asso' || role === 'agent') ? 'association'
+                        : 'association';
+      acc = {
+        role: mappedRole,
+        assocId: (opts && opts.assocId) || null,
+        pwd: '',
+        nom: (opts && opts.nom) || loginId,
+        color: 'oklch(0.52 0.22 285)'
+      };
+      if(typeof ACCOUNTS!=='undefined') ACCOUNTS[loginId] = acc;
+    }
     currentUser = {...acc, login: loginId};
     try { document.getElementById('loginPage')?.classList.remove('show'); } catch(e){}
     try { document.getElementById('appWrapper')?.classList.add('show'); } catch(e){}
