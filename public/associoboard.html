@@ -2654,7 +2654,7 @@ function openQualiteHistory(){
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-outline btn-sm" type="button" onclick="exportQualiteHistory()">Exporter JSON</button>
-          ${currentUser?.role==='superadmin'?'<button class="btn btn-outline btn-sm" type="button" onclick="if(confirm(\'Supprimer tout l\\'historique ?\')){localStorage.removeItem(QUAL_HIST_KEY);openQualiteHistory();}" style="color:oklch(0.58 0.22 25);border-color:oklch(0.58 0.22 25)">Vider</button>':''}
+          ${currentUser?.role==='superadmin'?`<button class="btn btn-outline btn-sm" type="button" onclick="clearQualiteHistory()" style="color:oklch(0.58 0.22 25);border-color:oklch(0.58 0.22 25)">Vider</button>`:''}
           <button class="btn btn-ghost btn-sm" type="button" onclick="document.getElementById('qualHistModal').remove()">✕</button>
         </div>
       </div>
@@ -2674,6 +2674,12 @@ function openQualiteHistory(){
           </div>`).join('') : '<p style="color:var(--muted-fore);font-size:13px;text-align:center;padding:24px">Aucune version enregistrée pour le moment.</p>'}
       </div>
     </div>`;
+}
+function clearQualiteHistory(){
+  if(confirm("Supprimer tout l'historique ?")){
+    localStorage.removeItem(QUAL_HIST_KEY);
+    openQualiteHistory();
+  }
 }
 function exportQualiteHistory(){
   const hist = _loadQualHistory();
