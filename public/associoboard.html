@@ -1384,6 +1384,7 @@ function nav(id){
   if(id==='guide') renderGuide();
   if(id==='resultats') renderResultatsPage();
   if(id==='parametres') renderSettings();
+  if(id==='sauvegarde') renderBackupList();
   if(id==='documents') renderDocuments();
   if(id==='utilite') renderUtilite();
   try { const nb=document.getElementById('topNewActionBtn'); if(nb) nb.style.display=(id==='dashboard'||id==='agenda')?'':'none'; } catch(e){}
