@@ -782,6 +782,23 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Partenaires évaluateurs</div><button class="btn btn-primary btn-sm" onclick="openAddPartnerModal()">+ Ajouter</button></div><div class="settings-list" id="partnerList"></div></div>
       </div>
       <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Comptes utilisateurs</div><button class="btn btn-outline btn-sm" onclick="toggleAccountsPwd()" id="togPwdBtn">Afficher mots de passe</button></div><div class="card-body" id="accountsList"></div></div>
+
+      <div class="settings-grid" style="margin-bottom:16px">
+        <div class="settings-card">
+          <div class="settings-card-hdr">
+            <div><div class="card-title">Évaluation bénéficiaire — Items</div><div style="font-size:11px;color:var(--muted-fore);margin-top:2px">Étapes / questions affichées dans la modale d'évaluation</div></div>
+            <button class="btn btn-primary btn-sm" onclick="addEvalItem()">+ Ajouter</button>
+          </div>
+          <div class="settings-list" id="evalItemsList"></div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-hdr">
+            <div><div class="card-title">Sujet d'action ↔ Thématique</div><div style="font-size:11px;color:var(--muted-fore);margin-top:2px">Auto-sélection de la thématique à l'évaluation d'un nouveau bénéficiaire</div></div>
+            <button class="btn btn-primary btn-sm" onclick="addSubjectTheme()">+ Lier</button>
+          </div>
+          <div class="settings-list" id="subjectThemeList"></div>
+        </div>
+      </div>
     </div>
 
     <!-- CONNEXION -->
