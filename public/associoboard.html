@@ -799,6 +799,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   <div id="importXlsxStatus" style="margin-top:10px;font-size:12px;color:var(--muted-fore)"></div>
 </div></div>
     </div>
+
+    <!-- SAUVEGARDE & RESTAURATION -->
+    <div class="page" id="page-sauvegarde">
+      <div class="page-hdr"><div><div class="page-title">Sauvegarde &amp; restauration</div><div class="page-sub">Historique, export et restauration des données</div></div></div>
+      <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Sauvegarde &amp; restauration</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="exportBackup()">⬇ Exporter</button><button class="btn btn-primary btn-sm" onclick="createBackup()">+ Créer &amp; télécharger</button></div></div><div class="card-body"><div style="font-size:12px;color:var(--muted-fore);margin-bottom:10px">Sauvegardez l'état complet de l'application (associations, comptes, actions, documents, partenaires). La création génère automatiquement un fichier téléchargeable et l'ajoute à l'historique. Restaurez à tout moment ci-dessous.</div><div style="display:flex;gap:9px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><input type="file" id="backupImportFile" accept=".json" class="form-inp" style="flex:1;min-width:200px"/><button class="btn btn-outline btn-sm" onclick="importBackupFile()">Importer un fichier</button></div><div id="backupList"></div></div></div>
+    </div>
   <!-- DIAGNOSTIC TERRITORIAL -->
     <div class="page" id="page-diagnostic">
       <div class="page-hdr">
