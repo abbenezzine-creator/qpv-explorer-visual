@@ -19,7 +19,7 @@ export const Route = createFileRoute("/app")({
 
 type IframeWin = Window & {
   nav?: (id: string) => void;
-  autoLogin?: (login: string) => boolean;
+  autoLogin?: (login: string, opts?: { role?: string; nom?: string; assocId?: string | null }) => boolean;
 };
 
 function AppPage() {
@@ -33,7 +33,7 @@ function AppPage() {
     const onLoad = () => {
       try {
         const win = f.contentWindow as IframeWin | null;
-        if (win?.autoLogin) win.autoLogin(u.login);
+        if (win?.autoLogin) win.autoLogin(u.login, { role: u.role, nom: u.nom, assocId: u.assocId });
         if (win?.nav) win.nav(page);
       } catch { /* noop */ }
     };
@@ -41,7 +41,7 @@ function AppPage() {
     onLoad();
     return () => f.removeEventListener("load", onLoad);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [u?.login]);
+  }, [u?.login, u?.role]);
 
   useEffect(() => {
     const f = ref.current;
