@@ -3441,7 +3441,9 @@ function deleteAssoc(id){
 }
 function deletePartner(id){PARTNERS=PARTNERS.filter(p=>p.id!==id);renderSettings();showToast('Partenaire supprimé');}
 let _showAccountsPwd=false;
-function toggleAccountsPwd(){ _showAccountsPwd=!_showAccountsPwd; const b=document.getElementById('togPwdBtn'); if(b) b.textContent=_showAccountsPwd?'Masquer mots de passe':'Afficher mots de passe'; renderSettings(); }
+function toggleAccountsPwd(){ if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; } _showAccountsPwd=!_showAccountsPwd; const b=document.getElementById('togPwdBtn'); if(b) b.textContent=_showAccountsPwd?'Masquer mots de passe':'Afficher mots de passe'; renderSettings(); }
+function togglePwdRow(login){ if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; } if(!window._showPwdRow) window._showPwdRow={}; window._showPwdRow[login]=!window._showPwdRow[login]; renderSettings(); }
+function copyPwd(login){ if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; } const acc=ACCOUNTS[login]; if(!acc) return; try{ navigator.clipboard.writeText(acc.pwd||''); showToast('Mot de passe copié'); }catch(e){ showToast('Copie impossible'); } }
 function resetAccountPwd(login){
   if(!ACCOUNTS[login]) return;
   const np = _genPwd(); ACCOUNTS[login].pwd = np;
@@ -3470,12 +3472,17 @@ function renderSettings(){
   const al=document.getElementById('assocList');if(al)al.innerHTML=ASSOCS.map(a=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:9px"><div class="settings-dot" style="background:${cv(a.color)}"></div><div><div class="settings-name">${a.nom}</div><div class="settings-sub">${a.theme}</div></div></div><button class="btn btn-sm btn-danger" onclick="deleteAssoc(${a.id})">✕</button></div>`).join('');
   const pl=document.getElementById('partnerList');if(pl)pl.innerHTML=PARTNERS.map(p=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:9px"><div class="settings-dot" style="background:var(--primary)"></div><div><div class="settings-name">${p.nom}</div><div class="settings-sub">${p.type}</div></div></div><button class="btn btn-sm btn-danger" onclick="deletePartner(${p.id})">✕</button></div>`).join('');
   const ac=document.getElementById('accountsList');
+  if(!window._showPwdRow) window._showPwdRow={};
   if(ac) ac.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">'+Object.entries(ACCOUNTS).map(([login,u])=>{
-    const pwdShown = _showAccountsPwd ? u.pwd : '••••••••';
+    const isSuper = currentUser?.role==='superadmin';
+    const shownThisRow = isSuper && (_showAccountsPwd || window._showPwdRow[login]);
+    const pwdShown = shownThisRow ? (u.pwd||'') : '••••••••';
+    const eyeBtn = isSuper ? `<button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="togglePwdRow('${login.replace(/'/g,"\\'")}')" title="${shownThisRow?'Masquer':'Afficher'} le mot de passe">${shownThisRow?'🙈':'👁'}</button>` : '';
+    const copyBtn = isSuper ? `<button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="copyPwd('${login.replace(/'/g,"\\'")}')" title="Copier le mot de passe">⧉</button>` : '';
     return `<div style="background:var(--muted);border-radius:calc(var(--radius)-4px);padding:10px 12px;border:1px solid var(--border)">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><div style="font-size:12px;font-weight:700">${login}</div><div style="display:flex;gap:4px"><button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="editAccount('${login.replace(/'/g,"\\'")}')" title="Modifier">✎</button><button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="resetAccountPwd('${login.replace(/'/g,"\\'")}')" title="Régénérer mot de passe">↻</button></div></div>
       <div style="font-size:11px;color:var(--muted-fore)">${u.role==='superadmin'?'Super Admin':getAssocName(u.assocId)}</div>
-      <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--fore);margin-top:4px">🔑 ${pwdShown}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:4px"><div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--fore);flex:1;overflow:hidden;text-overflow:ellipsis">🔑 ${pwdShown}</div>${eyeBtn}${copyBtn}</div>
     </div>`;
   }).join('')+'</div>';
   renderBackupList();
