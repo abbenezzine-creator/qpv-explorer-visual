@@ -60,6 +60,7 @@ const ressources: NavItem[] = [
 
 const admin: NavItem[] = [
   { title: "Paramètres", to: "/app", search: { page: "parametres" }, icon: Settings },
+  { title: "Sauvegarde & restauration", to: "/app", search: { page: "sauvegarde" }, icon: DatabaseBackup },
   { title: "Questionnaire thématique", to: "/app", search: { page: "questionnaire-thematique" }, icon: ListChecks },
 ];
 
