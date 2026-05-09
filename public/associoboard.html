@@ -3366,13 +3366,27 @@ function _xlsxParseQuartiers(s){
   });
   return [...out];
 }
+window._xlsxNewAccounts = window._xlsxNewAccounts || [];
 function _xlsxOrCreateAssoc(name, theme){
   name = _xlsxNorm(name); if(!name) return null;
   let a = ASSOCS.find(x=>x.nom.toLowerCase()===name.toLowerCase());
-  if(a) return a.id;
+  if(a){
+    // S'assurer qu'un compte existe pour cette association
+    const has = Object.values(ACCOUNTS).some(u=>u.assocId===a.id);
+    if(!has){
+      const login=_slugifyLogin(a.nom), pwd=_genPwd();
+      ACCOUNTS[login]={role:'association',assocId:a.id,pwd,nom:a.nom,color:'oklch(0.52 0.22 285)'};
+      window._xlsxNewAccounts.push({nom:a.nom, login, pwd});
+    }
+    return a.id;
+  }
   const colors=['blue','green','amber','purple','rose'];
   const id=++nextId;
   ASSOCS.push({id,nom:name,theme:theme||'—',color:colors[ASSOCS.length%colors.length]});
+  // Création automatique du compte utilisateur
+  const login=_slugifyLogin(name), pwd=_genPwd();
+  ACCOUNTS[login]={role:'association',assocId:id,pwd,nom:name,color:'oklch(0.52 0.22 285)'};
+  window._xlsxNewAccounts.push({nom:name, login, pwd});
   return id;
 }
 async function importActionsXlsx(){
@@ -3382,6 +3396,7 @@ async function importActionsXlsx(){
   if(!f){ if(status) status.textContent='Sélectionnez un fichier .xlsx'; return; }
   if(typeof XLSX==='undefined'){ if(status) status.textContent='Librairie XLSX non chargée'; return; }
   if(status) status.textContent='Lecture du classeur…';
+  window._xlsxNewAccounts = [];
   try{
     const buf=await f.arrayBuffer();
     const wb=XLSX.read(buf,{type:'array'});
@@ -3472,12 +3487,20 @@ async function importActionsXlsx(){
     }
     assocCreated=ASSOCS.length-beforeAssocs;
     if(ACTIONS.length){ nextId=Math.max(nextId, ...ACTIONS.map(a=>a.id||0))+1; }
-    renderSettings(); updateAllSelects();
+    renderSettings(); updateAllSelects(); if(typeof refreshDemoSelect==='function') refreshDemoSelect();
     if(typeof renderAllActions==='function') renderAllActions();
     if(typeof renderDashboard==='function') renderDashboard();
     if(typeof renderCalendar==='function') renderCalendar();
-    if(status) status.innerHTML=`<span style="color:var(--success,green);font-weight:600">Import réussi.</span> ${added} action(s) ajoutée(s), ${updated} mise(s) à jour, ${assocCreated} association(s) créée(s).`;
-    showToast('Import terminé : '+(added+updated)+' actions');
+    const newAccs = window._xlsxNewAccounts || [];
+    let credBlock = '';
+    if(newAccs.length){
+      credBlock = '<div style="margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--muted)"><div style="font-weight:700;font-size:12px;margin-bottom:6px">🔑 '+newAccs.length+' compte(s) utilisateur créé(s) :</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;font-size:11px;font-family:\'JetBrains Mono\',monospace">'
+        + newAccs.map(a=>`<div><div style="font-weight:600">${a.nom}</div><div>👤 ${a.login} · 🔑 ${a.pwd}</div></div>`).join('')
+        + '</div><div style="font-size:11px;color:var(--muted-fore);margin-top:6px">Retrouvez ces identifiants dans <b>Paramètres → Comptes utilisateurs</b>.</div></div>';
+    }
+    if(status) status.innerHTML=`<span style="color:var(--success,green);font-weight:600">Import réussi.</span> ${added} action(s) ajoutée(s), ${updated} mise(s) à jour, ${assocCreated} association(s) créée(s).`+credBlock;
+    showToast('Import terminé : '+(added+updated)+' actions'+(newAccs.length?' · '+newAccs.length+' compte(s) créé(s)':''));
   }catch(e){
     console.error(e);
     if(status) status.textContent='Erreur : '+(e.message||e);
