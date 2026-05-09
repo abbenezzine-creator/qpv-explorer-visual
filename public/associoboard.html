@@ -1375,9 +1375,9 @@ function setupUserCtx(){
 }
 
 // ========== NAV ==========
-const PT={dashboard:'Tableau de Bord',agenda:'Agenda des Actions',qualite:'Référentiel Qualité',guide:'Guide du Référentiel',questionnaire:'Questionnaire Bénéficiaires','questionnaire-thematique':'Questionnaire thématique',utilite:'Utilité Sociale',resultats:'Résultats & Impacts',documents:'Documents',parametres:'Paramètres',sauvegarde:'Sauvegarde & restauration',diagnostic:'Diagnostic Territorial'};
+const PT={dashboard:'Tableau de Bord',agenda:'Agenda des Actions',qualite:'Référentiel Qualité',guide:'Guide du Référentiel',questionnaire:'Questionnaire Bénéficiaires','questionnaire-thematique':'Questionnaire thématique',utilite:'Utilité Sociale',resultats:'Résultats & Impacts',documents:'Documents',parametres:'Paramètres',sauvegarde:'Sauvegarde & restauration',connexion:'Connexion',diagnostic:'Diagnostic Territorial'};
 function nav(id){
-  if((id==='parametres'||id==='questionnaire-thematique'||id==='sauvegarde')&&currentUser?.role!=='superadmin'){showToast('Réservé au Super Administrateur');return;}
+  if((id==='parametres'||id==='questionnaire-thematique'||id==='sauvegarde'||id==='connexion')&&currentUser?.role!=='superadmin'){showToast('Réservé au Super Administrateur');return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id)?.classList.add('active');
