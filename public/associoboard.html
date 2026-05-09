@@ -1195,6 +1195,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   </div>
 </div>
 
+<!-- ===== MODAL RESET ALL ===== -->
+<div class="overlay" id="resetAllModal" onclick="closeModal('resetAllModal',event)">
+  <div class="modal" style="max-width:460px" onclick="event.stopPropagation()">
+    <div class="modal-hdr"><div class="modal-ttl" style="color:oklch(0.55 0.22 25)">⚠ Réinitialisation complète</div><button class="modal-close" onclick="closeModal('resetAllModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--fore);margin-bottom:10px">Cette action supprimera <b>définitivement</b> toutes les associations, actions, évaluations bénéficiaires, documents, partenaires, sauvegardes et données qualité.</div>
+      <div style="font-size:12px;color:var(--muted-fore);margin-bottom:14px">Pour confirmer, saisissez le code de sécurité :</div>
+      <div class="form-row full"><div class="form-grp"><label class="form-lbl">Code de confirmation</label><input class="form-inp" id="resetAllCode" inputmode="numeric" autocomplete="off" placeholder="Saisir le code à 10 chiffres"/></div></div>
+      <div id="resetAllErr" style="font-size:12px;color:oklch(0.55 0.22 25);margin-top:6px;display:none">Code incorrect.</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('resetAllModal')">Annuler</button><button class="btn btn-danger" onclick="confirmResetAll()">Tout effacer</button></div>
+  </div>
+</div>
 <!-- ===== MODAL UPLOAD DOC ===== -->
 <div class="overlay" id="uploadDocModal" onclick="closeModal('uploadDocModal',event)">
   <div class="modal" style="max-width:500px" onclick="event.stopPropagation()">
