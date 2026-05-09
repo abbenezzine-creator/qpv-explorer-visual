@@ -4638,6 +4638,7 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 // ========== INIT ==========
 function init(){
   initYearFilter();
+  initGlobalThemeSel();
   document.getElementById('dashYear').textContent=currentYear;
   updateAllSelects();
   renderDashboard(); renderCalendar(); renderAllActions(); updateBadge();
