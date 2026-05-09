@@ -3396,6 +3396,7 @@ async function importActionsXlsx(){
   if(!f){ if(status) status.textContent='Sélectionnez un fichier .xlsx'; return; }
   if(typeof XLSX==='undefined'){ if(status) status.textContent='Librairie XLSX non chargée'; return; }
   if(status) status.textContent='Lecture du classeur…';
+  window._xlsxNewAccounts = [];
   try{
     const buf=await f.arrayBuffer();
     const wb=XLSX.read(buf,{type:'array'});
