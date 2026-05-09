@@ -2552,10 +2552,10 @@ function applyEmbedMode(){
   if(EMBED.theme && THEMATIQUES[EMBED.theme]){
     setTimeout(function(){
       selectThematique(EMBED.theme);
+      // Les autres thématiques restent cliquables (auto-sélection modifiable)
       document.querySelectorAll('.thematique-card').forEach(function(el){
-        if(el.dataset.key !== EMBED.theme){
-          el.style.opacity='0.35'; el.style.pointerEvents='none';
-        }
+        el.style.opacity=''; el.style.pointerEvents='';
+        if(el.dataset.key !== EMBED.theme){ el.style.opacity='0.85'; }
       });
       if(EMBED.sous && THEMATIQUES[EMBED.theme].sous[EMBED.sous]){
         setTimeout(function(){ selectSousThematique(EMBED.sous); }, 80);
