@@ -485,11 +485,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <button class="btn-login" onclick="doLogin()">Se connecter →</button>
     <div class="login-err" id="loginErr">Identifiant ou mot de passe incorrect.</div>
     <div class="demo-box">
-      <div class="demo-ttl">Comptes démo — cliquer pour remplir</div>
-      <div class="demo-row" onclick="fillDemo('admin','admin2025')"><span class="demo-role">Super Admin</span><span class="demo-creds">admin / admin2025</span></div>
-      <div class="demo-row" onclick="fillDemo('action','action2025')"><span class="demo-role">ACTION</span><span class="demo-creds">action / action2025</span></div>
-      <div class="demo-row" onclick="fillDemo('passemploi','pass2025')"><span class="demo-role">PASS'EMPLOI</span><span class="demo-creds">passemploi / pass2025</span></div>
-      <div class="demo-row" onclick="fillDemo('atlas','atlas2025')"><span class="demo-role">ATLAS ETRE ET SAVOIR</span><span class="demo-creds">atlas / atlas2025</span></div>
+      <div class="demo-ttl">Comptes de démonstration</div>
+      <select id="demoSel" onchange="onDemoSelect(this.value)" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--fore);font-family:inherit;cursor:pointer">
+        <option value="">— Choisir un compte —</option>
+      </select>
     </div>
     <div style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" onclick="toggleTheme()">
       <div class="tog-track" id="loginTog"><div class="tog-thumb"></div></div>
