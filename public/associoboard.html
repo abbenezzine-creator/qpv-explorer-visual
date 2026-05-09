@@ -1614,8 +1614,11 @@ function renderDashboard(){
   const allActsYear=ACTIONS.filter(a=>!a.annee||a.annee===currentYear);
   const totalActions=isAdmin?allActsYear.length:acts.length;
   const _avgBenef = (arr)=> arr.length ? Math.round(arr.reduce((s,a)=>s+(a.nb||0),0)/arr.length) : 0;
-  const totalBenef = isAdmin ? _avgBenef(allActsYear) : _avgBenef(acts);
-  const filteredBenef = _avgBenef(acts);
+  const _sumBenef = (arr)=> arr.reduce((s,a)=>s+(a.nb||0),0);
+  // Si une association est sélectionnée (ou si l'utilisateur est rattaché à une asso) → total. Sinon moyenne par action.
+  const assocScoped = !!(isAdmin ? currentAssocId : currentUser?.assocId);
+  const totalBenef = assocScoped ? _sumBenef(acts) : (isAdmin ? _avgBenef(allActsYear) : _avgBenef(acts));
+  const filteredBenef = _sumBenef(acts);
   // Score qualité scoped to current association (or moyenne globale si superadmin sans sélection)
   const scopedActs = (typeof _scopedActionsForQual==='function') ? _scopedActionsForQual() : acts;
   const allInds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
