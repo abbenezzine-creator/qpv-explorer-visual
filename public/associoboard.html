@@ -1435,10 +1435,13 @@ function getAssocColor(id){return ASSOCS.find(x=>x.id===id)?.color||'purple';}
 function cv(c){return CMAP[c]||CMAP.purple;}
 // ===== GLOBAL THEME / SOUS-THEME FILTERS =====
 const SOUS_THEMES = {
+  'Emancipation':['Égalité femmes-hommes','Lutte discriminations','Estime de soi','Autonomie'],
   'Education / Parentalité':['Soutien scolaire','Parentalité','Petite enfance','Périscolaire'],
   'Emploi':['Insertion professionnelle','Formation','Création d\'activité','Mobilité'],
   'Emploi & Développement':['Insertion professionnelle','Formation','Création d\'activité','Mobilité'],
   'Santé':['Prévention','Accès aux soins','Santé mentale','Nutrition'],
+  'Santé vieillissement':['Bien-vieillir','Isolement','Aidants','Prévention chutes'],
+  'Handicap':['Accessibilité','Inclusion','Accompagnement','Sensibilisation'],
   'Cohésion sociale':['Lien social','Médiation','Vivre-ensemble','Solidarité'],
   'Citoyenneté':['Engagement','Participation','Mémoire','Laïcité'],
   'Accès aux droits':['Numérique','Juridique','Logement','Démarches admin.'],
