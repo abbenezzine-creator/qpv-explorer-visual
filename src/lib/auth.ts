@@ -1,50 +1,130 @@
-// Lightweight client-side auth shared between React shell and the AssocioBoard iframe.
-// Mirrors the ACCOUNTS table in public/associoboard.html.
+// Auth helpers backed by Supabase. Keeps the AbUser shape used across the app.
+import { supabase } from "@/integrations/supabase/client";
 
-export type Role = "superadmin" | "association";
+export type Role = "superadmin" | "admin_asso" | "agent" | "viewer";
 
 export type AbUser = {
-  login: string;
+  id: string;
+  login: string; // email
+  email: string;
   role: Role;
-  assocId: number | null;
+  assocId: string | null;
   nom: string;
 };
 
-export const ACCOUNTS: Record<string, { pwd: string; role: Role; assocId: number | null; nom: string }> = {
-  admin:      { pwd: "admin2025",  role: "superadmin", assocId: null, nom: "Super Administrateur" },
-  action:     { pwd: "action2025", role: "association", assocId: 1,    nom: "ACTION" },
-  passemploi: { pwd: "pass2025",   role: "association", assocId: 2,    nom: "PASS'EMPLOI" },
-  atlas:      { pwd: "atlas2025",  role: "association", assocId: 3,    nom: "ATLAS ETRE ET SAVOIR" },
-  laos:       { pwd: "laos2025",   role: "association", assocId: 4,    nom: "DES JEUNES DU LAOS" },
-};
-
 const KEY = "abUser";
+let current: AbUser | null = null;
+let listenerInit = false;
 
-export function getUser(): AbUser | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as AbUser) : null;
-  } catch {
-    return null;
-  }
-}
-
-export function setUser(u: AbUser | null) {
+function broadcast() {
   if (typeof window === "undefined") return;
-  if (u) sessionStorage.setItem(KEY, JSON.stringify(u));
-  else sessionStorage.removeItem(KEY);
   window.dispatchEvent(new Event("ab-auth-change"));
 }
 
-export function login(loginId: string, pwd: string): AbUser | null {
-  const acc = ACCOUNTS[loginId.trim().toLowerCase()];
-  if (!acc || acc.pwd !== pwd) return null;
-  const u: AbUser = { login: loginId.trim().toLowerCase(), role: acc.role, assocId: acc.assocId, nom: acc.nom };
-  setUser(u);
+function persist(u: AbUser | null) {
+  current = u;
+  if (typeof window === "undefined") return;
+  if (u) sessionStorage.setItem(KEY, JSON.stringify(u));
+  else sessionStorage.removeItem(KEY);
+  broadcast();
+}
+
+export function getUser(): AbUser | null {
+  if (current) return current;
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(KEY);
+    if (raw) {
+      current = JSON.parse(raw) as AbUser;
+      return current;
+    }
+  } catch { /* noop */ }
+  return null;
+}
+
+const ROLE_PRIORITY: Role[] = ["superadmin", "admin_asso", "agent", "viewer"];
+
+async function loadProfile(userId: string, email: string): Promise<AbUser> {
+  const [profileRes, rolesRes] = await Promise.all([
+    supabase.from("profiles").select("nom, assoc_id, email").eq("id", userId).maybeSingle(),
+    supabase.from("user_roles").select("role").eq("user_id", userId),
+  ]);
+  const userRoles = (rolesRes.data ?? []).map((r) => r.role as Role);
+  const role = ROLE_PRIORITY.find((r) => userRoles.includes(r)) ?? "viewer";
+  const u: AbUser = {
+    id: userId,
+    login: email,
+    email,
+    role,
+    assocId: (profileRes.data?.assoc_id as string | null) ?? null,
+    nom: profileRes.data?.nom ?? email.split("@")[0],
+  };
+  persist(u);
   return u;
 }
 
-export function logout() {
-  setUser(null);
+export async function login(email: string, password: string): Promise<{ user: AbUser | null; error: string | null }> {
+  const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+  if (error || !data.user) return { user: null, error: error?.message ?? "Identifiants invalides" };
+  const u = await loadProfile(data.user.id, data.user.email ?? email);
+  return { user: u, error: null };
+}
+
+export async function signup(email: string, password: string, nom?: string): Promise<{ ok: boolean; needsConfirm: boolean; error: string | null }> {
+  const redirectUrl = typeof window !== "undefined" ? `${window.location.origin}/app?page=dashboard` : undefined;
+  const { data, error } = await supabase.auth.signUp({
+    email: email.trim(),
+    password,
+    options: { emailRedirectTo: redirectUrl, data: nom ? { nom } : undefined },
+  });
+  if (error) return { ok: false, needsConfirm: false, error: error.message };
+  if (data.user && data.session) {
+    await loadProfile(data.user.id, data.user.email ?? email);
+    return { ok: true, needsConfirm: false, error: null };
+  }
+  return { ok: true, needsConfirm: true, error: null };
+}
+
+export async function requestPasswordReset(email: string): Promise<{ ok: boolean; error: string | null }> {
+  const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, error: null };
+}
+
+export async function updatePassword(newPassword: string): Promise<{ ok: boolean; error: string | null }> {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, error: null };
+}
+
+export async function logout() {
+  await supabase.auth.signOut();
+  persist(null);
+}
+
+export async function refreshFromSession(): Promise<AbUser | null> {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session?.user) {
+    persist(null);
+    return null;
+  }
+  return await loadProfile(data.session.user.id, data.session.user.email ?? "");
+}
+
+export function initAuthListener() {
+  if (typeof window === "undefined" || listenerInit) return;
+  listenerInit = true;
+  supabase.auth.onAuthStateChange((_event, session) => {
+    if (!session?.user) {
+      persist(null);
+      return;
+    }
+    // Defer Supabase calls inside the callback to avoid lock contention.
+    setTimeout(() => {
+      void loadProfile(session.user.id, session.user.email ?? "");
+    }, 0);
+  });
+  // Hydrate once on init.
+  void refreshFromSession();
 }
