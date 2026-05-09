@@ -1516,10 +1516,12 @@ function onGlobalThemeChange(){
   currentSousTheme='';
   refreshSousThemeSel();
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
+  try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
 }
 function onGlobalSousThemeChange(){
   currentSousTheme=document.getElementById('globalSousThemeSel').value;
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
+  try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
 }
 
 function filteredActions(){
@@ -5567,12 +5569,18 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     const sub = document.getElementById('impactsBenefSub');
     if(!body) return;
     if(typeof ACTIONS==='undefined'){ body.innerHTML='<div class="card"><div class="card-body">Chargement…</div></div>'; return; }
-    const filtered = ACTIONS.filter(a => !currentAssocId || a.assocId===currentAssocId);
+    const filtered = ACTIONS.filter(a => {
+      if(currentAssocId && a.assocId!==currentAssocId) return false;
+      if(currentTheme && a.theme!==currentTheme) return false;
+      if(currentSousTheme && a.sousTheme!==currentSousTheme) return false;
+      return true;
+    });
     const allResp = [];
     filtered.forEach(a => (a.surveyResponses||[]).forEach(r => allResp.push(Object.assign({_assoc:getAssocName(a.assocId), _action:a.titre}, r))));
     const n = allResp.length;
-    const scope = currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Toutes les associations';
-    if(sub) sub.textContent = scope + ' · ' + n + ' bénéficiaire' + (n>1?'s':'') + ' évalué' + (n>1?'s':'');
+    const scopeAsso = currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Toutes les associations';
+    const scopeTheme = currentSousTheme || currentTheme || 'Toutes thématiques';
+    if(sub) sub.textContent = scopeAsso + ' · ' + scopeTheme + ' · ' + n + ' bénéficiaire' + (n>1?'s':'') + ' évalué' + (n>1?'s':'');
     if(!n){
       body.innerHTML = '<div class="card"><div class="card-body" style="color:var(--muted-fore);font-size:14px">Aucune évaluation bénéficiaire enregistrée pour ce périmètre. Lancez une évaluation depuis une carte action.</div></div>';
       return;
