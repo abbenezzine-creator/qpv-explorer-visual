@@ -4954,7 +4954,7 @@ async function connectSheetsFromParam(){document.getElementById('gsUrl').value=d
 async function gsPost(sheet,row){if(!SCRIPT_URL)return;try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({sheet,row})});}catch(e){}}
 
 // ========== TOAST ==========
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.transform='translateY(0)';t.style.opacity='1';setTimeout(()=>{t.style.transform='translateY(60px)';t.style.opacity='0';},3000);}
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;const grads={success:'linear-gradient(135deg,oklch(0.55 0.18 150),oklch(0.62 0.16 165))',error:'linear-gradient(135deg,oklch(0.58 0.22 25),oklch(0.62 0.22 15))',info:'linear-gradient(135deg,oklch(0.55 0.18 240),oklch(0.6 0.18 260))'};t.style.background=grads[type]||'var(--grad-rose)';t.style.transform='translateY(0)';t.style.opacity='1';clearTimeout(window._toastTm);window._toastTm=setTimeout(()=>{t.style.transform='translateY(60px)';t.style.opacity='0';},3200);}
 
 // ========== INIT ==========
 function init(){
