@@ -11,6 +11,7 @@ import {
   LogOut,
   Library,
   ListChecks,
+  DatabaseBackup,
 } from "lucide-react";
 
 import {
