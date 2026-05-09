@@ -3441,7 +3441,9 @@ function deleteAssoc(id){
 }
 function deletePartner(id){PARTNERS=PARTNERS.filter(p=>p.id!==id);renderSettings();showToast('Partenaire supprimé');}
 let _showAccountsPwd=false;
-function toggleAccountsPwd(){ _showAccountsPwd=!_showAccountsPwd; const b=document.getElementById('togPwdBtn'); if(b) b.textContent=_showAccountsPwd?'Masquer mots de passe':'Afficher mots de passe'; renderSettings(); }
+function toggleAccountsPwd(){ if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; } _showAccountsPwd=!_showAccountsPwd; const b=document.getElementById('togPwdBtn'); if(b) b.textContent=_showAccountsPwd?'Masquer mots de passe':'Afficher mots de passe'; renderSettings(); }
+function togglePwdRow(login){ if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; } if(!window._showPwdRow) window._showPwdRow={}; window._showPwdRow[login]=!window._showPwdRow[login]; renderSettings(); }
+function copyPwd(login){ if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; } const acc=ACCOUNTS[login]; if(!acc) return; try{ navigator.clipboard.writeText(acc.pwd||''); showToast('Mot de passe copié'); }catch(e){ showToast('Copie impossible'); } }
 function resetAccountPwd(login){
   if(!ACCOUNTS[login]) return;
   const np = _genPwd(); ACCOUNTS[login].pwd = np;
