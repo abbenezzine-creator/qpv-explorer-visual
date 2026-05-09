@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      associations: {
+        Row: {
+          commune: string | null
+          created_at: string
+          description: string | null
+          id: string
+          nom: string
+          qpv_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          commune?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          nom: string
+          qpv_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          commune?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          nom?: string
+          qpv_key?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          assoc_id: string | null
+          created_at: string
+          email: string | null
+          id: string
+          nom: string | null
+          updated_at: string
+        }
+        Insert: {
+          assoc_id?: string | null
+          created_at?: string
+          email?: string | null
+          id: string
+          nom?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assoc_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          nom?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_assoc_id_fkey"
+            columns: ["assoc_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       thematic_responses: {
         Row: {
           answers: Json
@@ -82,15 +147,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "superadmin" | "admin_asso" | "agent" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -217,6 +309,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["superadmin", "admin_asso", "agent", "viewer"],
+    },
   },
 } as const
