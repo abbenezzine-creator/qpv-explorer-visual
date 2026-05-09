@@ -3366,13 +3366,27 @@ function _xlsxParseQuartiers(s){
   });
   return [...out];
 }
+window._xlsxNewAccounts = window._xlsxNewAccounts || [];
 function _xlsxOrCreateAssoc(name, theme){
   name = _xlsxNorm(name); if(!name) return null;
   let a = ASSOCS.find(x=>x.nom.toLowerCase()===name.toLowerCase());
-  if(a) return a.id;
+  if(a){
+    // S'assurer qu'un compte existe pour cette association
+    const has = Object.values(ACCOUNTS).some(u=>u.assocId===a.id);
+    if(!has){
+      const login=_slugifyLogin(a.nom), pwd=_genPwd();
+      ACCOUNTS[login]={role:'association',assocId:a.id,pwd,nom:a.nom,color:'oklch(0.52 0.22 285)'};
+      window._xlsxNewAccounts.push({nom:a.nom, login, pwd});
+    }
+    return a.id;
+  }
   const colors=['blue','green','amber','purple','rose'];
   const id=++nextId;
   ASSOCS.push({id,nom:name,theme:theme||'—',color:colors[ASSOCS.length%colors.length]});
+  // Création automatique du compte utilisateur
+  const login=_slugifyLogin(name), pwd=_genPwd();
+  ACCOUNTS[login]={role:'association',assocId:id,pwd,nom:name,color:'oklch(0.52 0.22 285)'};
+  window._xlsxNewAccounts.push({nom:name, login, pwd});
   return id;
 }
 async function importActionsXlsx(){
