@@ -1324,6 +1324,21 @@ function onYearChange(){
 
 // ========== AUTH ==========
 function fillDemo(u,p){document.getElementById('loginUser').value=u;document.getElementById('loginPwd').value=p;}
+function onDemoSelect(v){
+  if(!v) return;
+  const acc = ACCOUNTS[v]; if(!acc) return;
+  fillDemo(v, acc.pwd);
+}
+function refreshDemoSelect(){
+  const sel = document.getElementById('demoSel'); if(!sel) return;
+  const cur = sel.value;
+  const opts = Object.entries(ACCOUNTS).map(([login,u])=>{
+    const label = u.role==='superadmin' ? 'Super Admin' : (u.nom||login);
+    return `<option value="${login}">${label} — ${login}</option>`;
+  }).join('');
+  sel.innerHTML = '<option value="">— Choisir un compte —</option>' + opts;
+  if(cur && ACCOUNTS[cur]) sel.value = cur;
+}
 function doLogin(){
   const u=document.getElementById('loginUser').value.trim(), p=document.getElementById('loginPwd').value;
   const acc=ACCOUNTS[u]; if(!acc||acc.pwd!==p){document.getElementById('loginErr').style.display='block';return;}
