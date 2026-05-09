@@ -14,6 +14,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppAssociationsRouteImport } from './routes/app.associations'
 import { Route as AppActionsRouteImport } from './routes/app.actions'
 import { Route as AppActionsIdRouteImport } from './routes/app.actions.$id'
 import { Route as AppActionsIdEvaluationRouteImport } from './routes/app.actions.$id.evaluation'
@@ -43,6 +44,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppAssociationsRoute = AppAssociationsRouteImport.update({
+  id: '/associations',
+  path: '/associations',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppActionsRoute = AppActionsRouteImport.update({
   id: '/actions',
   path: '/actions',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
+  '/app/associations': typeof AppAssociationsRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
+  '/app/associations': typeof AppAssociationsRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
+  '/app/associations': typeof AppAssociationsRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/app/actions'
+    | '/app/associations'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/app/actions'
+    | '/app/associations'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/app/actions'
+    | '/app/associations'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
   fileRoutesById: FileRoutesById
@@ -167,6 +179,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/associations': {
+      id: '/app/associations'
+      path: '/associations'
+      fullPath: '/app/associations'
+      preLoaderRoute: typeof AppAssociationsRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/actions': {
       id: '/app/actions'
@@ -218,10 +237,12 @@ const AppActionsRouteWithChildren = AppActionsRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppActionsRoute: typeof AppActionsRouteWithChildren
+  AppAssociationsRoute: typeof AppAssociationsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppActionsRoute: AppActionsRouteWithChildren,
+  AppAssociationsRoute: AppAssociationsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -236,3 +257,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
