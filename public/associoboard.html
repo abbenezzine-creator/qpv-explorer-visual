@@ -951,7 +951,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="8" rx="1"/><path d="M9 5V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h2"/></svg>
         Copier
       </button>
-      
+      <button class="btn btn-primary" id="detailEditBtn" onclick="editActionFromDetail()" style="display:none">
+        <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5l2 2-7 7H2.5v-2z"/></svg>
+        Modifier
+      </button>
       <button class="btn btn-outline" onclick="closeModal('actionDetailModal')">Fermer</button>
     </div>
   </div>
@@ -1084,7 +1087,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         </div>
       </div>
       <div class="form-row">
-        <div class="form-grp"><label class="form-lbl">Statut</label><select class="form-sel" id="fa-statut"><option>Planifié</option><option>En cours</option><option>Récurrent</option><option>Terminé</option></select></div>
+        <div class="form-grp"><label class="form-lbl">Statut</label><select class="form-sel" id="fa-statut"><option>Planifié</option><option>En cours</option><option>Récurrent</option><option>Terminé</option><option>Favorable</option><option>Non retenu</option><option>Ajournée</option><option>Orienté vers un autre dispositif</option></select></div>
         <div class="form-grp"><label class="form-lbl">Lieu principal (raccourci)</label><input class="form-inp" id="fa-lieu" placeholder="Auto depuis le 1er lieu" readonly style="cursor:default;background:var(--muted)"/></div>
       </div>
       <div class="form-row full"><div class="form-grp"><label class="form-lbl">Description & Objectifs</label><textarea class="form-ta" id="fa-desc" placeholder="Décrivez l'action…"></textarea></div></div>
@@ -1432,10 +1435,13 @@ function getAssocColor(id){return ASSOCS.find(x=>x.id===id)?.color||'purple';}
 function cv(c){return CMAP[c]||CMAP.purple;}
 // ===== GLOBAL THEME / SOUS-THEME FILTERS =====
 const SOUS_THEMES = {
+  'Emancipation':['Égalité femmes-hommes','Lutte discriminations','Estime de soi','Autonomie'],
   'Education / Parentalité':['Soutien scolaire','Parentalité','Petite enfance','Périscolaire'],
   'Emploi':['Insertion professionnelle','Formation','Création d\'activité','Mobilité'],
   'Emploi & Développement':['Insertion professionnelle','Formation','Création d\'activité','Mobilité'],
   'Santé':['Prévention','Accès aux soins','Santé mentale','Nutrition'],
+  'Santé vieillissement':['Bien-vieillir','Isolement','Aidants','Prévention chutes'],
+  'Handicap':['Accessibilité','Inclusion','Accompagnement','Sensibilisation'],
   'Cohésion sociale':['Lien social','Médiation','Vivre-ensemble','Solidarité'],
   'Citoyenneté':['Engagement','Participation','Mémoire','Laïcité'],
   'Accès aux droits':['Numérique','Juridique','Logement','Démarches admin.'],
@@ -1815,7 +1821,9 @@ function openActionDetail(id){
   document.getElementById('detailHeroTitle').textContent=a.titre;
   const bc=TCOL[a.type]||'purple';
   document.getElementById('detailBadges').innerHTML=`<span class="badge badge-${bc}">${a.type}</span><span class="badge badge-gray">${a.theme}</span>${(a.quartiers||[]).map(q=>`<span class="badge badge-gray">${q}</span>`).join('')}`;
-  document.getElementById('detailStatut').innerHTML=`<span class="badge badge-${bc}" style="padding:4px 12px;font-size:12px">${a.statut}</span>`;
+  const STATUT_COL={'Favorable':'green','Non retenu':'red','Ajournée':'amber','Orienté vers un autre dispositif':'blue','En cours':'blue','Planifié':'gray','Récurrent':'purple','Terminé':'green'};
+  const sbc=STATUT_COL[a.statut]||bc;
+  document.getElementById('detailStatut').innerHTML=`<span class="badge badge-${sbc}" style="padding:4px 12px;font-size:12px">${a.statut}</span>`;
   document.getElementById('detailInfoGrid').innerHTML=`
     <div class="info-block"><div class="info-lbl">Association</div><div class="info-val">${getAssocName(a.assocId)}</div></div>
     <div class="info-block"><div class="info-lbl">Date début</div><div class="info-val">${a.date.split('-').reverse().join('/')}</div></div>
@@ -1895,7 +1903,18 @@ function openActionDetail(id){
     ds.style.display='block';
     document.getElementById('detailDoc').innerHTML=`<div class="file-prev-pdf"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="oklch(0.58 0.22 25)" stroke-width="1.5" stroke-linecap="round"><path d="M9 1.5H4a1.5 1.5 0 0 0-1.5 1.5v10a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5V6l-4-4.5z"/></svg><span style="flex:1;font-size:12px;font-weight:600">${a.fileName}</span><a href="${a.fileData}" download="${a.fileName}" class="btn btn-outline btn-sm">Télécharger</a></div>`;
   } else ds.style.display='none';
+  // Bouton modifier (superadmin uniquement)
+  const eb=document.getElementById('detailEditBtn');
+  if(eb) eb.style.display=(currentUser?.role==='superadmin')?'inline-flex':'none';
   openModal('actionDetailModal');
+}
+let editingActionId=null;
+function editActionFromDetail(){
+  if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; }
+  const a=ACTIONS.find(x=>x.id===currentDetailId); if(!a) return;
+  editingActionId=a.id;
+  closeModal('actionDetailModal');
+  openAddActionModal(a.id);
 }
 
 // ========== COPY / PASTE ACTION ==========
@@ -2162,7 +2181,7 @@ function getHeureDisplay(){
 }
 
 // ========== ADD ACTION ==========
-function openAddActionModal(){
+function openAddActionModal(editId){
   const sel=document.getElementById('fa-assoc');
   const isAdmin=currentUser?.role==='superadmin';
   sel.innerHTML='<option value="">— Choisir —</option>'+ASSOCS.map(a=>`<option value="${a.id}"${(!isAdmin&&a.id===currentAssocId)?' selected':''}>${a.nom}</option>`).join('');
@@ -2192,6 +2211,34 @@ function openAddActionModal(){
   document.getElementById('fa-img-prev').style.display='none';
   document.getElementById('fa-pdf-prev').style.display='none';
   ['fa-titre','fa-heure-debut','fa-heure-fin','fa-lieu','fa-desc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  // Edit mode : préremplir
+  editingActionId = editId || null;
+  const titleEl=document.querySelector('#addActionModal .modal-ttl');
+  const submitBtn=document.querySelector('#addActionModal .modal-footer .btn-primary');
+  if(editingActionId){
+    const a=ACTIONS.find(x=>x.id===editingActionId);
+    if(a){
+      _applyPayloadToForm({
+        titre:a.titre,type:a.type,theme:a.theme,annee:a.annee,assocId:a.assocId,
+        date:a.date,dateFin:a.dateFin,heure:a.heure,jours:a.jours,recurrence:a.recurrence,
+        recurrenceDetail:a.recurrenceDetail,recurrenceFin:a.recurrenceFin,
+        quartiers:a.quartiers,ages:a.ages,fonctions:a.fonctions,
+        lieu:a.lieu,lieux:a.lieux,nb:a.nb,statut:a.statut,desc:a.desc,
+        budgetLines:a.budgetLines
+      });
+      if(a.fileData){
+        pendingFile={data:a.fileData,type:a.fileType,name:a.fileName};
+        const ip=document.getElementById('fa-img-prev'), pp=document.getElementById('fa-pdf-prev');
+        if(a.fileType?.startsWith('image')){ip.src=a.fileData;ip.style.display='block';}
+        else{pp.style.display='block';pp.innerHTML=`<div class="file-prev-pdf"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="oklch(0.58 0.22 25)" stroke-width="1.5" stroke-linecap="round"><path d="M9 1.5H4a1.5 1.5 0 0 0-1.5 1.5v10a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5V6l-4-4.5z"/></svg><span style="font-size:12px;font-weight:600">${a.fileName||''}</span></div>`;}
+      }
+    }
+    if(titleEl) titleEl.textContent='Modifier une action';
+    if(submitBtn) submitBtn.textContent='Enregistrer les modifications';
+  } else {
+    if(titleEl) titleEl.textContent='Ajouter / Modifier une action';
+    if(submitBtn) submitBtn.textContent="Ajouter l'action";
+  }
   openModal('addActionModal');
 }
 function handleFileSelect(input){
@@ -2212,8 +2259,8 @@ function addAction(){
   if(!titre){showToast('Saisissez un titre');return;}
   if(!assocId){showToast('Choisissez une association');return;}
   const grads=['linear-gradient(135deg,oklch(0.52 0.22 285),oklch(0.62 0.22 340))','linear-gradient(135deg,oklch(0.52 0.16 150),oklch(0.6 0.17 240))','linear-gradient(135deg,oklch(0.76 0.17 75),oklch(0.6 0.17 60))','linear-gradient(135deg,oklch(0.62 0.22 340),oklch(0.76 0.17 75))'];
-  ACTIONS.push({
-    id:++nextId,assocId,titre,
+  const payload={
+    assocId,titre,
     type:document.getElementById('fa-type').value,
     theme:document.getElementById('fa-theme').value,
     annee:parseInt(document.getElementById('fa-annee').value)||currentYear,
@@ -2233,10 +2280,20 @@ function addAction(){
     budgetLines:getBudgetRows(),
     statut:document.getElementById('fa-statut').value,
     desc:document.getElementById('fa-desc').value||'—',
-    gradient:grads[Math.floor(Math.random()*grads.length)],
     fileData:pendingFile.data,fileType:pendingFile.type,fileName:pendingFile.name,
-    surveyResult:null,
-  });
+  };
+  if(editingActionId){
+    const idx=ACTIONS.findIndex(x=>x.id===editingActionId);
+    if(idx>=0){
+      ACTIONS[idx]={...ACTIONS[idx],...payload};
+      closeModal('addActionModal');
+      editingActionId=null;
+      renderCalendar(); renderActionsList('dashActions',filteredActions(),4); renderAllActions(); updateBadge(); renderDashboard();
+      showToast('Action modifiée : '+titre);
+      return;
+    }
+  }
+  ACTIONS.push({id:++nextId,...payload,gradient:grads[Math.floor(Math.random()*grads.length)],surveyResult:null});
   closeModal('addActionModal');
   renderCalendar(); renderActionsList('dashActions',filteredActions(),4); renderAllActions(); updateBadge(); renderDashboard();
   if(SCRIPT_URL) gsPost('Actions',{titre,type:document.getElementById('fa-type').value,date:document.getElementById('fa-date').value});
@@ -4942,9 +4999,29 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       +'<div><div style="font-size:15px;font-weight:800">Évaluation bénéficiaire</div><div id="benefSub" style="font-size:12px;opacity:0.9;margin-top:2px"></div></div>'
       +'<button onclick="closeBenefModal()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:34px;height:34px;border-radius:8px;font-size:18px;cursor:pointer">✕</button>'
       +'</div>'
+      +'<div id="benefThemeBar" style="display:flex;flex-wrap:wrap;gap:10px;padding:12px 20px;border-bottom:1px solid #e5e7eb;background:#f8fafc;align-items:flex-end">'
+        +'<div style="flex:1;min-width:200px"><label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:4px">Thématique</label><select id="benefThemeSel" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;color:#0f172a;font-family:inherit"></select></div>'
+        +'<div style="flex:1;min-width:200px"><label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:4px">Sous-thématique</label><select id="benefSousThemeSel" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;color:#0f172a;font-family:inherit"></select></div>'
+      +'</div>'
       +'<iframe id="benefFrame" style="flex:1;border:none;width:100%" title="Questionnaire bénéficiaire"></iframe>'
       +'</div>';
     document.body.appendChild(div);
+  }
+  function _populateBenefThemeSel(themeSel,subSel,curTheme,curSub){
+    const themes=Object.keys(SOUS_THEMES);
+    themeSel.innerHTML=themes.map(t=>`<option value="${t}"${t===curTheme?' selected':''}>${t}</option>`).join('');
+    const opts=SOUS_THEMES[themeSel.value]||[];
+    subSel.innerHTML='<option value="">— Toutes —</option>'+opts.map(s=>`<option value="${s}"${s===curSub?' selected':''}>${s}</option>`).join('');
+  }
+  function _reloadBenefFrame(){
+    const a=ACTIONS.find(x=>x.id===benefCurrentId); if(!a) return;
+    const t=document.getElementById('benefThemeSel').value;
+    const s=document.getElementById('benefSousThemeSel').value;
+    const qkey=THEME_TO_QKEY[t]||'transversal';
+    const params=new URLSearchParams({embed:'1',action:String(a.id),title:a.titre||'',asso:getAssocName(a.assocId)||'',theme:qkey,sousTheme:s||''});
+    const fr=document.getElementById('benefFrame');
+    fr.src='questionnaire.html?'+params.toString();
+    fr.onload=function(){ try{ fr.contentWindow.postMessage({type:'aggregate-data',aggregate:{responses:(a.surveyResponses||[])}},'*'); }catch(err){} };
   }
   window.closeBenefModal = function(){
     const m = document.getElementById('benefModal'); if(m) m.style.display = 'none';
@@ -4955,23 +5032,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     ensureBenefModal();
     benefCurrentId = id;
     const a = ACTIONS.find(x=>x.id===id); if(!a) return;
-    const qkey = THEME_TO_QKEY[a.theme] || 'transversal';
     document.getElementById('benefSub').textContent = (a.titre||'') + ' — ' + getAssocName(a.assocId);
-    const params = new URLSearchParams({
-      embed:'1',
-      action: String(a.id),
-      title: a.titre || '',
-      asso: getAssocName(a.assocId) || '',
-      theme: qkey
-    });
-    const fr = document.getElementById('benefFrame');
-    fr.src = 'questionnaire.html?' + params.toString();
-    fr.onload = function(){
-      try{
-        const responses = (a.surveyResponses || []);
-        fr.contentWindow.postMessage({ type:'aggregate-data', aggregate: { responses } }, '*');
-      }catch(err){}
-    };
+    const themeSel=document.getElementById('benefThemeSel');
+    const subSel=document.getElementById('benefSousThemeSel');
+    const initTheme=SOUS_THEMES[a.theme]?a.theme:Object.keys(SOUS_THEMES)[0];
+    _populateBenefThemeSel(themeSel,subSel,initTheme,a.sousTheme||'');
+    themeSel.onchange=function(){ _populateBenefThemeSel(themeSel,subSel,themeSel.value,''); _reloadBenefFrame(); };
+    subSel.onchange=function(){ _reloadBenefFrame(); };
+    _reloadBenefFrame();
     document.getElementById('benefModal').style.display = 'flex';
   };
 
