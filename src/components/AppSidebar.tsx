@@ -51,7 +51,7 @@ const principal: NavItem[] = [
 ];
 
 const evaluation: NavItem[] = [
-  { title: "Impacts bénéficiaires", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
+  { title: "Impacts bénéficiaires", to: "/app", search: { page: "impacts-beneficiaires" }, icon: TrendingUp },
 ];
 
 const ressources: NavItem[] = [
