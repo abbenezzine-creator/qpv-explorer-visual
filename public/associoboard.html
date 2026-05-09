@@ -414,20 +414,23 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .page-sub{font-size:13px;color:var(--muted-fore);margin-top:3px}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
 .q-wrap{max-width:700px}
-.sb-overlay{display:none;position:fixed;inset:0;background:oklch(0 0 0/.5);z-index:99}
+.sb-overlay{display:none;position:fixed;inset:0;background:oklch(0 0 0/.5);z-index:99;backdrop-filter:blur(2px)}
 .sb-overlay.show{display:block}
+.mob-toggle:focus-visible,.sidebar a:focus-visible,.sidebar button:focus-visible,.sidebar select:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:8px}
 @media(max-width:1280px){
-  .sidebar{transform:translateX(-100%);box-shadow:var(--shadow-glow)}
+  .sidebar{transform:translateX(-100%);box-shadow:var(--shadow-glow);z-index:101}
   .sidebar.collapsed{width:260px}
   .sidebar.mobile-open{transform:translateX(0)}
   .main{margin-left:0!important}
-  .mob-toggle{display:inline-flex;align-items:center;justify-content:center}
-  .topbar{padding:0 14px}
-  .topbar-title{font-size:15px}
+  .mob-toggle{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;order:-1}
+  .topbar{padding:0 14px;flex-wrap:wrap;height:auto;min-height:58px;padding-top:8px;padding-bottom:8px}
+  .topbar-title{font-size:15px;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topbar-right{flex-basis:100%;margin-left:0;justify-content:flex-start}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .two-col,.settings-grid{grid-template-columns:1fr}
   .info-grid{grid-template-columns:1fr 1fr}
   .circ-grid{grid-template-columns:repeat(3,1fr)}
+  body.sb-open{overflow:hidden}
 }
 @media(max-width:640px){
   .topbar{height:54px;padding:0 10px;gap:6px}
@@ -506,10 +509,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <div style="display:flex;align-items:center;gap:5px;font-size:12px"><div class="gs-dot" id="gsDot"></div><span id="gsStatusTxt" style="color:var(--muted-fore)">Non connecté</span></div>
     <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="document.getElementById('gsBanner').classList.add('hidden')">✕</button>
   </div>
-  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()" aria-hidden="true"></div>
 
   <!-- SIDEBAR -->
-  <nav class="sidebar" id="sidebar">
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Navigation principale">
     <div class="sb-hdr">
       <div class="sb-logo-icon"><svg viewBox="0 0 22 22" width="18" height="18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><path d="M2 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 10a3 3 0 0 0 0-6"/><path d="M20 20v-2a3 3 0 0 0-2-2.8"/></svg></div>
       <div id="sbLogoTxt"><div class="sb-logo-txt">AssocioBoard</div><div class="sb-logo-sub">Contrat de Ville</div></div>
@@ -554,8 +557,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   <!-- MAIN -->
   <div class="main" id="mainArea">
     <header class="topbar">
-      <button class="mob-toggle" onclick="toggleMobile()">
-        <svg viewBox="0 0 18 18" width="16" height="16" fill="none" stroke="url(#ig)" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="4.5" x2="16" y2="4.5"/><line x1="2" y1="9" x2="16" y2="9"/><line x1="2" y1="13.5" x2="16" y2="13.5"/></svg>
+      <button class="mob-toggle" id="mobToggleBtn" onclick="toggleMobile()" aria-label="Ouvrir le menu" aria-controls="sidebar" aria-expanded="false">
+        <svg viewBox="0 0 18 18" width="16" height="16" fill="none" stroke="url(#ig)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="2" y1="4.5" x2="16" y2="4.5"/><line x1="2" y1="9" x2="16" y2="9"/><line x1="2" y1="13.5" x2="16" y2="13.5"/></svg>
       </button>
       <div class="topbar-title" id="pageTitle">Tableau de Bord</div>
       <div class="topbar-right">
@@ -1372,8 +1375,52 @@ function applyCollapse(){
   document.querySelectorAll('.nav-lbl,.nav-badge,.sb-nav-lbl,.theme-lbl').forEach(el=>{if(el)el.style.display=hide?'none':'';});
 }
 function toggleCollapse(){collapsed=!collapsed;localStorage.setItem('sb-col',collapsed?'1':'0');applyCollapse();}
-function toggleMobile(){document.getElementById('sidebar').classList.toggle('mobile-open');document.getElementById('sbOverlay').classList.toggle('show');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('mobile-open');document.getElementById('sbOverlay').classList.remove('show');}
+let _sbLastFocus=null;
+function _sbFirstFocusable(){
+  const sb=document.getElementById('sidebar'); if(!sb) return null;
+  return sb.querySelector('button:not([disabled]),a[href],select,[tabindex]:not([tabindex="-1"])');
+}
+function openSidebar(){
+  const sb=document.getElementById('sidebar'),ov=document.getElementById('sbOverlay'),bt=document.getElementById('mobToggleBtn');
+  if(!sb) return;
+  _sbLastFocus=document.activeElement;
+  sb.classList.add('mobile-open');
+  if(ov) ov.classList.add('show');
+  document.body.classList.add('sb-open');
+  if(bt){bt.setAttribute('aria-expanded','true');bt.setAttribute('aria-label','Fermer le menu');}
+  sb.setAttribute('aria-modal','true');
+  setTimeout(()=>{const f=_sbFirstFocusable(); if(f) f.focus();},60);
+}
+function closeSidebar(){
+  const sb=document.getElementById('sidebar'),ov=document.getElementById('sbOverlay'),bt=document.getElementById('mobToggleBtn');
+  if(sb){sb.classList.remove('mobile-open');sb.removeAttribute('aria-modal');}
+  if(ov) ov.classList.remove('show');
+  document.body.classList.remove('sb-open');
+  if(bt){bt.setAttribute('aria-expanded','false');bt.setAttribute('aria-label','Ouvrir le menu');}
+  if(_sbLastFocus&&typeof _sbLastFocus.focus==='function'){try{_sbLastFocus.focus();}catch(e){}}
+  _sbLastFocus=null;
+}
+function toggleMobile(){
+  const sb=document.getElementById('sidebar');
+  if(!sb) return;
+  if(sb.classList.contains('mobile-open')) closeSidebar(); else openSidebar();
+}
+// Focus trap inside sidebar when open
+document.addEventListener('keydown',function(e){
+  const sb=document.getElementById('sidebar');
+  if(!sb||!sb.classList.contains('mobile-open')) return;
+  if(e.key==='Escape'){e.preventDefault();closeSidebar();return;}
+  if(e.key!=='Tab') return;
+  const nodes=sb.querySelectorAll('button:not([disabled]),a[href],select,[tabindex]:not([tabindex="-1"])');
+  if(!nodes.length) return;
+  const first=nodes[0],last=nodes[nodes.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+});
+// Auto-close when resizing back to desktop
+window.addEventListener('resize',function(){
+  if(window.innerWidth>1280){const sb=document.getElementById('sidebar');if(sb&&sb.classList.contains('mobile-open'))closeSidebar();}
+});
 function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
 function closeModal(id,e){if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
 
