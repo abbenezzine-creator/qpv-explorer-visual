@@ -1900,7 +1900,18 @@ function openActionDetail(id){
     ds.style.display='block';
     document.getElementById('detailDoc').innerHTML=`<div class="file-prev-pdf"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="oklch(0.58 0.22 25)" stroke-width="1.5" stroke-linecap="round"><path d="M9 1.5H4a1.5 1.5 0 0 0-1.5 1.5v10a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5V6l-4-4.5z"/></svg><span style="flex:1;font-size:12px;font-weight:600">${a.fileName}</span><a href="${a.fileData}" download="${a.fileName}" class="btn btn-outline btn-sm">Télécharger</a></div>`;
   } else ds.style.display='none';
+  // Bouton modifier (superadmin uniquement)
+  const eb=document.getElementById('detailEditBtn');
+  if(eb) eb.style.display=(currentUser?.role==='superadmin')?'inline-flex':'none';
   openModal('actionDetailModal');
+}
+let editingActionId=null;
+function editActionFromDetail(){
+  if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; }
+  const a=ACTIONS.find(x=>x.id===currentDetailId); if(!a) return;
+  editingActionId=a.id;
+  closeModal('actionDetailModal');
+  openAddActionModal(a.id);
 }
 
 // ========== COPY / PASTE ACTION ==========
