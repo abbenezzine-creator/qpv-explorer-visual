@@ -3,7 +3,7 @@ import {
   LayoutDashboard,
   Map,
   CalendarDays,
-  
+  Building2,
   BookOpen,
   TrendingUp,
   FileText,
