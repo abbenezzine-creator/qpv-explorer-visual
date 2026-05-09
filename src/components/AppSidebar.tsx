@@ -42,6 +42,7 @@ type NavItem = { title: string; to: string; search?: Record<string, string>; ico
 
 const territoire: NavItem[] = [
   { title: "Diagnostic Territorial", to: "/", icon: Map },
+  { title: "Résultats & Impacts", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
 ];
 
 const principal: NavItem[] = [
@@ -50,13 +51,13 @@ const principal: NavItem[] = [
 ];
 
 const evaluation: NavItem[] = [
-  { title: "Résultats & Impacts", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
-  { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
+  { title: "Impacts bénéficiaires", to: "/app", search: { page: "resultats" }, icon: TrendingUp },
 ];
 
 const ressources: NavItem[] = [
   { title: "Documents", to: "/app", search: { page: "documents" }, icon: FileText },
   { title: "Centre de Ressources", to: "/app", search: { page: "ressources" }, icon: Library },
+  { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
 ];
 
 const admin: NavItem[] = [
