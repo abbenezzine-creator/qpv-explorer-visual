@@ -5406,29 +5406,17 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       +'<div><div style="font-size:15px;font-weight:800">Évaluation bénéficiaire</div><div id="benefSub" style="font-size:12px;opacity:0.9;margin-top:2px"></div></div>'
       +'<button onclick="closeBenefModal()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:34px;height:34px;border-radius:8px;font-size:18px;cursor:pointer">✕</button>'
       +'</div>'
-      +'<div id="benefThemeBar" style="display:flex;flex-wrap:wrap;gap:10px;padding:12px 20px;border-bottom:1px solid #e5e7eb;background:#f8fafc;align-items:flex-end">'
-        +'<div style="flex:1;min-width:200px"><label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:4px">Thématique</label><select id="benefThemeSel" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;color:#0f172a;font-family:inherit"></select></div>'
-        +'<div style="flex:1;min-width:200px"><label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:4px">Sous-thématique</label><select id="benefSousThemeSel" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;color:#0f172a;font-family:inherit"></select></div>'
-      +'</div>'
       +'<iframe id="benefFrame" style="flex:1;border:none;width:100%" title="Questionnaire bénéficiaire"></iframe>'
       +'</div>';
     document.body.appendChild(div);
   }
-  function _populateBenefThemeSel(themeSel,subSel,curTheme,curSub){
-    const themes=Object.keys(SOUS_THEMES);
-    themeSel.innerHTML=themes.map(t=>`<option value="${t}"${t===curTheme?' selected':''}>${t}</option>`).join('');
-    const opts=SOUS_THEMES[themeSel.value]||[];
-    subSel.innerHTML='<option value="">— Toutes —</option>'+opts.map(s=>`<option value="${s}"${s===curSub?' selected':''}>${s}</option>`).join('');
-  }
   function _reloadBenefFrame(){
     const a=ACTIONS.find(x=>x.id===benefCurrentId); if(!a) return;
-    const t=document.getElementById('benefThemeSel').value;
-    const s=document.getElementById('benefSousThemeSel').value;
-    const qkey=THEME_TO_QKEY[t]||'transversal';
-    const params=new URLSearchParams({embed:'1',action:String(a.id),title:a.titre||'',asso:getAssocName(a.assocId)||'',theme:qkey,sousTheme:s||''});
+    let theme=a.theme; try{ const auto=(typeof lookupThemeForAction==='function')?lookupThemeForAction(a):null; if(auto) theme=auto; }catch(_){}
+    const qkey=THEME_TO_QKEY[theme]||'transversal';
+    const params=new URLSearchParams({embed:'1',action:String(a.id),title:a.titre||'',asso:getAssocName(a.assocId)||'',theme:qkey,sousTheme:a.sousTheme||''});
     const fr=document.getElementById('benefFrame');
     fr.src='questionnaire.html?'+params.toString();
-    fr.onload=function(){ try{ fr.contentWindow.postMessage({type:'aggregate-data',aggregate:{responses:(a.surveyResponses||[])}},'*'); }catch(err){} };
   }
   window.closeBenefModal = function(){
     const m = document.getElementById('benefModal'); if(m) m.style.display = 'none';
@@ -5440,13 +5428,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     benefCurrentId = id;
     const a = ACTIONS.find(x=>x.id===id); if(!a) return;
     document.getElementById('benefSub').textContent = (a.titre||'') + ' — ' + getAssocName(a.assocId);
-    const themeSel=document.getElementById('benefThemeSel');
-    const subSel=document.getElementById('benefSousThemeSel');
-    let initTheme=SOUS_THEMES[a.theme]?a.theme:Object.keys(SOUS_THEMES)[0];
-    try{ const auto = (typeof lookupThemeForAction==='function') ? lookupThemeForAction(a) : null; if(auto && SOUS_THEMES[auto]) initTheme=auto; }catch(_){}
-    _populateBenefThemeSel(themeSel,subSel,initTheme,a.sousTheme||'');
-    themeSel.onchange=function(){ _populateBenefThemeSel(themeSel,subSel,themeSel.value,''); _reloadBenefFrame(); };
-    subSel.onchange=function(){ _reloadBenefFrame(); };
     _reloadBenefFrame();
     document.getElementById('benefModal').style.display = 'flex';
   };
