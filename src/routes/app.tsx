@@ -1,10 +1,13 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { getUser } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app")({
-  beforeLoad: () => {
-    if (typeof window !== "undefined" && !getUser()) {
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
       throw redirect({ to: "/login" });
     }
   },
@@ -24,7 +27,6 @@ function AppPage() {
   const ref = useRef<HTMLIFrameElement>(null);
   const u = getUser();
 
-  // Auto-login the iframe once it loads
   useEffect(() => {
     const f = ref.current;
     if (!f || !u) return;
@@ -36,7 +38,6 @@ function AppPage() {
       } catch { /* noop */ }
     };
     f.addEventListener("load", onLoad);
-    // Try immediately too in case already loaded
     onLoad();
     return () => f.removeEventListener("load", onLoad);
     // eslint-disable-next-line react-hooks/exhaustive-deps
