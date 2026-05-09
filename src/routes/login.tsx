@@ -75,20 +75,24 @@ function LoginPage() {
         </form>
 
         <div className="mt-6 border-t border-border pt-4">
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Comptes de démonstration</div>
-          <div className="grid grid-cols-1 gap-1.5">
+          <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Comptes de démonstration
+          </label>
+          <select
+            defaultValue=""
+            onChange={(e) => {
+              const d = DEMO.find((x) => x.u === e.target.value);
+              if (d) { setU(d.u); setP(d.p); }
+            }}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          >
+            <option value="" disabled>Sélectionner une association…</option>
             {DEMO.map((d) => (
-              <button
-                key={d.u}
-                type="button"
-                onClick={() => { setU(d.u); setP(d.p); }}
-                className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-1.5 text-xs hover:border-primary hover:bg-accent"
-              >
-                <span className="font-medium">{d.label}</span>
-                <span className="font-mono text-muted-foreground">{d.u} / {d.p}</span>
-              </button>
+              <option key={d.u} value={d.u}>
+                {d.label} — {d.u} / {d.p}
+              </option>
             ))}
-          </div>
+          </select>
         </div>
       </div>
     </div>
