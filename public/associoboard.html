@@ -2521,7 +2521,13 @@ function updateQualGlobalScore(){
 function saveQualite(){
   if(SCRIPT_URL) gsPost('Qualité',{horodatage:new Date().toLocaleString('fr-FR'),key:currentEvalKey,scores:JSON.stringify(QUAL_EVALS[currentEvalKey]||{})});
   updateEvalTabs();
-  showToast('Évaluation qualité enregistrée');
+  // Refresh "Évaluation partenaires" et toutes les cards liées
+  try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
+  try{ if(typeof renderCalendar==='function') renderCalendar(); }catch(e){}
+  try{ if(typeof renderAllActions==='function') renderAllActions(); }catch(e){}
+  try{ if(typeof renderActionsList==='function') renderActionsList('dashActions', (typeof filteredActions==='function'?filteredActions():ACTIONS), 4); }catch(e){}
+  try{ if(typeof updateBadge==='function') updateBadge(); }catch(e){}
+  showToast('Évaluation qualité enregistrée — cards actualisées');
 }
 
 // ========== QUESTIONNAIRE ==========
