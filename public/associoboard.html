@@ -1352,7 +1352,7 @@ function nav(id){
   document.querySelectorAll('.nav-btn').forEach(b=>{if(b.getAttribute('onclick')?.includes("'"+id+"'"))b.classList.add('active');});
   closeSidebar();
   if(id==='qualite') renderQualite();
-  if(id==='diagnostic'){renderDiag();renderCitizenEval();}
+  if(id==='diagnostic'){renderDiag();renderCitizenEval();try{onDiagYear(document.getElementById('diagYearSlider').value);}catch(e){}}
   if(id==='guide') renderGuide();
   if(id==='resultats') renderResultatsPage();
   if(id==='parametres') renderSettings();
