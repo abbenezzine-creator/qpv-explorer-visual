@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      actions: {
+        Row: {
+          assoc_id: string
+          axis_key: string | null
+          budget: number | null
+          created_at: string
+          created_by: string | null
+          date_debut: string | null
+          date_fin: string | null
+          description: string | null
+          id: string
+          nb_beneficiaires_prevu: number | null
+          nb_beneficiaires_reel: number | null
+          qpv_key: string | null
+          statut: string
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          assoc_id: string
+          axis_key?: string | null
+          budget?: number | null
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          description?: string | null
+          id?: string
+          nb_beneficiaires_prevu?: number | null
+          nb_beneficiaires_reel?: number | null
+          qpv_key?: string | null
+          statut?: string
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          assoc_id?: string
+          axis_key?: string | null
+          budget?: number | null
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          description?: string | null
+          id?: string
+          nb_beneficiaires_prevu?: number | null
+          nb_beneficiaires_reel?: number | null
+          qpv_key?: string | null
+          statut?: string
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actions_assoc_id_fkey"
+            columns: ["assoc_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       associations: {
         Row: {
           commune: string | null
@@ -43,6 +105,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      evaluations: {
+        Row: {
+          action_id: string
+          beneficiaire_age: number | null
+          beneficiaire_genre: string | null
+          beneficiaire_nom: string | null
+          commentaire: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          phase: string
+          reponses: Json
+        }
+        Insert: {
+          action_id: string
+          beneficiaire_age?: number | null
+          beneficiaire_genre?: string | null
+          beneficiaire_nom?: string | null
+          commentaire?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          phase: string
+          reponses?: Json
+        }
+        Update: {
+          action_id?: string
+          beneficiaire_age?: number | null
+          beneficiaire_genre?: string | null
+          beneficiaire_nom?: string | null
+          commentaire?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          phase?: string
+          reponses?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "actions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -173,6 +282,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      action_assoc_id: { Args: { _action_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -180,6 +290,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      user_assoc_id: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       app_role: "superadmin" | "admin_asso" | "agent" | "viewer"
