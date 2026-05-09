@@ -16,6 +16,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppActionsRouteImport } from './routes/app.actions'
 import { Route as AppActionsIdRouteImport } from './routes/app.actions.$id'
+import { Route as AppActionsIdEvaluationRouteImport } from './routes/app.actions.$id.evaluation'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -52,6 +53,11 @@ const AppActionsIdRoute = AppActionsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppActionsRoute,
 } as any)
+const AppActionsIdEvaluationRoute = AppActionsIdEvaluationRouteImport.update({
+  id: '/evaluation',
+  path: '/evaluation',
+  getParentRoute: () => AppActionsIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,7 +66,8 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
-  '/app/actions/$id': typeof AppActionsIdRoute
+  '/app/actions/$id': typeof AppActionsIdRouteWithChildren
+  '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,7 +76,8 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
-  '/app/actions/$id': typeof AppActionsIdRoute
+  '/app/actions/$id': typeof AppActionsIdRouteWithChildren
+  '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,7 +87,8 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
-  '/app/actions/$id': typeof AppActionsIdRoute
+  '/app/actions/$id': typeof AppActionsIdRouteWithChildren
+  '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/actions'
     | '/app/actions/$id'
+    | '/app/actions/$id/evaluation'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/actions'
     | '/app/actions/$id'
+    | '/app/actions/$id/evaluation'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/actions'
     | '/app/actions/$id'
+    | '/app/actions/$id/evaluation'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -170,15 +182,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActionsIdRouteImport
       parentRoute: typeof AppActionsRoute
     }
+    '/app/actions/$id/evaluation': {
+      id: '/app/actions/$id/evaluation'
+      path: '/evaluation'
+      fullPath: '/app/actions/$id/evaluation'
+      preLoaderRoute: typeof AppActionsIdEvaluationRouteImport
+      parentRoute: typeof AppActionsIdRoute
+    }
   }
 }
 
+interface AppActionsIdRouteChildren {
+  AppActionsIdEvaluationRoute: typeof AppActionsIdEvaluationRoute
+}
+
+const AppActionsIdRouteChildren: AppActionsIdRouteChildren = {
+  AppActionsIdEvaluationRoute: AppActionsIdEvaluationRoute,
+}
+
+const AppActionsIdRouteWithChildren = AppActionsIdRoute._addFileChildren(
+  AppActionsIdRouteChildren,
+)
+
 interface AppActionsRouteChildren {
-  AppActionsIdRoute: typeof AppActionsIdRoute
+  AppActionsIdRoute: typeof AppActionsIdRouteWithChildren
 }
 
 const AppActionsRouteChildren: AppActionsRouteChildren = {
-  AppActionsIdRoute: AppActionsIdRoute,
+  AppActionsIdRoute: AppActionsIdRouteWithChildren,
 }
 
 const AppActionsRouteWithChildren = AppActionsRoute._addFileChildren(
