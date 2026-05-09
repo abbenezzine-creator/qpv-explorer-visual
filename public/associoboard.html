@@ -4782,7 +4782,7 @@ function init(){
   applyCollapse();
 }
 
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('loginPage').classList.add('show');});
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('loginPage').classList.add('show'); try{refreshDemoSelect();}catch(e){}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal','addActionModal','addAssocModal','addPartnerModal','uploadDocModal'].forEach(id=>{const m=document.getElementById(id);if(m)m.classList.remove('open');});document.body.style.overflow='';}});
 </script>
 <script>
