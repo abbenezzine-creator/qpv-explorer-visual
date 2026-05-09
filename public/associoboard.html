@@ -1878,15 +1878,32 @@ function openActionDetail(id){
     </table></div>`:'<p style="color:var(--muted-fore);font-size:12px">Aucun financeur renseigné</p>';
   // Résultats de l'évaluation bénéficiaires (alignés sur la fenêtre d'évaluation)
   const sr=a.surveyResult;
-  const nbResp=(a.surveyResponses||[]).length;
+  const respArr=(a.surveyResponses||[]);
+  const nbResp=respArr.length;
   if(sr && (sr.pct_avant!=null || sr.pct_apres!=null)){
     const av=sr.pct_avant||0, ap=sr.pct_apres||0, dl=(sr.delta!=null?sr.delta:(ap-av));
     const dlColor = dl>=0 ? 'oklch(0.52 0.16 150)' : 'oklch(0.58 0.22 25)';
+    // Totaux cumulés sur l'ensemble des bénéficiaires évalués
+    const sumLen = (k)=> respArr.reduce((s,r)=> s + ((r&&Array.isArray(r[k]))?r[k].length:0), 0);
+    const totFreins = sumLen('freins_leves');
+    const totActions = sumLen('actions');
+    const totComp = sumLen('competences');
+    const totRes = sumLen('resultats');
+    const impactMoy = Math.round((av+ap)/2);
+    const tile = (val,lbl,col,bg)=>`<div style="text-align:center;padding:10px 8px;background:${bg};border-radius:10px;border:1px solid var(--border)"><div style="font-size:22px;font-weight:800;color:${col};line-height:1">${val}</div><div style="font-size:10.5px;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.4px;font-weight:700;margin-top:4px">${lbl}</div></div>`;
     document.getElementById('detailIndicateurs').innerHTML=`
-      <div style="font-size:11px;color:var(--muted-fore);margin-bottom:8px">Moyenne sur ${nbResp} bénéficiaire${nbResp>1?'s':''} évalué${nbResp>1?'s':''}</div>
+      <div style="font-size:11px;color:var(--muted-fore);margin-bottom:8px">Cumul sur ${nbResp} bénéficiaire${nbResp>1?'s':''} évalué${nbResp>1?'s':''}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px">
+        ${tile(totFreins,'Freins levés','oklch(0.58 0.22 25)','oklch(0.58 0.22 25/.06)')}
+        ${tile(totActions,'Actions suivies','oklch(0.52 0.22 285)','oklch(0.52 0.22 285/.06)')}
+        ${tile(totComp,'Compétences acquises','oklch(0.7 0.17 50)','oklch(0.7 0.17 50/.06)')}
+        ${tile(totRes,'Résultats obtenus','oklch(0.52 0.16 150)','oklch(0.52 0.16 150/.06)')}
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 6px">Moyennes</div>
       <div class="circ-grid">
-        ${circleChart(av,'Avant','oklch(0.6 0.17 240)',null)}
-        ${circleChart(ap,'Après','oklch(0.52 0.22 285)',null)}
+        ${circleChart(av,'Moy. départ','oklch(0.6 0.17 240)',null)}
+        ${circleChart(ap,'Moy. arrivée','oklch(0.52 0.22 285)',null)}
+        ${circleChart(impactMoy,'Mesure d\'impact','oklch(0.76 0.17 75)',null)}
         ${circleChart(Math.max(0,Math.min(100,Math.abs(dl))),(dl>=0?'Progression +':'Régression −')+Math.abs(dl)+'%',dlColor,null)}
       </div>`;
   } else if (sr) {
