@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppActionsRouteImport } from './routes/app.actions'
+import { Route as AppActionsIdRouteImport } from './routes/app.actions.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -46,6 +47,11 @@ const AppActionsRoute = AppActionsRouteImport.update({
   path: '/actions',
   getParentRoute: () => AppRoute,
 } as any)
+const AppActionsIdRoute = AppActionsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppActionsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,7 +59,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/app/actions': typeof AppActionsRoute
+  '/app/actions': typeof AppActionsRouteWithChildren
+  '/app/actions/$id': typeof AppActionsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +68,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/app/actions': typeof AppActionsRoute
+  '/app/actions': typeof AppActionsRouteWithChildren
+  '/app/actions/$id': typeof AppActionsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,7 +78,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/app/actions': typeof AppActionsRoute
+  '/app/actions': typeof AppActionsRouteWithChildren
+  '/app/actions/$id': typeof AppActionsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,8 +90,16 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/app/actions'
+    | '/app/actions/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/login' | '/reset-password' | '/signup' | '/app/actions'
+  to:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/reset-password'
+    | '/signup'
+    | '/app/actions'
+    | '/app/actions/$id'
   id:
     | '__root__'
     | '/'
@@ -91,6 +108,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/app/actions'
+    | '/app/actions/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,15 +163,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActionsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/actions/$id': {
+      id: '/app/actions/$id'
+      path: '/$id'
+      fullPath: '/app/actions/$id'
+      preLoaderRoute: typeof AppActionsIdRouteImport
+      parentRoute: typeof AppActionsRoute
+    }
   }
 }
 
+interface AppActionsRouteChildren {
+  AppActionsIdRoute: typeof AppActionsIdRoute
+}
+
+const AppActionsRouteChildren: AppActionsRouteChildren = {
+  AppActionsIdRoute: AppActionsIdRoute,
+}
+
+const AppActionsRouteWithChildren = AppActionsRoute._addFileChildren(
+  AppActionsRouteChildren,
+)
+
 interface AppRouteChildren {
-  AppActionsRoute: typeof AppActionsRoute
+  AppActionsRoute: typeof AppActionsRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppActionsRoute: AppActionsRoute,
+  AppActionsRoute: AppActionsRouteWithChildren,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
