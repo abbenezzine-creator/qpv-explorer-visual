@@ -594,38 +594,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       <div class="card"><div class="card-hdr"><div class="card-title">Chronologie</div></div><div class="card-body"><div class="timeline" id="dashTL"></div></div></div>
     </div>
 
-    <!-- AGENDA -->
+    <!-- AGENDA (déplacé vers React /app/actions) -->
     <div class="page" id="page-agenda">
-      <div class="page-hdr">
-        <div><div class="page-title">Agenda des actions</div><div class="page-sub">Calendrier et liste des actions associatives</div></div>
-        <button class="btn btn-primary" onclick="openAddActionModal()"><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>Ajouter</button>
-      </div>
-      <div class="card" style="margin-bottom:18px">
-        <div class="card-hdr" style="flex-wrap:wrap;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <button onclick="prevMonth()" style="background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--foreground)">‹</button>
-            <div style="font-family:'Lexend',sans-serif;font-weight:700;font-size:15px" id="calMonth"></div>
-            <button onclick="nextMonth()" style="background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--foreground)">›</button>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:auto">
-            <span class="badge badge-purple">■ Formation</span><span class="badge badge-amber">■ Accompagnement</span>
-            <span class="badge badge-rose">■ Animation</span><span class="badge badge-blue">■ Permanence</span>
-          </div>
-        </div>
-        <div style="padding:0 12px 12px"><div style="display:grid;grid-template-columns:repeat(7,1fr)" id="calDayHdr"></div><div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;align-items:start"></div></div>
-      </div>
-      <div class="card">
-        <div class="card-hdr">
-          <div class="card-title">Liste des actions</div>
-          <div style="display:flex;gap:7px;flex-wrap:wrap">
-            <select class="form-sel" style="width:auto;padding:4px 8px;font-size:12px" id="filterType" onchange="renderAllActions()"><option value="">Tous types</option><option>Formation</option><option>Accompagnement</option><option>Animation</option><option>Permanence</option></select>
-            <select class="form-sel" style="width:auto;padding:4px 8px;font-size:12px" id="filterTheme" onchange="renderAllActions()"><option value="">Toutes thématiques</option><option>Education / Parentalité</option><option>Emploi</option><option>Santé</option><option>Cohésion sociale</option><option>Citoyenneté</option><option>Accès aux droits</option></select>
-            <select class="form-sel" style="width:auto;padding:4px 8px;font-size:12px" id="filterQpv" onchange="renderAllActions()"><option value="">Tous QPV</option><option>Argonne</option><option>La Source</option><option>Dauphine</option><option>Blossières</option></select>
-            <button type="button" class="btn btn-outline btn-sm" onclick="toggleAllThemes()" id="toggleAllThemesBtn" style="font-size:11px;padding:4px 8px">Tout dérouler</button>
-          </div>
-        </div>
-        <div class="card-body" style="padding:8px 14px" id="allActionsList"></div>
-      </div>
+      <div class="page-hdr"><div><div class="page-title">Agenda des actions</div><div class="page-sub">Cette section a été migrée</div></div></div>
+      <div class="card"><div class="card-body" style="padding:32px;text-align:center">
+        <div style="font-size:15px;font-weight:600;margin-bottom:8px">Cette section a été déplacée vers la nouvelle interface</div>
+        <div style="font-size:13px;color:var(--muted-fore);margin-bottom:18px">La gestion des actions est désormais persistée dans la base Supabase via la nouvelle interface React.</div>
+        <button class="btn btn-primary" onclick="goReact('/app/actions')">→ Ouvrir Actions</button>
+      </div></div>
     </div>
 
     <!-- QUALITE -->
