@@ -96,14 +96,21 @@ export function AppSidebar() {
     };
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
       const f = document.querySelector<HTMLIFrameElement>("iframe[title='AssocioBoard']");
       const w = f?.contentWindow as (Window & { doLogout?: () => void }) | null;
       w?.doLogout?.();
     } catch { /* noop */ }
-    authLogout();
+    await authLogout();
     navigate({ to: "/login" });
+  };
+
+  const roleLabel: Record<string, string> = {
+    superadmin: "Super Admin",
+    admin_asso: "Admin Asso",
+    agent: "Agent",
+    viewer: "Lecteur",
   };
 
   const renderGroup = (label: string, items: NavItem[], extra?: React.ReactNode) => (
