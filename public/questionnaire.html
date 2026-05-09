@@ -1034,30 +1034,43 @@
           <div class="impact-delta" id="impactDelta">Progression de — points</div>
         </div>
 
-        <!-- RÉCAP -->
+        <!-- RÉCAP — champs déroulants -->
         <div class="recap-grid">
-          <div class="recap-card recap-depart">
-            <h4>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-              Au départ
-            </h4>
+          <details class="recap-card recap-depart" open>
+            <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <h4 style="margin:0;display:flex;align-items:center;gap:6px;border:none;padding:0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                Au départ
+              </h4>
+              <span class="recap-chev" style="transition:transform .2s">▾</span>
+            </summary>
             <ul id="recapDepart"></ul>
-          </div>
-          <div class="recap-card recap-chemin">
-            <h4>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
-              Le chemin
-            </h4>
+          </details>
+          <details class="recap-card recap-chemin" open>
+            <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <h4 style="margin:0;display:flex;align-items:center;gap:6px;border:none;padding:0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+                Le chemin
+              </h4>
+              <span class="recap-chev" style="transition:transform .2s">▾</span>
+            </summary>
             <ul id="recapChemin"></ul>
-          </div>
-          <div class="recap-card recap-arrivee">
-            <h4>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Aujourd'hui
-            </h4>
+          </details>
+          <details class="recap-card recap-arrivee" open>
+            <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <h4 style="margin:0;display:flex;align-items:center;gap:6px;border:none;padding:0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Aujourd'hui
+              </h4>
+              <span class="recap-chev" style="transition:transform .2s">▾</span>
+            </summary>
             <ul id="recapArrivee"></ul>
-          </div>
+          </details>
         </div>
+        <style>
+          .recap-grid details > summary::-webkit-details-marker{display:none}
+          .recap-grid details:not([open]) .recap-chev{transform:rotate(-90deg)}
+        </style>
 
         <div class="actions-final">
           <button class="btn btn-success" onclick="window.print()">
