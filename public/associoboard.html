@@ -3272,8 +3272,16 @@ function _backupSnapshot(){
 function _backupsRead(){ try{ return JSON.parse(localStorage.getItem('ab_backups')||'[]'); }catch(e){ return []; } }
 function _backupsWrite(arr){ localStorage.setItem('ab_backups', JSON.stringify(arr.slice(-30))); }
 function createBackup(){
-  const arr=_backupsRead(); arr.push(_backupSnapshot()); _backupsWrite(arr);
-  showToast('Sauvegarde créée'); renderBackupList();
+  const snap=_backupSnapshot();
+  const arr=_backupsRead(); arr.push(snap); _backupsWrite(arr);
+  // Téléchargement automatique du fichier
+  try{
+    const blob=new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download='associoboard-backup-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.json';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }catch(e){}
+  showToast('Sauvegarde créée et téléchargée'); renderBackupList();
 }
 function deleteBackup(ts){
   const arr=_backupsRead().filter(b=>b.ts!==ts); _backupsWrite(arr); renderBackupList(); showToast('Sauvegarde supprimée');
