@@ -5661,6 +5661,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
         else page.insertBefore(wrap, page.firstChild);
       }
     }
+    if(id==='impacts-beneficiaires'){
+      try { document.getElementById('pageTitle').textContent = 'Impacts bénéficiaires'; } catch(e){}
+      try { renderImpactsBeneficiaires(); } catch(e){}
+    }
     return r;
   };
   try{
