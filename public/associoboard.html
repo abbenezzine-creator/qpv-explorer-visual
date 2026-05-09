@@ -3334,6 +3334,16 @@ let diagAxis='emancipation';
 function onDiagYear(val){
   diagYear=parseInt(val);
   document.getElementById('diagYearLbl').textContent=diagYear;
+  // Indicate data availability for the chosen year
+  try{
+    const qpvKey=document.getElementById('diagQPV')?.value||'argonne';
+    const has=QPV_INDS.some(i=>i.s&&i.s[qpvKey]&&i.s[qpvKey][diagYear]!=null);
+    const st=document.getElementById('diagYearStatus');
+    if(st){
+      if(has){st.textContent='Données ✓';st.style.background='oklch(0.52 0.16 150/.12)';st.style.color='oklch(0.42 0.18 150)';}
+      else{st.textContent='Aucune donnée — valeur la plus récente affichée';st.style.background='oklch(0.58 0.22 25/.12)';st.style.color='var(--destructive)';}
+    }
+  }catch(e){}
   renderDiag();
 }
 
