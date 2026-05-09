@@ -2256,8 +2256,8 @@ function addAction(){
   if(!titre){showToast('Saisissez un titre');return;}
   if(!assocId){showToast('Choisissez une association');return;}
   const grads=['linear-gradient(135deg,oklch(0.52 0.22 285),oklch(0.62 0.22 340))','linear-gradient(135deg,oklch(0.52 0.16 150),oklch(0.6 0.17 240))','linear-gradient(135deg,oklch(0.76 0.17 75),oklch(0.6 0.17 60))','linear-gradient(135deg,oklch(0.62 0.22 340),oklch(0.76 0.17 75))'];
-  ACTIONS.push({
-    id:++nextId,assocId,titre,
+  const payload={
+    assocId,titre,
     type:document.getElementById('fa-type').value,
     theme:document.getElementById('fa-theme').value,
     annee:parseInt(document.getElementById('fa-annee').value)||currentYear,
@@ -2277,10 +2277,20 @@ function addAction(){
     budgetLines:getBudgetRows(),
     statut:document.getElementById('fa-statut').value,
     desc:document.getElementById('fa-desc').value||'—',
-    gradient:grads[Math.floor(Math.random()*grads.length)],
     fileData:pendingFile.data,fileType:pendingFile.type,fileName:pendingFile.name,
-    surveyResult:null,
-  });
+  };
+  if(editingActionId){
+    const idx=ACTIONS.findIndex(x=>x.id===editingActionId);
+    if(idx>=0){
+      ACTIONS[idx]={...ACTIONS[idx],...payload};
+      closeModal('addActionModal');
+      editingActionId=null;
+      renderCalendar(); renderActionsList('dashActions',filteredActions(),4); renderAllActions(); updateBadge(); renderDashboard();
+      showToast('Action modifiée : '+titre);
+      return;
+    }
+  }
+  ACTIONS.push({id:++nextId,...payload,gradient:grads[Math.floor(Math.random()*grads.length)],surveyResult:null});
   closeModal('addActionModal');
   renderCalendar(); renderActionsList('dashActions',filteredActions(),4); renderAllActions(); updateBadge(); renderDashboard();
   if(SCRIPT_URL) gsPost('Actions',{titre,type:document.getElementById('fa-type').value,date:document.getElementById('fa-date').value});
