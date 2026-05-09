@@ -5498,8 +5498,92 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
 
   // Merge "Utilité sociale" content into "Résultats & Impacts"
   const _origNav = window.nav;
+
+  function ensureImpactsBenefPage(){
+    let p = document.getElementById('page-impacts-beneficiaires');
+    if(p) return p;
+    p = document.createElement('div');
+    p.className = 'page'; p.id = 'page-impacts-beneficiaires';
+    p.innerHTML = `
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">Impacts bénéficiaires</div>
+          <div class="page-sub" id="impactsBenefSub">Synthèse des évaluations bénéficiaires</div>
+        </div>
+      </div>
+      <div id="impactsBenefBody"></div>`;
+    document.getElementById('mainArea')?.appendChild(p) || document.body.appendChild(p);
+    return p;
+  }
+
+  window.renderImpactsBeneficiaires = function(){
+    ensureImpactsBenefPage();
+    const body = document.getElementById('impactsBenefBody');
+    const sub = document.getElementById('impactsBenefSub');
+    if(!body) return;
+    if(typeof ACTIONS==='undefined'){ body.innerHTML='<div class="card"><div class="card-body">Chargement…</div></div>'; return; }
+    const filtered = ACTIONS.filter(a => !currentAssocId || a.assocId===currentAssocId);
+    const allResp = [];
+    filtered.forEach(a => (a.surveyResponses||[]).forEach(r => allResp.push(Object.assign({_assoc:getAssocName(a.assocId), _action:a.titre}, r))));
+    const n = allResp.length;
+    const scope = currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Toutes les associations';
+    if(sub) sub.textContent = scope + ' · ' + n + ' bénéficiaire' + (n>1?'s':'') + ' évalué' + (n>1?'s':'');
+    if(!n){
+      body.innerHTML = '<div class="card"><div class="card-body" style="color:var(--muted-fore);font-size:14px">Aucune évaluation bénéficiaire enregistrée pour ce périmètre. Lancez une évaluation depuis une carte action.</div></div>';
+      return;
+    }
+    const sumLen = k => allResp.reduce((s,r)=>s+((r[k]||[]).length||0),0);
+    const avg = k => Math.round(allResp.reduce((s,r)=>s+(+r[k]||0),0)/n);
+    const totFreins = sumLen('freins_leves');
+    const totActions = sumLen('actions');
+    const totComp = sumLen('competences');
+    const totRes = sumLen('resultats');
+    const avantM = avg('pct_avant'), apresM = avg('pct_apres');
+    const deltaM = apresM - avantM;
+    const uniq = (k) => {
+      const set = new Set();
+      allResp.forEach(r => (r[k]||[]).forEach(v => { const t=(v||'').toString().trim(); if(t) set.add(t); }));
+      return Array.from(set).sort((a,b)=>a.localeCompare(b,'fr'));
+    };
+    const depart = uniq('freins');
+    const chemin = Array.from(new Set([...uniq('actions'), ...uniq('competences')])).sort((a,b)=>a.localeCompare(b,'fr'));
+    const aujourd = Array.from(new Set([...uniq('freins_leves'), ...uniq('resultats')])).sort((a,b)=>a.localeCompare(b,'fr'));
+    const stat = (lbl,val,color,bg) => `<div class="stat-card" style="background:${bg||'#fff'}"><div class="stat-blob" style="background:${color}"></div><div class="stat-lbl">${lbl}</div><div class="stat-val" style="color:${color}">${val}</div></div>`;
+    const list = (title, items, color) => `
+      <div class="card">
+        <div class="card-hdr"><div class="card-title" style="color:${color}">${title}</div><span style="font-size:12px;color:var(--muted-fore)">${items.length} élément${items.length>1?'s':''}</span></div>
+        <div class="card-body">
+          ${items.length ? '<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px">'+items.map(i=>`<li style="padding:8px 12px;background:#f8fafc;border-left:3px solid ${color};border-radius:6px;font-size:13px">${i}</li>`).join('')+'</ul>' : '<div style="color:var(--muted-fore);font-size:13px">Aucun élément</div>'}
+        </div>
+      </div>`;
+    body.innerHTML = `
+      <div class="stats-grid" style="margin-bottom:18px">
+        ${stat('Bénéficiaires évalués', n, 'var(--primary)')}
+        ${stat('Freins levés', totFreins, '#dc2626')}
+        ${stat('Actions suivies', totActions, '#7c3aed')}
+        ${stat('Compétences acquises', totComp, '#ea580c')}
+        ${stat('Résultats obtenus', totRes, '#059669')}
+      </div>
+      <div class="stats-grid" style="margin-bottom:18px">
+        ${stat('Moyenne % au départ', avantM+'%', '#dc2626')}
+        ${stat('Moyenne % aujourd\\'hui', apresM+'%', '#059669')}
+        ${stat('Mesure d\\'impact moyenne', apresM+'%', 'var(--info)')}
+        ${stat('Progression moyenne', (deltaM>=0?'+':'')+deltaM+' pts', deltaM>=0?'#059669':'#dc2626')}
+      </div>
+      <div class="two-col" style="margin-bottom:18px">
+        ${list('Au départ', depart, '#dc2626')}
+        ${list('Le chemin', chemin, '#7c3aed')}
+      </div>
+      <div style="margin-bottom:18px">
+        ${list('Aujourd\\'hui', aujourd, '#059669')}
+      </div>`;
+  };
+
   window.nav = function(id){
     if(id==='utilite') id='resultats';
+    if(id==='impacts-beneficiaires'){
+      ensureImpactsBenefPage();
+    }
     if(id==='ressources'){
       let p = document.getElementById('page-ressources');
       if(!p){
