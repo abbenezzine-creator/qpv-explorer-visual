@@ -3469,6 +3469,50 @@ function renderSettings(){
     </div>`;
   }).join('')+'</div>';
   renderBackupList();
+  renderEvalItems();
+  renderSubjectThemes();
+}
+
+// ===== Évaluation bénéficiaire — items éditables (localStorage) =====
+const DEFAULT_EVAL_ITEMS = [
+  "Étape 1 — Point de départ du bénéficiaire",
+  "Étape 2 — Difficultés / freins identifiés",
+  "Étape 3 — Actions menées dans le parcours",
+  "Étape 4 — Compétences acquises",
+  "Étape 5 — Résultats / point d'arrivée",
+  "Étape 6 — Mesure d'impact (avant / après)"
+];
+function getEvalItems(){ try{ const r=JSON.parse(localStorage.getItem('ab_eval_items')||'null'); return Array.isArray(r)?r:DEFAULT_EVAL_ITEMS.slice(); }catch(e){ return DEFAULT_EVAL_ITEMS.slice(); } }
+function saveEvalItems(arr){ localStorage.setItem('ab_eval_items', JSON.stringify(arr)); }
+function renderEvalItems(){
+  const el=document.getElementById('evalItemsList'); if(!el) return;
+  const items=getEvalItems();
+  if(!items.length){ el.innerHTML='<div style="font-size:12px;color:var(--muted-fore);padding:8px 0">Aucun item. Cliquez « + Ajouter ».</div>'; return; }
+  el.innerHTML=items.map((t,i)=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:9px;flex:1;min-width:0"><div class="settings-dot" style="background:var(--primary)"></div><input class="form-inp" style="flex:1;font-size:12px;padding:4px 8px" value="${(t||'').replace(/"/g,'&quot;')}" onchange="updEvalItem(${i}, this.value)"/></div><button class="btn btn-sm btn-danger" onclick="delEvalItem(${i})" title="Supprimer">✕</button></div>`).join('');
+}
+function addEvalItem(){ const arr=getEvalItems(); arr.push('Nouvel item'); saveEvalItems(arr); renderEvalItems(); }
+function updEvalItem(i,v){ const arr=getEvalItems(); arr[i]=v; saveEvalItems(arr); }
+function delEvalItem(i){ const arr=getEvalItems(); arr.splice(i,1); saveEvalItems(arr); renderEvalItems(); if(typeof showToast==='function') showToast('Item supprimé'); }
+
+// ===== Sujet d'action ↔ Thématique (localStorage) =====
+function getSubjectThemes(){ try{ const r=JSON.parse(localStorage.getItem('ab_subject_themes')||'null'); return Array.isArray(r)?r:[]; }catch(e){ return []; } }
+function saveSubjectThemes(arr){ localStorage.setItem('ab_subject_themes', JSON.stringify(arr)); }
+function renderSubjectThemes(){
+  const el=document.getElementById('subjectThemeList'); if(!el) return;
+  const arr=getSubjectThemes();
+  const themes=Object.keys(SOUS_THEMES);
+  if(!arr.length){ el.innerHTML='<div style="font-size:12px;color:var(--muted-fore);padding:8px 0">Aucune liaison. Cliquez « + Lier ».</div>'; return; }
+  el.innerHTML=arr.map((m,i)=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:6px;flex:1;flex-wrap:wrap"><input class="form-inp" style="flex:1;min-width:120px;font-size:12px;padding:4px 8px" placeholder="Sujet (mot-clé titre action)" value="${(m.sujet||'').replace(/"/g,'&quot;')}" onchange="updSubjectTheme(${i},'sujet',this.value)"/><select class="form-sel" style="flex:1;min-width:120px;font-size:12px;padding:4px 8px" onchange="updSubjectTheme(${i},'theme',this.value)">${themes.map(t=>`<option value="${t}"${t===m.theme?' selected':''}>${t}</option>`).join('')}</select></div><button class="btn btn-sm btn-danger" onclick="delSubjectTheme(${i})">✕</button></div>`).join('');
+}
+function addSubjectTheme(){ const arr=getSubjectThemes(); arr.push({sujet:'', theme:Object.keys(SOUS_THEMES)[0]}); saveSubjectThemes(arr); renderSubjectThemes(); }
+function updSubjectTheme(i,k,v){ const arr=getSubjectThemes(); if(!arr[i]) return; arr[i][k]=v; saveSubjectThemes(arr); }
+function delSubjectTheme(i){ const arr=getSubjectThemes(); arr.splice(i,1); saveSubjectThemes(arr); renderSubjectThemes(); }
+function lookupThemeForAction(a){
+  if(!a) return null;
+  const map=getSubjectThemes(); if(!map.length) return null;
+  const hay=((a.titre||'')+' '+(a.sujet||'')).toLowerCase();
+  const hit=map.find(m=> m.sujet && hay.indexOf(m.sujet.toLowerCase())>=0 );
+  return hit ? hit.theme : null;
 }
 
 // ========== BACKUP & RESTORE ==========
