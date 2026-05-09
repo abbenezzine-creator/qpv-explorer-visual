@@ -830,6 +830,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <div class="page" id="page-sauvegarde">
       <div class="page-hdr"><div><div class="page-title">Sauvegarde &amp; restauration</div><div class="page-sub">Historique, export et restauration des données</div></div></div>
       <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Sauvegarde &amp; restauration</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="exportBackup()">⬇ Exporter</button><button class="btn btn-primary btn-sm" onclick="createBackup()">+ Créer &amp; télécharger</button></div></div><div class="card-body"><div style="font-size:12px;color:var(--muted-fore);margin-bottom:10px">Sauvegardez l'état complet de l'application (associations, comptes, actions, documents, partenaires). La création génère automatiquement un fichier téléchargeable et l'ajoute à l'historique. Restaurez à tout moment ci-dessous.</div><div style="display:flex;gap:9px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><input type="file" id="backupImportFile" accept=".json" class="form-inp" style="flex:1;min-width:200px"/><button class="btn btn-outline btn-sm" onclick="importBackupFile()">Importer un fichier</button></div><div id="backupList"></div></div></div>
+      <div class="card" style="border:1.5px solid oklch(0.62 0.22 25/.4)"><div class="card-hdr"><div class="card-title" style="color:oklch(0.55 0.22 25)">⚠ Zone dangereuse — Réinitialisation complète</div></div><div class="card-body"><div style="font-size:12px;color:var(--muted-fore);margin-bottom:12px">Efface définitivement <b>toutes les associations, actions, évaluations bénéficiaires, documents, partenaires, sauvegardes et données qualité</b>. Cette opération est irréversible. Un code de confirmation sera demandé.</div><button class="btn btn-danger btn-sm" onclick="openResetAllModal()">Réinitialiser toutes les données</button></div></div>
     </div>
   <!-- DIAGNOSTIC TERRITORIAL -->
     <div class="page" id="page-diagnostic">
@@ -1194,6 +1195,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   </div>
 </div>
 
+<!-- ===== MODAL RESET ALL ===== -->
+<div class="overlay" id="resetAllModal" onclick="closeModal('resetAllModal',event)">
+  <div class="modal" style="max-width:460px" onclick="event.stopPropagation()">
+    <div class="modal-hdr"><div class="modal-ttl" style="color:oklch(0.55 0.22 25)">⚠ Réinitialisation complète</div><button class="modal-close" onclick="closeModal('resetAllModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--fore);margin-bottom:10px">Cette action supprimera <b>définitivement</b> toutes les associations, actions, évaluations bénéficiaires, documents, partenaires, sauvegardes et données qualité.</div>
+      <div style="font-size:12px;color:var(--muted-fore);margin-bottom:14px">Pour confirmer, saisissez le code de sécurité :</div>
+      <div class="form-row full"><div class="form-grp"><label class="form-lbl">Code de confirmation</label><input class="form-inp" id="resetAllCode" inputmode="numeric" autocomplete="off" placeholder="Saisir le code à 10 chiffres"/></div></div>
+      <div id="resetAllErr" style="font-size:12px;color:oklch(0.55 0.22 25);margin-top:6px;display:none">Code incorrect.</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('resetAllModal')">Annuler</button><button class="btn btn-danger" onclick="confirmResetAll()">Tout effacer</button></div>
+  </div>
+</div>
 <!-- ===== MODAL UPLOAD DOC ===== -->
 <div class="overlay" id="uploadDocModal" onclick="closeModal('uploadDocModal',event)">
   <div class="modal" style="max-width:500px" onclick="event.stopPropagation()">
@@ -3581,6 +3595,35 @@ function renderBackupList(){
     <div><div class="settings-name">${b.label}</div><div class="settings-sub">${(b.ASSOCS||[]).length} assoc · ${(b.ACTIONS||[]).length} actions · ${(b.DOCUMENTS||[]).length} docs</div></div>
     <div style="display:flex;gap:6px"><button class="btn btn-primary btn-sm" onclick="restoreBackup(${b.ts})">Restaurer</button><button class="btn btn-sm btn-danger" onclick="deleteBackup(${b.ts})">✕</button></div>
   </div>`).join('');
+}
+
+// ========== RESET COMPLET ==========
+function openResetAllModal(){
+  const i=document.getElementById('resetAllCode'); if(i){ i.value=''; }
+  const e=document.getElementById('resetAllErr'); if(e) e.style.display='none';
+  openModal('resetAllModal');
+  setTimeout(()=>{ try{ document.getElementById('resetAllCode').focus(); }catch(_){} },50);
+}
+function confirmResetAll(){
+  const code=(document.getElementById('resetAllCode').value||'').trim();
+  if(code!=='1234567890'){ document.getElementById('resetAllErr').style.display='block'; return; }
+  try{
+    ASSOCS=[]; ACTIONS=[]; PARTNERS=[]; DOCUMENTS=[]; QUAL_EVALS={};
+    if(typeof EVALUATIONS!=='undefined') EVALUATIONS=[];
+    nextId=1;
+    const keys=['ab_backups','ab_eval_items','ab_subject_themes','ab_actions','ab_assocs','ab_partners','ab_documents','ab_qual_evals','ab_evaluations','ab_beneficiaires','ab_data','ab_state'];
+    keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(_){} });
+  }catch(e){ console.error(e); }
+  closeModal('resetAllModal');
+  showToast('Réinitialisation complète effectuée');
+  try{ renderSettings(); }catch(_){}
+  try{ updateAllSelects(); }catch(_){}
+  try{ renderDashboard(); }catch(_){}
+  try{ renderAllActions(); }catch(_){}
+  try{ renderCalendar(); }catch(_){}
+  try{ renderDocuments(); }catch(_){}
+  try{ renderBackupList(); }catch(_){}
+  try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(_){}
 }
 
 // ========== IMPORT EXCEL — Fiches Actions ==========
