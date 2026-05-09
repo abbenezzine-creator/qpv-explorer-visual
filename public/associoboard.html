@@ -5410,6 +5410,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     try{ renderAllActions(); }catch(e){}
     try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
     try{ if(typeof renderResultatsPage==='function') renderResultatsPage(); }catch(e){}
+    try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
   });
 
   // Override renderActionsList to group by theme when full list (no limit)
