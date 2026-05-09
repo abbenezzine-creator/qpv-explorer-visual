@@ -2359,7 +2359,9 @@ function addAction(){
 const DAYS=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 function renderCalendar(){
   const yr=currentMonth.getFullYear(),mo=currentMonth.getMonth();
-  document.getElementById('calMonth').textContent=MONTHS[mo]+' '+yr;
+  const calMonthEl=document.getElementById('calMonth');
+  if(!calMonthEl) return; // agenda déplacé vers React
+  calMonthEl.textContent=MONTHS[mo]+' '+yr;
   // Day headers
   document.getElementById('calDayHdr').innerHTML=DAYS.map(d=>`<div style="text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted-fore);padding:7px 0;font-weight:600">${d}</div>`).join('');
   const grid=document.getElementById('calGrid');
