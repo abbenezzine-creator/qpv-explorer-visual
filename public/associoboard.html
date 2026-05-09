@@ -2527,7 +2527,8 @@ function saveQualite(){
   try{ if(typeof renderAllActions==='function') renderAllActions(); }catch(e){}
   try{ if(typeof renderActionsList==='function') renderActionsList('dashActions', (typeof filteredActions==='function'?filteredActions():ACTIONS), 4); }catch(e){}
   try{ if(typeof updateBadge==='function') updateBadge(); }catch(e){}
-  showToast('Évaluation qualité enregistrée — cards actualisées');
+  showToast('Évaluation qualité enregistrée — retour au tableau de bord');
+  setTimeout(()=>{ try{ nav('dashboard'); }catch(e){} }, 600);
 }
 
 // ========== QUESTIONNAIRE ==========
