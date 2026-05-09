@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import { getUser } from "@/lib/auth";
+import { useEffect, useRef, useState } from "react";
+import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app")({
@@ -25,7 +25,14 @@ type IframeWin = Window & {
 function AppPage() {
   const { page } = Route.useSearch();
   const ref = useRef<HTMLIFrameElement>(null);
-  const u = getUser();
+  const [u, setUser] = useState<AbUser | null>(() => getUser());
+
+  useEffect(() => {
+    const sync = () => setUser(getUser());
+    window.addEventListener("ab-auth-change", sync);
+    void refreshFromSession().then(setUser);
+    return () => window.removeEventListener("ab-auth-change", sync);
+  }, []);
 
   useEffect(() => {
     const f = ref.current;
@@ -41,7 +48,7 @@ function AppPage() {
     onLoad();
     return () => f.removeEventListener("load", onLoad);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [u?.login, u?.role]);
+  }, [u?.login, u?.role, u?.nom, u?.assocId, page]);
 
   useEffect(() => {
     const f = ref.current;

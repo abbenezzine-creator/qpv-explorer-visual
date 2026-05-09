@@ -5543,21 +5543,20 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   window.autoLogin = function(loginId, opts){
     if(!loginId) return false;
     let acc = (typeof ACCOUNTS!=='undefined') ? ACCOUNTS[loginId] : null;
-    if(!acc){
-      // Synthesize an account from the Supabase profile/role passed by the React parent
-      const role = (opts && opts.role) || 'viewer';
-      const mappedRole = (role === 'superadmin') ? 'superadmin'
-                        : (role === 'admin_asso' || role === 'agent') ? 'association'
-                        : 'association';
-      acc = {
-        role: mappedRole,
-        assocId: (opts && opts.assocId) || null,
-        pwd: '',
-        nom: (opts && opts.nom) || loginId,
-        color: 'oklch(0.52 0.22 285)'
-      };
-      if(typeof ACCOUNTS!=='undefined') ACCOUNTS[loginId] = acc;
-    }
+    const role = (opts && opts.role) || (acc && acc.role) || 'viewer';
+    const mappedRole = (role === 'superadmin') ? 'superadmin'
+                      : (role === 'admin_asso' || role === 'agent') ? 'association'
+                      : 'association';
+    // Always merge the Supabase role/profile into the iframe account to avoid stale local viewer cache.
+    acc = {
+      ...(acc || {}),
+      role: mappedRole,
+      assocId: (opts && Object.prototype.hasOwnProperty.call(opts, 'assocId')) ? opts.assocId : (acc ? acc.assocId : null),
+      pwd: acc?.pwd || '',
+      nom: (opts && opts.nom) || (acc && acc.nom) || loginId,
+      color: (acc && acc.color) || 'oklch(0.52 0.22 285)'
+    };
+    if(typeof ACCOUNTS!=='undefined') ACCOUNTS[loginId] = acc;
     currentUser = {...acc, login: loginId};
     try { document.getElementById('loginPage')?.classList.remove('show'); } catch(e){}
     try { document.getElementById('appWrapper')?.classList.add('show'); } catch(e){}
