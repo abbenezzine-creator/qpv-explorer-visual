@@ -1382,6 +1382,43 @@ const TCOL={Formation:'purple',Accompagnement:'amber',Animation:'rose',Permanenc
 function getAssocName(id){return ASSOCS.find(x=>x.id===id)?.nom||'—';}
 function getAssocColor(id){return ASSOCS.find(x=>x.id===id)?.color||'purple';}
 function cv(c){return CMAP[c]||CMAP.purple;}
+// ===== GLOBAL THEME / SOUS-THEME FILTERS =====
+const SOUS_THEMES = {
+  'Education / Parentalité':['Soutien scolaire','Parentalité','Petite enfance','Périscolaire'],
+  'Emploi':['Insertion professionnelle','Formation','Création d\'activité','Mobilité'],
+  'Emploi & Développement':['Insertion professionnelle','Formation','Création d\'activité','Mobilité'],
+  'Santé':['Prévention','Accès aux soins','Santé mentale','Nutrition'],
+  'Cohésion sociale':['Lien social','Médiation','Vivre-ensemble','Solidarité'],
+  'Citoyenneté':['Engagement','Participation','Mémoire','Laïcité'],
+  'Accès aux droits':['Numérique','Juridique','Logement','Démarches admin.'],
+  'Transition écologique':['Mobilité douce','Énergie','Alimentation','Recyclage'],
+  'Prévention':['Délinquance','Addictions','Violences','Décrochage'],
+  'Culture':['Pratique artistique','Diffusion','Patrimoine','Langues']
+};
+let currentTheme='', currentSousTheme='';
+function initGlobalThemeSel(){
+  const ts=document.getElementById('globalThemeSel'); if(!ts) return;
+  const themes=Object.keys(SOUS_THEMES);
+  ts.innerHTML='<option value="">Toutes thématiques</option>'+themes.map(t=>`<option value="${t}">${t}</option>`).join('');
+  refreshSousThemeSel();
+}
+function refreshSousThemeSel(){
+  const ss=document.getElementById('globalSousThemeSel'); if(!ss) return;
+  const opts=currentTheme&&SOUS_THEMES[currentTheme]?SOUS_THEMES[currentTheme]:[];
+  ss.innerHTML='<option value="">'+(currentTheme?'Toutes sous-thématiques':'— Choisir thématique —')+'</option>'+opts.map(s=>`<option value="${s}">${s}</option>`).join('');
+  ss.disabled=!currentTheme;
+}
+function onGlobalThemeChange(){
+  currentTheme=document.getElementById('globalThemeSel').value;
+  currentSousTheme='';
+  refreshSousThemeSel();
+  try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
+}
+function onGlobalSousThemeChange(){
+  currentSousTheme=document.getElementById('globalSousThemeSel').value;
+  try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
+}
+
 function filteredActions(){
   const ft=document.getElementById('filterType')?.value;
   const fth=document.getElementById('filterTheme')?.value;
@@ -1392,6 +1429,8 @@ function filteredActions(){
     if(a.annee&&a.annee!==currentYear) return false;
     if(ft&&a.type!==ft) return false;
     if(fth&&a.theme!==fth) return false;
+    if(currentTheme&&a.theme!==currentTheme) return false;
+    if(currentSousTheme&&a.sousTheme!==currentSousTheme) return false;
     if(fq&&!(a.quartiers||[]).includes(fq)) return false;
     return true;
   });
