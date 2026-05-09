@@ -748,7 +748,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <div class="page" id="page-parametres">
       <div class="page-hdr"><div><div class="page-title">Paramètres</div><div class="page-sub">Administration — Super Administrateur</div></div></div>
       <div class="settings-grid" style="margin-bottom:16px">
-        <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Associations</div><button class="btn btn-primary btn-sm" onclick="openAddAssocModal()">+ Ajouter</button></div><div class="settings-list" id="assocList"></div></div>
+        <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Associations</div></div><div class="card-body" style="padding:14px"><div style="font-size:13px;color:var(--muted-fore);margin-bottom:12px">La gestion des associations a été déplacée vers la nouvelle interface React (persistée dans Supabase).</div><button class="btn btn-primary btn-sm" onclick="goReact('/app/associations')">→ Ouvrir Associations</button><div id="assocList" style="display:none"></div></div></div>
         <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Partenaires évaluateurs</div><button class="btn btn-primary btn-sm" onclick="openAddPartnerModal()">+ Ajouter</button></div><div class="settings-list" id="partnerList"></div></div>
       </div>
       <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Comptes utilisateurs</div><button class="btn btn-outline btn-sm" onclick="toggleAccountsPwd()" id="togPwdBtn">Afficher mots de passe</button></div><div class="card-body" id="accountsList"></div></div>
