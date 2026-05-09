@@ -1274,9 +1274,8 @@
         </div>
         <div class="field">
           <label>Quand avez-vous commencé ?</label>
-          <input type="number" name="date_debut" min="1990" max="2100" step="1" placeholder="Année" id="ab_year_debut" inputmode="numeric" style="appearance:textfield;-moz-appearance:textfield;">
-          <style>#ab_year_debut::-webkit-outer-spin-button,#ab_year_debut::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}</style>
-          <script>(function(){var y=new Date().getFullYear();var el=document.getElementById('ab_year_debut');if(el){el.max=y;if(!el.value)el.value=y;}})();</script>
+          <input type="text" name="date_debut" placeholder="Année" id="ab_year_debut" inputmode="numeric" pattern="[0-9]{4}" maxlength="4">
+          <script>(function(){var y=new Date().getFullYear();var el=document.getElementById('ab_year_debut');if(el&&!el.value)el.value=y;})();</script>
         </div>
       </div>
 
