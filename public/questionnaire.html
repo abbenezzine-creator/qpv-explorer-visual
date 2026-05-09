@@ -225,80 +225,6 @@
     line-height: 1.4;
   }
 
-  /* BOUTON "+ AJOUTER" sous une grille */
-  .add-item-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 12px;
-    padding: 10px 16px;
-    background: #fff;
-    border: 2px dashed var(--bordure);
-    border-radius: 10px;
-    color: var(--bleu);
-    font-size: 15px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .add-item-btn:hover {
-    border-color: var(--bleu);
-    border-style: solid;
-    background: var(--bleu-clair);
-  }
-  .add-item-btn .plus-icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: var(--bleu);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  /* Carte personnalisée avec input éditable */
-  .check-card.custom-card {
-    background: var(--bleu-clair);
-    border-color: var(--bleu);
-    border-style: dashed;
-  }
-  .check-card.custom-card.checked {
-    border-style: solid;
-  }
-  .check-card.custom-card .custom-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-size: 15px;
-    font-weight: 500;
-    font-family: inherit;
-    padding: 4px 0;
-    color: var(--gris-fonce);
-    outline: none;
-  }
-  .check-card.custom-card .custom-input::placeholder {
-    color: var(--gris);
-    font-style: italic;
-  }
-  .check-card.custom-card .remove-btn {
-    background: none;
-    border: none;
-    color: var(--rouge);
-    font-size: 22px;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0 4px;
-    flex-shrink: 0;
-  }
-  .check-card.custom-card .remove-btn:hover {
-    color: #b91c1c;
-  }
-
   /* CARTES DE THÉMATIQUE GRANDES */
   .thematique-grid {
     display: grid;
@@ -471,14 +397,318 @@
     margin-bottom: 28px;
   }
 
+  /* ============================================== */
+  /* GRILLE PÉDAGOGIQUE - encart sur l'étape 2 */
+  /* ============================================== */
+  .grille-encart {
+    margin-top: 28px;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
+    transition: all 0.2s;
+  }
+  .grille-encart:hover { border-color: #cbd5e1; }
+  .grille-encart-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    background: #fff;
+    border-bottom: 1px solid transparent;
+    user-select: none;
+  }
+  .grille-encart.open .grille-encart-header {
+    border-bottom-color: #e2e8f0;
+  }
+  .grille-encart-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bleu-clair);
+    color: var(--bleu);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .grille-encart-icon svg { width: 22px; height: 22px; }
+  .grille-encart-titre {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gris-fonce);
+    flex-grow: 1;
+  }
+  .grille-encart-titre .small {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gris);
+    margin-top: 2px;
+  }
+  .grille-encart-toggle {
+    color: var(--gris);
+    transition: transform 0.2s;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 0 8px;
+  }
+  .grille-encart.open .grille-encart-toggle {
+    transform: rotate(180deg);
+  }
+  .grille-encart-body {
+    padding: 0 18px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.2s ease;
+  }
+  .grille-encart.open .grille-encart-body {
+    max-height: 2000px;
+    padding: 18px;
+  }
+  .grille-finalite {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #78350f;
+  }
+  .grille-finalite strong { color: #b45309; }
+  .grille-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+  }
+  .grille-table th {
+    background: var(--bleu);
+    color: #fff;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .grille-table td {
+    padding: 10px 12px;
+    vertical-align: top;
+    border-top: 1px solid #e2e8f0;
+    color: var(--gris-fonce);
+    line-height: 1.5;
+  }
+  .grille-table tr:nth-child(even) td { background: #f9fafb; }
+
+  /* ============================================== */
+  /* BOUTON FLOTTANT GRILLE PÉDAGOGIQUE */
+  /* ============================================== */
+  .btn-grille-flottant {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bleu);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-grille-flottant:hover {
+    background: var(--bleu-fonce);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.45);
+  }
+  .btn-grille-flottant svg { width: 20px; height: 20px; }
+
+  @media print {
+    .btn-grille-flottant { display: none; }
+  }
+
+  /* ============================================== */
+  /* MODALE GRILLE PÉDAGOGIQUE */
+  /* ============================================== */
+  .modale-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    z-index: 200;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px;
+    overflow-y: auto;
+    backdrop-filter: blur(2px);
+  }
+  .modale-overlay.open {
+    display: flex;
+  }
+  .modale {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 1100px;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+  }
+  .modale-header {
+    padding: 22px 28px;
+    background: linear-gradient(135deg, var(--bleu-fonce), var(--bleu));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .modale-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0;
+    color: #fff;
+  }
+  .modale-header .sous {
+    font-size: 13px;
+    opacity: 0.9;
+    margin-top: 2px;
+  }
+  .modale-fermer {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .modale-fermer:hover { background: rgba(255,255,255,0.3); }
+  .modale-fermer svg { width: 20px; height: 20px; }
+
+  .modale-body {
+    padding: 24px 28px;
+    overflow-y: auto;
+    flex-grow: 1;
+  }
+  .modale-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--bordure);
+  }
+  .modale-nav-btn {
+    padding: 7px 14px;
+    border: 1.5px solid var(--bordure);
+    border-radius: 20px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gris);
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .modale-nav-btn:hover { border-color: var(--bleu); color: var(--bleu); }
+  .modale-nav-btn.active {
+    background: var(--bleu);
+    color: #fff;
+    border-color: var(--bleu);
+  }
+
+  .modale-section {
+    display: none;
+  }
+  .modale-section.active {
+    display: block;
+  }
+  .modale-section h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .modale-section .sous-titre {
+    font-size: 14px;
+    color: var(--gris);
+    margin-bottom: 18px;
+  }
+  .modale-section .grille-finalite {
+    margin-bottom: 18px;
+  }
+
+  .modale-footer {
+    padding: 16px 28px;
+    background: #f8fafc;
+    border-top: 1px solid var(--bordure);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 640px) {
+    .modale-overlay { padding: 12px; }
+    .modale-header { padding: 16px 18px; }
+    .modale-header h2 { font-size: 18px; }
+    .modale-body { padding: 16px 18px; }
+    .grille-table { font-size: 12px; }
+    .grille-table th, .grille-table td { padding: 8px 10px; }
+    .btn-grille-flottant {
+      bottom: 16px;
+      right: 16px;
+      padding: 12px 16px;
+      font-size: 13px;
+    }
+  }
+
+  /* PRINT - ne montrer que la section active de la modale */
+  @media print {
+    .modale-overlay {
+      position: static;
+      padding: 0;
+      background: none;
+      display: block !important;
+    }
+    .modale {
+      max-height: none;
+      box-shadow: none;
+      border-radius: 0;
+    }
+    .modale-fermer, .modale-footer, .modale-nav { display: none; }
+  }
+
+  /* ============================================== */
   /* COMPTEURS EN HAUT */
+  /* ============================================== */
   .compteurs {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 12px;
     margin-bottom: 28px;
   }
-  @media (max-width: 700px) { .compteurs { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px) { .compteurs { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 540px) { .compteurs { grid-template-columns: repeat(2, 1fr); } }
   .compteur {
     background: #fff;
     border-radius: 14px;
@@ -504,6 +734,327 @@
   .c-bleu .compteur-num, .c-bleu svg { color: var(--bleu); }
   .c-violet .compteur-num, .c-violet svg { color: var(--violet); }
   .c-vert .compteur-num, .c-vert svg { color: var(--vert); }
+  .c-or .compteur-num, .c-or svg { color: #b45309; }
+  .c-or { background: linear-gradient(135deg, #fffbeb 0%, #fff 100%); }
+  .compteur-num.euro { font-size: 26px; }
+
+  /* CARTE VALEUR SOCIALE */
+  .valeur-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+    border: 2px solid #fef3c7;
+  }
+  .valeur-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #fef3c7;
+  }
+  .valeur-header svg { width: 32px; height: 32px; color: #b45309; }
+  .valeur-header .titre {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1f2937;
+  }
+  .valeur-header .sous-titre {
+    font-size: 13px;
+    color: var(--gris);
+  }
+  .valeur-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 700px) { .valeur-grid { grid-template-columns: 1fr; } }
+  .valeur-bloc {
+    padding: 18px;
+    border-radius: 12px;
+    text-align: center;
+  }
+  .valeur-bloc.couleur-evite { background: #fef3c7; }
+  .valeur-bloc.couleur-richesse { background: #d1fae5; }
+  .valeur-bloc.couleur-total { background: linear-gradient(135deg, #fef3c7, #d1fae5); }
+  .valeur-bloc-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .couleur-evite .valeur-bloc-label { color: #b45309; }
+  .couleur-richesse .valeur-bloc-label { color: var(--vert); }
+  .couleur-total .valeur-bloc-label { color: #1f2937; }
+  .valeur-bloc-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1f2937;
+    line-height: 1;
+  }
+  .valeur-bloc-sub {
+    font-size: 11px;
+    color: var(--gris);
+    margin-top: 4px;
+  }
+  .valeur-detail {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .valeur-detail-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gris);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .valeur-detail table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .valeur-detail th, .valeur-detail td {
+    padding: 6px 4px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .valeur-detail th {
+    font-weight: 700;
+    color: var(--gris);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .valeur-detail td.num {
+    text-align: right;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .valeur-detail td.num.evite { color: #b45309; }
+  .valeur-detail td.num.richesse { color: var(--vert); }
+  .valeur-disclaimer {
+    font-size: 12px;
+    color: var(--gris);
+    font-style: italic;
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    line-height: 1.5;
+  }
+
+  /* DASHBOARD RÉSULTATS & IMPACTS */
+  .dashboard-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+  }
+  .dashboard-header {
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--bordure);
+  }
+  .dashboard-header h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--gris-fonce);
+    margin-bottom: 2px;
+  }
+  .dashboard-header .sous-titre {
+    font-size: 13px;
+    color: var(--gris);
+  }
+  .jauges-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 1000px) { .jauges-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 540px) { .jauges-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .jauge-card {
+    background: #fff;
+    border: 1px solid var(--bordure);
+    border-radius: 12px;
+    padding: 14px 8px;
+    text-align: center;
+  }
+  .jauge-svg {
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 4px;
+    position: relative;
+  }
+  .jauge-svg svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .jauge-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .jauge-pct {
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .jauge-delta {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--vert);
+    margin-top: 1px;
+  }
+  .jauge-delta.neg { color: var(--rouge); }
+  .jauge-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gris-fonce);
+    line-height: 1.3;
+  }
+
+  /* CARTES DÉTAILLÉES UTILITÉ SOCIALE */
+  .util-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 800px) { .util-detail-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 500px) { .util-detail-grid { grid-template-columns: 1fr; } }
+
+  .util-detail-card {
+    background: #fff;
+    border: 1px solid var(--bordure);
+    border-top: 3px solid;
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .util-detail-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .util-detail-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .util-detail-icon svg { width: 22px; height: 22px; }
+  .util-detail-pct {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .util-detail-stars {
+    color: #fbbf24;
+    font-size: 13px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    text-align: right;
+  }
+  .util-detail-stars .empty-star { color: #e5e7eb; }
+  .util-detail-titre {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--gris-fonce);
+    margin-bottom: 4px;
+  }
+  .util-detail-desc {
+    font-size: 12px;
+    color: var(--gris);
+    line-height: 1.4;
+  }
+
+  /* ANALYSE QUALITATIVE */
+  .analyse-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .analyse-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--bordure);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .analyse-header h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--gris-fonce);
+  }
+  .analyse-header .badge-auto {
+    font-size: 11px;
+    font-weight: 700;
+    background: #ede9fe;
+    color: var(--violet);
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .analyse-bloc {
+    padding: 18px 24px;
+    border-left: 4px solid;
+    background: #f9fafb;
+    margin: 12px 16px;
+    border-radius: 8px;
+  }
+  .analyse-bloc-titre {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .analyse-bloc-titre svg { width: 18px; height: 18px; }
+  .analyse-bloc.forts { border-color: var(--vert); }
+  .analyse-bloc.forts .analyse-bloc-titre { color: var(--vert); }
+  .analyse-bloc.vigilance { border-color: #f59e0b; }
+  .analyse-bloc.vigilance .analyse-bloc-titre { color: #b45309; }
+  .analyse-bloc.recos { border-color: var(--bleu); }
+  .analyse-bloc.recos .analyse-bloc-titre { color: var(--bleu); }
+  .analyse-bloc ul { list-style: none; }
+  .analyse-bloc li {
+    font-size: 14px;
+    padding: 4px 0;
+    color: var(--gris-fonce);
+    line-height: 1.5;
+    display: flex;
+    gap: 8px;
+  }
+  .analyse-bloc li::before {
+    content: "•";
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .analyse-bloc.forts li::before { color: var(--vert); }
+  .analyse-bloc.vigilance li::before { color: #f59e0b; }
+  .analyse-bloc.recos li::before { color: var(--bleu); }
 
   /* PARCOURS DROIT */
   .parcours-svg-wrap {
@@ -754,6 +1305,24 @@
         <div class="sous-grid" id="sousThematiquesGrid"></div>
       </div>
 
+      <!-- Encart pédagogique : s'affiche après sélection sous-thématique -->
+      <div class="grille-encart" id="grilleEncart" style="display: none;">
+        <div class="grille-encart-header" onclick="toggleGrilleEncart()">
+          <div class="grille-encart-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
+          <div class="grille-encart-titre">
+            Comprendre cette sous-thématique
+            <span class="small">Finalité, freins typiques, actions, compétences mobilisées</span>
+          </div>
+          <div class="grille-encart-toggle">▾</div>
+        </div>
+        <div class="grille-encart-body" id="grilleEncartBody"></div>
+      </div>
+
       <div class="nav">
         <button class="btn btn-secondary" onclick="prevStep()">← Retour</button>
         <button class="btn btn-primary" onclick="nextStep()">Continuer →</button>
@@ -773,9 +1342,6 @@
           <span class="label-help">Cochez toutes les difficultés qui vous concernent.</span>
         </label>
         <div class="check-grid" id="freinsGrid"></div>
-        <button type="button" class="add-item-btn" onclick="addCustomItem('freinsGrid', 'freins')">
-          <span class="plus-icon">+</span> Ajouter une difficulté
-        </button>
       </div>
 
       <div class="field">
@@ -811,9 +1377,6 @@
           <span class="label-help">Cochez toutes les actions auxquelles vous avez pris part.</span>
         </label>
         <div class="check-grid" id="actionsGrid"></div>
-        <button type="button" class="add-item-btn" onclick="addCustomItem('actionsGrid', 'actions')">
-          <span class="plus-icon">+</span> Ajouter une action
-        </button>
       </div>
 
       <div class="field">
@@ -821,9 +1384,6 @@
           <span class="label-help">Cochez toutes les choses que vous savez mieux faire maintenant.</span>
         </label>
         <div class="check-grid" id="competencesGrid"></div>
-        <button type="button" class="add-item-btn" onclick="addCustomItem('competencesGrid', 'competences')">
-          <span class="plus-icon">+</span> Ajouter une compétence
-        </button>
       </div>
 
       <div class="nav">
@@ -845,9 +1405,6 @@
           <span class="label-help">Cochez toutes les difficultés qui vont mieux maintenant.</span>
         </label>
         <div class="check-grid" id="freinsLevesGrid"></div>
-        <button type="button" class="add-item-btn" onclick="addCustomItem('freinsLevesGrid', 'freins_leves')">
-          <span class="plus-icon">+</span> Ajouter une difficulté résolue
-        </button>
       </div>
 
       <div class="field">
@@ -855,9 +1412,6 @@
           <span class="label-help">Cochez tous les résultats concrets de votre parcours.</span>
         </label>
         <div class="check-grid" id="resultatsGrid"></div>
-        <button type="button" class="add-item-btn" onclick="addCustomItem('resultatsGrid', 'resultats')">
-          <span class="plus-icon">+</span> Ajouter un résultat
-        </button>
       </div>
 
       <div class="field">
@@ -923,6 +1477,14 @@
             </svg>
             <div class="compteur-num" id="cResultats">0</div>
             <div class="compteur-label">Résultats obtenus</div>
+          </div>
+          <div class="compteur c-or">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <div class="compteur-num euro" id="cImpactTotal">0 €</div>
+            <div class="compteur-label">Impact estimé / an</div>
           </div>
         </div>
 
@@ -1034,43 +1596,128 @@
           <div class="impact-delta" id="impactDelta">Progression de — points</div>
         </div>
 
-        <!-- RÉCAP — champs déroulants -->
-        <div class="recap-grid">
-          <details class="recap-card recap-depart" open>
-            <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
-              <h4 style="margin:0;display:flex;align-items:center;gap:6px;border:none;padding:0">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-                Au départ
-              </h4>
-              <span class="recap-chev" style="transition:transform .2s">▾</span>
-            </summary>
-            <ul id="recapDepart"></ul>
-          </details>
-          <details class="recap-card recap-chemin" open>
-            <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
-              <h4 style="margin:0;display:flex;align-items:center;gap:6px;border:none;padding:0">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
-                Le chemin
-              </h4>
-              <span class="recap-chev" style="transition:transform .2s">▾</span>
-            </summary>
-            <ul id="recapChemin"></ul>
-          </details>
-          <details class="recap-card recap-arrivee" open>
-            <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
-              <h4 style="margin:0;display:flex;align-items:center;gap:6px;border:none;padding:0">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Aujourd'hui
-              </h4>
-              <span class="recap-chev" style="transition:transform .2s">▾</span>
-            </summary>
-            <ul id="recapArrivee"></ul>
-          </details>
+        <!-- VALEUR SOCIALE CRÉÉE -->
+        <div class="valeur-card">
+          <div class="valeur-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <div>
+              <div class="titre">Valeur sociale créée sur 12 mois</div>
+              <div class="sous-titre">Estimation socio-économique du parcours du bénéficiaire</div>
+            </div>
+          </div>
+
+          <div class="valeur-grid">
+            <div class="valeur-bloc couleur-evite">
+              <div class="valeur-bloc-label">Coût évité</div>
+              <div class="valeur-bloc-num" id="valeurCoutEvite">0 €</div>
+              <div class="valeur-bloc-sub">à la collectivité</div>
+            </div>
+            <div class="valeur-bloc couleur-richesse">
+              <div class="valeur-bloc-label">Richesse apportée</div>
+              <div class="valeur-bloc-num" id="valeurRichesse">0 €</div>
+              <div class="valeur-bloc-sub">par le bénéficiaire</div>
+            </div>
+            <div class="valeur-bloc couleur-total">
+              <div class="valeur-bloc-label">Valeur totale</div>
+              <div class="valeur-bloc-num" id="valeurTotal">0 €</div>
+              <div class="valeur-bloc-sub">sur 1 an</div>
+            </div>
+          </div>
+
+          <div class="valeur-detail" id="valeurDetail">
+            <div class="valeur-detail-title">Détail des résultats valorisés</div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 50%">Résultat</th>
+                  <th class="num" style="width: 25%">Coût évité</th>
+                  <th class="num" style="width: 25%">Richesse</th>
+                </tr>
+              </thead>
+              <tbody id="valeurDetailBody">
+                <tr><td colspan="3" style="text-align:center; color: var(--gris); padding: 20px;">Aucun résultat coché</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="valeur-disclaimer">
+            <strong>Note méthodologique.</strong> Ces montants sont des ordres de grandeur basés sur des références publiques (UNEDIC, France Travail, INCA, Cour des comptes, France Bénévolat…) et constituent une estimation conservatrice. Ils n'ont pas de valeur comptable mais permettent de mesurer la valeur sociale créée par l'action de l'association.
+          </div>
         </div>
-        <style>
-          .recap-grid details > summary::-webkit-details-marker{display:none}
-          .recap-grid details:not([open]) .recap-chev{transform:rotate(-90deg)}
-        </style>
+
+        <!-- DASHBOARD RÉSULTATS & IMPACTS — UTILITÉ SOCIALE -->
+        <div class="dashboard-card">
+          <div class="dashboard-header">
+            <h3>Résultats &amp; Impacts</h3>
+            <div class="sous-titre">Synthèse de l'utilité sociale du parcours</div>
+          </div>
+
+          <!-- 6 jauges synthétiques -->
+          <div class="jauges-grid" id="jaugesGrid"></div>
+
+          <!-- 6 cartes détaillées -->
+          <div class="util-detail-grid" id="utilDetailGrid"></div>
+        </div>
+
+        <!-- ANALYSE QUALITATIVE -->
+        <div class="analyse-card">
+          <div class="analyse-header">
+            <h3>Analyse qualitative</h3>
+            <span class="badge-auto">Auto</span>
+          </div>
+
+          <div class="analyse-bloc forts">
+            <div class="analyse-bloc-titre">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Points forts
+            </div>
+            <ul id="analyseForts"></ul>
+          </div>
+
+          <div class="analyse-bloc vigilance">
+            <div class="analyse-bloc-titre">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Points de vigilance
+            </div>
+            <ul id="analyseVigilance"></ul>
+          </div>
+
+          <div class="analyse-bloc recos" style="margin-bottom: 16px;">
+            <div class="analyse-bloc-titre">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Recommandations
+            </div>
+            <ul id="analyseRecos"></ul>
+          </div>
+        </div>
+
+        <!-- RÉCAP -->
+        <div class="recap-grid">
+          <div class="recap-card recap-depart">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+              Au départ
+            </h4>
+            <ul id="recapDepart"></ul>
+          </div>
+          <div class="recap-card recap-chemin">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+              Le chemin
+            </h4>
+            <ul id="recapChemin"></ul>
+          </div>
+          <div class="recap-card recap-arrivee">
+            <h4>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Aujourd'hui
+            </h4>
+            <ul id="recapArrivee"></ul>
+          </div>
+        </div>
 
         <div class="actions-final">
           <button class="btn btn-success" onclick="window.print()">
@@ -1096,6 +1743,46 @@
   </main>
 </div>
 
+<!-- BOUTON FLOTTANT GRILLE PÉDAGOGIQUE -->
+<button class="btn-grille-flottant" onclick="ouvrirGrille()" title="Consulter la grille pédagogique">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+  </svg>
+  Grille pédagogique
+</button>
+
+<!-- MODALE GRILLE PÉDAGOGIQUE -->
+<div class="modale-overlay" id="modaleGrille" onclick="if(event.target===this) fermerGrille()">
+  <div class="modale">
+    <div class="modale-header">
+      <div>
+        <h2>Grille pédagogique des actions</h2>
+        <div class="sous">Pour chaque sous-thématique : finalité, freins, actions, compétences mobilisées</div>
+      </div>
+      <button class="modale-fermer" onclick="fermerGrille()" title="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modale-body">
+      <div class="modale-nav" id="modaleNav"></div>
+      <div id="modaleSections"></div>
+    </div>
+
+    <div class="modale-footer">
+      <button class="btn btn-secondary" onclick="fermerGrille()">Fermer</button>
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimer
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 // =================================================================
 // ICÔNES SVG ÉPURÉES (line-art)
@@ -1103,7 +1790,7 @@
 const ICONS = {
   // Thématiques principales
   emancipation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
-  sante: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  sante: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
   emploi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
   transition: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>',
   tranquillite: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
@@ -1147,148 +1834,146 @@ const ICONS = {
 // =================================================================
 // THÉMATIQUES + SOUS-THÉMATIQUES (depuis votre feuille de route)
 // =================================================================
+// =================================================================
+// THÉMATIQUES + SOUS-THÉMATIQUES
+// Structure ALIGNÉE 1:1 avec le tableau de la feuille de route Orléans
+// =================================================================
 const THEMATIQUES = {
   emancipation: {
     label: "Émancipation",
-    desc: "Droits, numérique, langue, sport, culture, éducation, parentalité, lien social, émancipation des femmes",
+    desc: "Accès aux droits, langue française, sport, culture, parentalité, image du quartier, lien social, droits des femmes",
     icon: ICONS.emancipation,
     sous: {
       "droits_numerique": "Accès aux droits & numérique",
-      "langue_francaise": "Apprendre le français",
-      "sport_culture": "Sport et culture",
-      "education_reussite": "Éducation et réussite scolaire",
-      "parentalite": "Soutien à la parentalité",
+      "langue_francaise": "Apprendre le français (FLE)",
+      "sport_culture": "Animation sport et culture",
+      "education_parentalite": "Éducation et parentalité",
+      "image_quartier": "Image et ouverture du quartier",
       "lien_social": "Lien social et vie de quartier",
       "femmes": "Émancipation des femmes"
     }
   },
   sante: {
-    label: "Santé & Bien-être",
-    desc: "Prévention, sport-santé, addictions, contraception, infos santé",
+    label: "Santé, Vieillissement, Handicap",
+    desc: "Prévention santé, sport-santé, CLS / CLSM",
     icon: ICONS.sante,
     sous: {
-      "prevention": "Prévention santé (dépistages, vaccins…)",
+      "prevention": "Prévention santé (cancers, vaccins, addictions…)",
       "sport_sante": "Sport-santé",
-      "addictions": "Prévention des addictions",
-      "vie_sexuelle": "Vie sexuelle et contraception",
-      "info_sante": "Bien s'informer sur la santé"
+      "cls_clsm": "Santé mentale (CLS / CLSM)"
     }
   },
   emploi: {
-    label: "Emploi & Économie",
-    desc: "Stages, parrainage, freins à l'emploi, métiers en tension, entrepreneuriat, dispositifs jeunes",
+    label: "Emploi & Développement économique",
+    desc: "Accompagnement emploi, formation, stages, parrainage, entrepreneuriat, dispositifs jeunes",
     icon: ICONS.emploi,
     sous: {
       "stages_apprentissage": "Stages et apprentissage",
       "parrainage": "Parrainage et mentorat",
       "freins_emploi": "Lever les freins à l'emploi",
-      "metiers_tension": "Découvrir les métiers qui recrutent",
-      "entrepreneuriat": "Créer son activité",
-      "dispositifs_jeunes": "École 2e chance, EPIDE, chantiers éducatifs"
+      "metiers_tension": "Métiers en tension (logistique, BTP…)",
+      "entrepreneuriat": "Création d'activité",
+      "dispositifs_jeunes": "Dispositifs jeunes (E2C, EPIDE, Étincelle, chantiers…)"
     }
   },
   transition: {
-    label: "Transition & Cadre de vie",
-    desc: "Logement, cadre de vie, déchets, énergie, mobilité douce",
+    label: "Transition",
+    desc: "GUSP, transition écologique, sensibilisation déchets, logement",
     icon: ICONS.transition,
     sous: {
-      "cadre_de_vie": "Mon quartier, ma rue (propreté…)",
-      "dechets": "Trier et réduire les déchets",
-      "energie": "Économiser l'énergie",
-      "mobilite_douce": "Vélo, marche, transports",
-      "logement": "Logement"
+      "gusp": "Gestion Urbaine de Proximité (GUSP)",
+      "transition_eco": "Transition écologique (réemploi, énergie, mobilités)",
+      "dechets": "Sensibilisation aux déchets et propreté",
+      "logement": "Logement (bailleurs, NPNRU, TFPB)"
     }
   },
   tranquillite: {
     label: "Tranquillité publique",
-    desc: "Prévention de la délinquance, médiation, lien police-population, réserves citoyennes, parents relais",
+    desc: "Prévention de la délinquance, médiation, lien police-population",
     icon: ICONS.tranquillite,
     sous: {
       "prevention_delinquance": "Prévention de la délinquance",
-      "mediation": "Médiation sociale",
-      "police_population": "Lien police - habitants",
-      "reserves_citoyennes": "Réserves citoyennes / cadets",
-      "parents_relais": "Parents relais"
+      "mediation": "Médiation sociale et parents relais",
+      "police_population": "Lien police-population, réserves citoyennes"
     }
   },
   transversal: {
-    label: "Vie associative & Citoyenneté",
-    desc: "Information, coordination entre acteurs, bénévolat et vie associative",
+    label: "Axe transversal",
+    desc: "Participation citoyenne",
     icon: ICONS.transversal,
     sous: {
-      "aller_vers": "Aller vers les habitants (communication, médiation)",
-      "coordination": "Coordination et référent unique",
-      "vie_associative": "Vie associative et bénévolat"
+      "participation_citoyenne": "Participation citoyenne"
     }
   }
 };
 
 // =================================================================
-// QUESTIONS PAR SOUS-THÉMATIQUE — FALC + COHÉRENCE
-// Chaque sous-thématique a SES propres :
-// - freins (difficultés au départ)
-// - actions (ce qui a été fait)
-// - competences (ce qui a été appris)
-// - freins_leves (difficultés résolues — symétriques)
-// - resultats (résultats concrets)
+// QUESTIONS PAR SOUS-THÉMATIQUE
+// Chaque liste reflète fidèlement les dispositifs cités dans le tableau
 // =================================================================
 const QUESTIONS = {
-  // ==================== ÉMANCIPATION ====================
+
+  // ============ ÉMANCIPATION ============
+
   droits_numerique: {
+    // Objectif visé : maintenir services publics de proximité, accompagner aux démarches en ligne, lutter contre l'illectronisme
     freins: [
       { txt: "Je ne savais pas où aller pour mes papiers", ic: "alerte" },
       { txt: "Je ne savais pas faire mes démarches sur internet", ic: "numerique" },
-      { txt: "Je n'avais pas d'ordinateur ou de téléphone", ic: "numerique" },
+      { txt: "Je n'avais pas d'ordinateur ou de smartphone", ic: "numerique" },
       { txt: "Je ne connaissais pas mes droits", ic: "document" },
-      { txt: "J'avais peur d'aller dans les administrations", ic: "porte" },
-      { txt: "Je ne comprenais pas les courriers que je recevais", ic: "document" }
+      { txt: "J'avais peur des administrations", ic: "porte" },
+      { txt: "Je ne comprenais pas mes courriers", ic: "document" }
     ],
     actions: [
-      { txt: "J'ai été accompagné(e) à France Services", ic: "porte" },
-      { txt: "J'ai participé à un atelier numérique (Digilab, Res'O)", ic: "numerique" },
-      { txt: "J'ai été aidé(e) pour mes démarches en ligne", ic: "numerique" },
-      { txt: "J'ai été reçu(e) à la mairie de proximité", ic: "porte" },
-      { txt: "J'ai participé au Forum d'inclusion numérique", ic: "groupe" },
-      { txt: "Un médiateur numérique m'a aidé(e)", ic: "personnes" }
+      { txt: "J'ai été reçu(e) à France Services / mairie de proximité", ic: "porte" },
+      { txt: "J'ai été reçu(e) au Bus France Services", ic: "mobilite" },
+      { txt: "J'ai été reçu(e) à la Maison de la Réussite", ic: "porte" },
+      { txt: "J'ai été aidé(e) par le Digilab", ic: "numerique" },
+      { txt: "J'ai été reçu(e) au CDAD (accès au droit)", ic: "document" },
+      { txt: "J'ai utilisé le catalogue Res'O (médiation numérique)", ic: "numerique" },
+      { txt: "J'ai été aidé(e) par le CCAS (pacte de solidarité)", ic: "personnes" },
+      { txt: "J'ai participé au Forum d'inclusion numérique (CRIA45)", ic: "groupe" }
     ],
     competences: [
       { txt: "Je sais utiliser un ordinateur ou un smartphone", ic: "numerique" },
-      { txt: "Je sais faire mes démarches sur internet", ic: "numerique" },
+      { txt: "Je sais faire mes démarches en ligne", ic: "numerique" },
       { txt: "Je connais mieux mes droits", ic: "document" },
-      { txt: "Je sais à qui m'adresser pour mes papiers", ic: "personnes" },
+      { txt: "Je sais à qui m'adresser", ic: "personnes" },
       { txt: "J'ose aller dans les administrations", ic: "porte" },
-      { txt: "Je comprends mieux les courriers officiels", ic: "document" }
+      { txt: "Je comprends les courriers officiels", ic: "document" }
     ],
     freins_leves: [
-      { txt: "Je sais maintenant où faire mes démarches", ic: "porte" },
+      { txt: "Je sais où faire mes démarches", ic: "porte" },
       { txt: "Je suis à l'aise avec internet", ic: "numerique" },
       { txt: "Je connais mes droits", ic: "document" },
       { txt: "Je n'ai plus peur des administrations", ic: "sourire" }
     ],
     resultats: [
-      { txt: "J'ai obtenu ou renouvelé mes papiers d'identité", ic: "document" },
+      { txt: "J'ai obtenu/renouvelé mes papiers d'identité", ic: "document" },
       { txt: "J'ai accès à mes droits sociaux (CAF, CPAM…)", ic: "document" },
       { txt: "J'ai créé mon compte FranceConnect / Ameli", ic: "numerique" },
-      { txt: "Je sais utiliser une boîte mail", ic: "numerique" },
-      { txt: "J'aide d'autres personnes dans leurs démarches", ic: "personnes" }
+      { txt: "J'utilise une boîte mail", ic: "numerique" },
+      { txt: "J'aide d'autres habitants dans leurs démarches", ic: "personnes" }
     ]
   },
 
   langue_francaise: {
+    // Objectif visé : renforcer dispositifs FLE
     freins: [
       { txt: "Je ne parlais pas bien français", ic: "parler" },
       { txt: "Je ne savais pas lire le français", ic: "livre" },
       { txt: "Je ne savais pas écrire en français", ic: "document" },
       { txt: "J'avais peur de prendre la parole", ic: "alerte" },
-      { txt: "Je ne comprenais pas mes voisins", ic: "personnes" },
-      { txt: "Je ne pouvais pas aider mes enfants à l'école", ic: "enfant" }
+      { txt: "Je ne pouvais pas aider mes enfants à l'école", ic: "enfant" },
+      { txt: "Je me sentais isolé(e)", ic: "triste" }
     ],
     actions: [
-      { txt: "J'ai suivi des cours de français (FLE)", ic: "livre" },
-      { txt: "J'ai participé aux ateliers de l'Alliance française", ic: "livre" },
-      { txt: "J'ai participé aux ateliers de Libre de Mots / CRIA45", ic: "livre" },
-      { txt: "J'ai parlé français en groupe", ic: "groupe" },
-      { txt: "J'ai été accompagné(e) à l'écrit", ic: "document" }
+      { txt: "J'ai suivi des cours de français à l'Alliance française", ic: "livre" },
+      { txt: "J'ai participé aux ateliers de Libre de Mots", ic: "livre" },
+      { txt: "J'ai été accompagné(e) par le CRIA45", ic: "personnes" },
+      { txt: "J'ai été accompagné(e) par Atlas Être et Savoir", ic: "personnes" },
+      { txt: "J'ai participé à des ateliers FLE en centre social", ic: "groupe" }
     ],
     competences: [
       { txt: "Je parle mieux français", ic: "parler" },
@@ -1304,30 +1989,33 @@ const QUESTIONS = {
       { txt: "Je ne suis plus isolé(e)", ic: "groupe" }
     ],
     resultats: [
-      { txt: "J'ai obtenu une certification de français (DELF…)", ic: "diplome" },
-      { txt: "Je peux faire mes démarches seul(e)", ic: "document" },
-      { txt: "J'ai fait des connaissances dans mon quartier", ic: "personnes" },
+      { txt: "J'ai obtenu une certification (DELF / DILF…)", ic: "diplome" },
+      { txt: "Je fais mes démarches seul(e)", ic: "document" },
       { txt: "Je peux suivre une formation", ic: "diplome" },
-      { txt: "Je peux chercher un emploi", ic: "briefcase" }
+      { txt: "Je peux chercher un emploi", ic: "briefcase" },
+      { txt: "J'ai des contacts dans mon quartier", ic: "personnes" }
     ]
   },
 
   sport_culture: {
+    // Objectif visé : actions culturelles/sportives, finalité pédagogique, médiation culturelle, dynamique culturelle
     freins: [
       { txt: "Je ne faisais aucune activité sportive", ic: "sport" },
-      { txt: "Je n'avais jamais été dans un musée ou un théâtre", ic: "culture" },
+      { txt: "Je n'allais ni au théâtre ni aux musées", ic: "culture" },
       { txt: "Le sport ou la culture coûtaient trop cher", ic: "argent" },
       { txt: "Je ne savais pas où aller", ic: "alerte" },
-      { txt: "Je n'osais pas y aller seul(e)", ic: "personnes" },
-      { txt: "Je restais à la maison", ic: "maison" }
+      { txt: "Je n'osais pas y aller seul(e)", ic: "personnes" }
     ],
     actions: [
-      { txt: "J'ai pratiqué un sport (Orléans Mouv', AJLA, UPA, JAM…)", ic: "sport" },
-      { txt: "J'ai participé au dispositif DEMOS", ic: "culture" },
+      { txt: "J'ai pratiqué un sport avec AJLA, UPA ou JAM", ic: "sport" },
+      { txt: "J'ai bénéficié du dispositif Orléans Mouv'", ic: "sport" },
+      { txt: "J'ai pratiqué grâce à « Faisons vivre le sport dans les QPV »", ic: "sport" },
+      { txt: "J'ai intégré le dispositif EMIS (Ville)", ic: "sport" },
+      { txt: "Mon enfant a participé à DEMOS (musique)", ic: "culture" },
       { txt: "Je suis allé(e) à la Micro-Folie mobile", ic: "culture" },
-      { txt: "J'ai participé à une sortie culturelle (théâtre Charbon, Culture du Cœur)", ic: "culture" },
-      { txt: "J'ai participé au dispositif EMIS", ic: "sport" },
-      { txt: "J'ai participé à un projet artistique (Fabrique Opéra…)", ic: "culture" }
+      { txt: "J'ai vu un spectacle au Théâtre Charbon / Culture du Cœur", ic: "culture" },
+      { txt: "Mon enfant participe au projet Fabrique Opéra (Argonne)", ic: "culture" },
+      { txt: "J'ai participé à un atelier des Petits Débrouillards", ic: "ampoule" }
     ],
     competences: [
       { txt: "Je connais mieux mon corps", ic: "sport" },
@@ -1340,109 +2028,105 @@ const QUESTIONS = {
     freins_leves: [
       { txt: "Je fais une activité régulièrement", ic: "sport" },
       { txt: "Je sors plus de chez moi", ic: "porte" },
-      { txt: "J'ai accès à des activités gratuites ou peu chères", ic: "argent" },
-      { txt: "J'ai trouvé un groupe avec qui partager", ic: "groupe" }
+      { txt: "J'accède à des activités gratuites ou peu chères", ic: "argent" },
+      { txt: "J'ai un groupe avec qui partager", ic: "groupe" }
     ],
     resultats: [
       { txt: "J'ai pris une licence dans un club", ic: "sport" },
       { txt: "Je vais régulièrement à des événements culturels", ic: "culture" },
       { txt: "Je participe à des spectacles ou expositions", ic: "culture" },
-      { txt: "Mes enfants pratiquent une activité", ic: "enfant" },
+      { txt: "Mes enfants pratiquent une activité régulière", ic: "enfant" },
       { txt: "Je suis en meilleure forme physique", ic: "sport" }
     ]
   },
 
-  education_reussite: {
+  education_parentalite: {
+    // Objectif visé : soutien parents, coéducation, accompagnement scolarité, animations apprenantes
     freins: [
-      { txt: "J'avais des difficultés à l'école", ic: "livre" },
-      { txt: "Je risquais de décrocher (NEET, absentéisme)", ic: "alerte" },
-      { txt: "Je n'avais pas d'aide pour mes devoirs", ic: "diplome" },
-      { txt: "Je ne savais pas vers quelle orientation aller", ic: "cible" },
-      { txt: "Je manquais de confiance en moi à l'école", ic: "triste" },
-      { txt: "Je n'avais pas accès à des activités après l'école", ic: "alerte" }
-    ],
-    actions: [
-      { txt: "J'ai été inscrit(e) au Coup de pouce clé / CLI", ic: "diplome" },
-      { txt: "J'ai été suivi(e) en accompagnement scolaire (ATP, AMASCO…)", ic: "diplome" },
-      { txt: "J'ai été reçu(e) à la Maison de la Réussite", ic: "porte" },
-      { txt: "J'ai participé à des ateliers de prévention du décrochage", ic: "personnes" },
-      { txt: "J'ai participé à un programme sport-éducation (UPA, AJLA, JAS…)", ic: "sport" },
-      { txt: "J'ai participé à un atelier numérique éducatif (code, médias)", ic: "numerique" },
-      { txt: "J'ai bénéficié du dispositif Cité éducative", ic: "diplome" },
-      { txt: "J'ai été accompagné(e) sur mon orientation (Cap Réussite, Excellence)", ic: "cible" }
-    ],
-    competences: [
-      { txt: "J'ai amélioré mes compétences en lecture / écriture", ic: "livre" },
-      { txt: "J'ai pris confiance dans mes capacités scolaires", ic: "ampoule" },
-      { txt: "J'ai appris à m'organiser dans mon travail", ic: "cible" },
-      { txt: "J'ai développé l'esprit critique et la curiosité", ic: "oeil" },
-      { txt: "J'ai un projet d'orientation plus clair", ic: "cible" },
-      { txt: "J'ai développé des compétences psychosociales (CSP)", ic: "groupe" }
-    ],
-    freins_leves: [
-      { txt: "Je ne risque plus de décrocher", ic: "sourire" },
-      { txt: "Je suis aidé(e) pour mes devoirs", ic: "diplome" },
-      { txt: "J'ai retrouvé l'envie d'apprendre", ic: "ampoule" },
-      { txt: "Je sais où je vais après l'école", ic: "cible" }
-    ],
-    resultats: [
-      { txt: "Mes résultats scolaires se sont améliorés", ic: "diplome" },
-      { txt: "Je suis passé(e) en classe supérieure / au lycée", ic: "diplome" },
-      { txt: "J'ai trouvé un stage ou une orientation qui me plaît", ic: "briefcase" },
-      { txt: "Je participe à des activités éducatives régulières", ic: "groupe" },
-      { txt: "J'aide à mon tour d'autres jeunes", ic: "coeur" }
-    ]
-  },
-
-  parentalite: {
-    freins: [
+      { txt: "Je n'arrivais pas à aider mes enfants à l'école", ic: "enfant" },
       { txt: "Je me sentais seul(e) en tant que parent", ic: "personnes" },
-      { txt: "Je ne connaissais pas les structures pour parents", ic: "alerte" },
       { txt: "J'avais des difficultés avec mon enfant", ic: "enfant" },
-      { txt: "Je ne dialoguais pas assez avec l'école", ic: "porte" },
-      { txt: "Je n'arrivais pas à aider mes enfants à l'école", ic: "enfant" }
+      { txt: "Je ne dialoguais pas avec l'école", ic: "porte" },
+      { txt: "Je ne connaissais pas les structures pour parents", ic: "alerte" }
     ],
     actions: [
       { txt: "Je suis allé(e) au Carrefour des parents", ic: "groupe" },
-      { txt: "J'ai participé à la Maison des 1000 premiers jours", ic: "enfant" },
-      { txt: "J'ai participé à la Journée des familles", ic: "groupe" },
-      { txt: "J'ai été reçu(e) à la Maison de la Réussite", ic: "porte" },
-      { txt: "J'ai participé à des ateliers parents (Récré des parents…)", ic: "groupe" },
-      { txt: "J'ai été soutenu(e) sur le handicap de mon enfant (MDPH)", ic: "document" }
+      { txt: "J'ai fréquenté la Maison des 1000 premiers jours (Blossières)", ic: "enfant" },
+      { txt: "J'ai été suivi(e) par une Maison de la Réussite", ic: "porte" },
+      { txt: "Mon enfant a été inscrit au Coup de pouce clé", ic: "diplome" },
+      { txt: "Mon enfant a été accompagné par les ATP / cité éducative", ic: "diplome" },
+      { txt: "Mon enfant a été suivi par Proxité, IG45 ou AMASCO", ic: "personnes" },
+      { txt: "Mon enfant a participé aux Entretiens de l'excellence", ic: "diplome" },
+      { txt: "Nous avons participé à la Journée des familles", ic: "groupe" },
+      { txt: "Nous avons participé aux villages d'aventures", ic: "star" }
     ],
     competences: [
+      { txt: "Je sais accompagner la scolarité de mon enfant", ic: "enfant" },
       { txt: "Je dialogue mieux avec mon enfant", ic: "parler" },
       { txt: "Je dialogue mieux avec l'école", ic: "personnes" },
-      { txt: "Je sais mieux accompagner la scolarité de mon enfant", ic: "enfant" },
       { txt: "Je connais les bons gestes pour les jeunes enfants", ic: "enfant" },
       { txt: "Je sais à qui m'adresser quand j'ai un problème", ic: "personnes" }
     ],
     freins_leves: [
+      { txt: "J'aide mes enfants à l'école", ic: "enfant" },
       { txt: "Je ne suis plus seul(e) en tant que parent", ic: "groupe" },
       { txt: "Je dialogue avec l'école", ic: "porte" },
-      { txt: "Mes relations familiales se sont apaisées", ic: "coeur" },
-      { txt: "J'aide mes enfants à l'école", ic: "enfant" }
+      { txt: "Mes relations familiales se sont apaisées", ic: "coeur" }
     ],
     resultats: [
+      { txt: "Les notes/comportement de mon enfant se sont améliorés", ic: "diplome" },
       { txt: "J'ai retrouvé confiance dans mon rôle de parent", ic: "ampoule" },
       { txt: "Je suis impliqué(e) à l'école (parent d'élève…)", ic: "groupe" },
-      { txt: "Mon enfant a été orienté(e) vers une structure adaptée", ic: "porte" },
-      { txt: "Je suis devenu(e) parent relais", ic: "personnes" }
+      { txt: "Mon enfant a été orienté(e) vers une structure adaptée", ic: "porte" }
+    ]
+  },
+
+  image_quartier: {
+    // Objectif visé : valoriser image quartier, mettre en valeur les réussites
+    freins: [
+      { txt: "Je n'étais pas fier(ère) de mon quartier", ic: "triste" },
+      { txt: "On ne parlait que du négatif sur mon quartier", ic: "alerte" },
+      { txt: "Je ne connaissais pas les belles initiatives du quartier", ic: "alerte" },
+      { txt: "Je ne me sentais pas représenté(e)", ic: "triste" }
+    ],
+    actions: [
+      { txt: "J'ai participé à un projet de portraits d'habitants", ic: "personnes" },
+      { txt: "J'ai participé à une exposition photo dans le quartier", ic: "culture" },
+      { txt: "J'ai participé à un événement de valorisation du quartier", ic: "star" },
+      { txt: "Mon parcours a été mis en avant (médias, réseaux sociaux)", ic: "star" },
+      { txt: "J'ai été accompagné(e) par un centre social pour ce projet", ic: "groupe" }
+    ],
+    competences: [
+      { txt: "Je sais raconter mon histoire", ic: "parler" },
+      { txt: "J'ai pris confiance en moi", ic: "ampoule" },
+      { txt: "Je connais les forces de mon quartier", ic: "ampoule" },
+      { txt: "Je sais valoriser une initiative collective", ic: "star" }
+    ],
+    freins_leves: [
+      { txt: "Je suis fier(ère) de mon quartier", ic: "sourire" },
+      { txt: "Je connais les belles initiatives autour de moi", ic: "ampoule" },
+      { txt: "Je me sens représenté(e)", ic: "personnes" }
+    ],
+    resultats: [
+      { txt: "Mon témoignage est visible dans le quartier", ic: "star" },
+      { txt: "Je porte un projet de valorisation", ic: "ampoule" },
+      { txt: "Je relaie les bonnes nouvelles du quartier", ic: "personnes" }
     ]
   },
 
   lien_social: {
+    // Objectif visé : soutenir vie de quartier, solidarité, animation
     freins: [
       { txt: "Je me sentais seul(e)", ic: "triste" },
       { txt: "Je ne connaissais personne dans mon quartier", ic: "personnes" },
-      { txt: "Je ne sortais pas beaucoup de chez moi", ic: "maison" },
+      { txt: "Je ne sortais pas beaucoup", ic: "maison" },
       { txt: "Je n'osais pas aller vers les autres", ic: "alerte" },
       { txt: "Je ne connaissais pas les associations du quartier", ic: "groupe" }
     ],
     actions: [
       { txt: "J'ai participé aux activités du centre social", ic: "groupe" },
+      { txt: "J'ai été accompagné(e) par AJLA ou UPA", ic: "personnes" },
       { txt: "Je suis allé(e) à des temps forts du quartier", ic: "star" },
-      { txt: "J'ai été aidé(e) par AJLA, UPA ou une autre association", ic: "personnes" },
       { txt: "J'ai participé à des projets collectifs", ic: "groupe" },
       { txt: "J'ai rencontré mes voisins lors d'un événement", ic: "personnes" }
     ],
@@ -1455,7 +2139,7 @@ const QUESTIONS = {
     ],
     freins_leves: [
       { txt: "Je me sens moins seul(e)", ic: "sourire" },
-      { txt: "J'ai des amis ou des contacts dans le quartier", ic: "groupe" },
+      { txt: "J'ai des amis dans le quartier", ic: "groupe" },
       { txt: "Je sors régulièrement", ic: "porte" },
       { txt: "Je participe à la vie du quartier", ic: "personnes" }
     ],
@@ -1463,12 +2147,12 @@ const QUESTIONS = {
       { txt: "Je suis bénévole dans une association", ic: "coeur" },
       { txt: "J'ai créé ou rejoint un projet collectif", ic: "groupe" },
       { txt: "Je suis devenu(e) parent relais", ic: "personnes" },
-      { txt: "Je participe au conseil citoyen", ic: "groupe" },
       { txt: "Je me sens mieux dans mon quartier", ic: "sourire" }
     ]
   },
 
   femmes: {
+    // Objectif visé : valoriser place des femmes, susciter leur expression
     freins: [
       { txt: "Je n'osais pas sortir de chez moi", ic: "maison" },
       { txt: "Je ne connaissais pas mes droits en tant que femme", ic: "document" },
@@ -1477,14 +2161,14 @@ const QUESTIONS = {
       { txt: "Je manquais de confiance en moi", ic: "triste" }
     ],
     actions: [
-      { txt: "J'ai participé à Activ'elles", ic: "groupe" },
-      { txt: "Je suis allée à la Maison du droit et de la justice", ic: "porte" },
-      { txt: "J'ai participé à des actions du CIDFF", ic: "personnes" },
-      { txt: "J'ai été aux événements de la Journée des droits des femmes", ic: "star" },
+      { txt: "J'ai participé au dispositif Activ'elles", ic: "groupe" },
+      { txt: "J'ai été reçue à la Maison du droit et de la justice", ic: "porte" },
+      { txt: "J'ai été accompagnée par le CIDFF", ic: "personnes" },
+      { txt: "J'ai participé à la Journée internationale des droits des femmes", ic: "star" },
       { txt: "J'ai pris la parole dans des actions du quartier", ic: "parler" }
     ],
     competences: [
-      { txt: "Je connais mieux mes droits", ic: "document" },
+      { txt: "Je connais mes droits", ic: "document" },
       { txt: "J'ose prendre la parole", ic: "parler" },
       { txt: "J'ai pris confiance en moi", ic: "ampoule" },
       { txt: "Je sais où chercher de l'aide", ic: "personnes" },
@@ -1497,7 +2181,7 @@ const QUESTIONS = {
       { txt: "J'ai pris confiance en moi", ic: "sourire" }
     ],
     resultats: [
-      { txt: "Je suis revenue dans une dynamique professionnelle", ic: "briefcase" },
+      { txt: "Je suis dans une dynamique professionnelle", ic: "briefcase" },
       { txt: "J'aide d'autres femmes du quartier", ic: "personnes" },
       { txt: "Je me suis engagée dans une association", ic: "coeur" },
       { txt: "Je suis sortie d'une situation difficile", ic: "sourire" },
@@ -1505,25 +2189,31 @@ const QUESTIONS = {
     ]
   },
 
-  // ==================== SANTÉ ====================
+  // ============ SANTÉ ============
+
   prevention: {
+    // Objectif visé : prévention cancers, vaccins, addictions, obésité, vie sexuelle, fakes news
     freins: [
       { txt: "Je n'allais pas chez le médecin", ic: "sante" },
       { txt: "Je ne faisais pas les dépistages (cancers…)", ic: "sante" },
+      { txt: "Je n'étais pas à jour des vaccins", ic: "sante" },
       { txt: "Je n'étais pas bien informé(e) sur la santé", ic: "alerte" },
-      { txt: "Je n'avais pas de mutuelle", ic: "argent" },
-      { txt: "Je ne savais pas si j'étais à jour des vaccins", ic: "sante" }
+      { txt: "Je consommais trop (tabac, alcool, écrans…)", ic: "alerte" },
+      { txt: "Je manquais d'info sur la contraception", ic: "document" },
+      { txt: "Je croyais des fausses informations santé", ic: "alerte" },
+      { txt: "Je n'avais pas de mutuelle", ic: "argent" }
     ],
     actions: [
       { txt: "J'ai participé au Forum Santé du quartier", ic: "groupe" },
-      { txt: "J'ai été reçu(e) par le bus santé / CPAM", ic: "sante" },
-      { txt: "J'ai fait un bilan de santé", ic: "sante" },
-      { txt: "J'ai été informé(e) sur les dépistages", ic: "document" },
-      { txt: "J'ai consulté un médecin grâce à l'association", ic: "sante" }
+      { txt: "J'ai participé au Festival de la santé", ic: "star" },
+      { txt: "Une action de prévention CPAM est venue dans mon quartier", ic: "sante" },
+      { txt: "J'ai été accompagné(e) par le CCAS", ic: "personnes" },
+      { txt: "Une action a eu lieu via mon bailleur", ic: "maison" },
+      { txt: "J'ai été accompagné(e) par mon centre social / Maison de la Réussite", ic: "porte" }
     ],
     competences: [
       { txt: "Je sais ce qu'est un dépistage", ic: "sante" },
-      { txt: "Je sais reconnaître une fausse information santé", ic: "alerte" },
+      { txt: "Je sais reconnaître une fausse info santé", ic: "alerte" },
       { txt: "Je connais mes droits santé (mutuelle, CMU…)", ic: "document" },
       { txt: "Je sais à qui m'adresser pour ma santé", ic: "personnes" },
       { txt: "Je prends mieux soin de moi", ic: "coeur" }
@@ -1532,34 +2222,34 @@ const QUESTIONS = {
       { txt: "J'ai un médecin référent", ic: "sante" },
       { txt: "Je fais mes dépistages", ic: "sante" },
       { txt: "Je suis à jour des vaccins", ic: "sante" },
-      { txt: "J'ai une mutuelle / CMU", ic: "document" }
+      { txt: "J'ai une mutuelle / CMU", ic: "document" },
+      { txt: "J'ai diminué ma consommation à risque", ic: "sourire" }
     ],
     resultats: [
       { txt: "J'ai fait un dépistage (cancer, diabète…)", ic: "sante" },
       { txt: "J'ai accès aux soins (médecin, dentiste…)", ic: "sante" },
-      { txt: "Je sens que je suis en meilleure santé", ic: "sourire" },
+      { txt: "Je suis en meilleure santé", ic: "sourire" },
       { txt: "J'aide mes proches à prendre soin de leur santé", ic: "personnes" }
     ]
   },
 
   sport_sante: {
+    // Objectif visé : Maisons Sport-Santé labellisées
     freins: [
       { txt: "Je ne faisais aucune activité physique", ic: "sport" },
-      { txt: "Je me sentais fatigué(e) souvent", ic: "triste" },
-      { txt: "J'avais des problèmes de poids", ic: "sante" },
+      { txt: "Je me sentais souvent fatigué(e)", ic: "triste" },
       { txt: "J'avais une maladie chronique mal suivie", ic: "sante" },
       { txt: "Je ne savais pas comment commencer le sport", ic: "alerte" }
     ],
     actions: [
-      { txt: "Je suis allé(e) dans une Maison Sport-Santé", ic: "sport" },
-      { txt: "J'ai été suivi(e) par un éducateur sportif", ic: "personnes" },
+      { txt: "Je suis allé(e) dans une Maison Sport-Santé labellisée", ic: "sport" },
+      { txt: "J'ai été suivi(e) par un éducateur sportif municipal", ic: "personnes" },
       { txt: "Je pratique une activité sport-santé régulière", ic: "sport" },
-      { txt: "J'ai participé à des séances en groupe", ic: "groupe" }
+      { txt: "J'ai rejoint un club du quartier", ic: "groupe" }
     ],
     competences: [
       { txt: "Je sais quelles activités sont bonnes pour moi", ic: "sport" },
       { txt: "Je connais mes limites physiques", ic: "ampoule" },
-      { txt: "Je sais m'échauffer et m'étirer", ic: "sport" },
       { txt: "Je gère mieux mon alimentation", ic: "sante" }
     ],
     freins_leves: [
@@ -1570,143 +2260,92 @@ const QUESTIONS = {
     resultats: [
       { txt: "Je pratique au moins 1 activité par semaine", ic: "sport" },
       { txt: "Mon médecin a constaté une amélioration", ic: "sante" },
-      { txt: "J'ai perdu du poids ou je me sens mieux dans mon corps", ic: "sourire" },
-      { txt: "Je suis moins essoufflé(e) au quotidien", ic: "sport" }
+      { txt: "Je me sens mieux dans mon corps", ic: "sourire" }
     ]
   },
 
-  addictions: {
+  cls_clsm: {
+    // Objectif visé : prendre en compte QPV dans diagnostics CLS et CLSM
     freins: [
-      { txt: "Je consommais trop (tabac, alcool, écrans…)", ic: "alerte" },
-      { txt: "Je ne savais pas où demander de l'aide", ic: "personnes" },
-      { txt: "Je voulais arrêter sans y arriver", ic: "alerte" },
-      { txt: "Un proche avait des problèmes d'addiction", ic: "personnes" }
+      { txt: "Je vivais une période de mal-être / souffrance psychique", ic: "triste" },
+      { txt: "Je ne savais pas où parler de mes difficultés", ic: "alerte" },
+      { txt: "Je n'avais pas accès à un suivi psychologique", ic: "sante" },
+      { txt: "Un proche allait mal et je ne savais pas comment l'aider", ic: "personnes" }
     ],
     actions: [
-      { txt: "J'ai été accompagné(e) par une association de prévention", ic: "personnes" },
-      { txt: "J'ai participé à un atelier de sensibilisation", ic: "groupe" },
-      { txt: "J'ai été orienté(e) vers un professionnel", ic: "sante" }
+      { txt: "J'ai été orienté(e) dans le cadre du CLS / CLSM", ic: "sante" },
+      { txt: "J'ai participé à un atelier sur la santé mentale", ic: "groupe" },
+      { txt: "J'ai été reçu(e) par un professionnel via mon centre social", ic: "personnes" }
     ],
     competences: [
-      { txt: "Je connais les risques", ic: "alerte" },
-      { txt: "Je sais où demander de l'aide", ic: "personnes" },
-      { txt: "Je gère mieux mes envies", ic: "ampoule" }
+      { txt: "Je sais reconnaître les signes de mal-être", ic: "ampoule" },
+      { txt: "Je sais à qui m'adresser", ic: "personnes" },
+      { txt: "J'ose en parler", ic: "parler" }
     ],
     freins_leves: [
-      { txt: "J'ai diminué ou arrêté ma consommation", ic: "sourire" },
-      { txt: "Je sais à qui parler", ic: "personnes" },
-      { txt: "J'aide un proche à s'en sortir", ic: "coeur" }
+      { txt: "Je vais mieux", ic: "sourire" },
+      { txt: "J'ai un suivi adapté", ic: "sante" },
+      { txt: "Je sais aider un proche en difficulté", ic: "coeur" }
     ],
     resultats: [
-      { txt: "J'ai arrêté ou diminué ma consommation", ic: "sourire" },
       { txt: "Je suis suivi(e) régulièrement", ic: "sante" },
-      { txt: "Je me sens mieux au quotidien", ic: "sourire" }
+      { txt: "Je me sens mieux psychologiquement", ic: "sourire" }
     ]
   },
 
-  vie_sexuelle: {
-    freins: [
-      { txt: "Je n'osais pas parler de ces sujets", ic: "alerte" },
-      { txt: "Je manquais d'information", ic: "document" },
-      { txt: "Je ne connaissais pas les moyens de contraception", ic: "sante" }
-    ],
-    actions: [
-      { txt: "J'ai participé à un atelier d'information", ic: "groupe" },
-      { txt: "J'ai été reçu(e) par un professionnel", ic: "sante" },
-      { txt: "J'ai eu accès à des dépistages", ic: "sante" }
-    ],
-    competences: [
-      { txt: "Je suis mieux informé(e)", ic: "ampoule" },
-      { txt: "Je connais mes droits", ic: "document" },
-      { txt: "J'ose en parler", ic: "parler" }
-    ],
-    freins_leves: [
-      { txt: "Je suis informé(e)", ic: "document" },
-      { txt: "Je sais où trouver de l'aide", ic: "personnes" },
-      { txt: "J'ose en parler", ic: "parler" }
-    ],
-    resultats: [
-      { txt: "J'ai accès à la contraception", ic: "sante" },
-      { txt: "Je fais les dépistages régulièrement", ic: "sante" },
-      { txt: "Je peux en parler avec mes proches", ic: "personnes" }
-    ]
-  },
+  // ============ EMPLOI ============
 
-  info_sante: {
-    freins: [
-      { txt: "Je croyais beaucoup d'infos qui circulaient sur internet", ic: "alerte" },
-      { txt: "Je ne savais pas qui croire", ic: "alerte" },
-      { txt: "Je n'osais pas demander à un professionnel", ic: "personnes" }
-    ],
-    actions: [
-      { txt: "J'ai participé à un atelier sur les fakes news santé", ic: "ampoule" },
-      { txt: "J'ai été informé(e) par un professionnel de santé", ic: "sante" }
-    ],
-    competences: [
-      { txt: "Je sais reconnaître une vraie info santé", ic: "ampoule" },
-      { txt: "Je vérifie mes sources", ic: "oeil" },
-      { txt: "Je préfère demander à mon médecin", ic: "sante" }
-    ],
-    freins_leves: [
-      { txt: "Je ne crois plus n'importe quoi", ic: "ampoule" },
-      { txt: "Je sais qui croire", ic: "oeil" }
-    ],
-    resultats: [
-      { txt: "Je prends de meilleures décisions pour ma santé", ic: "sante" },
-      { txt: "J'aide ma famille à mieux s'informer", ic: "personnes" }
-    ]
-  },
-
-  // ==================== EMPLOI ====================
   stages_apprentissage: {
+    // Objectif visé : favoriser accès aux stages, dispositifs d'apprentissage
     freins: [
       { txt: "Je ne trouvais pas de stage", ic: "briefcase" },
       { txt: "Je ne connaissais personne dans le monde du travail", ic: "personnes" },
       { txt: "Je ne savais pas faire un CV ou une lettre", ic: "document" },
-      { txt: "Je n'avais pas confiance en moi pour postuler", ic: "triste" },
+      { txt: "Je n'avais pas confiance pour postuler", ic: "triste" },
       { txt: "Je ne savais pas quel métier choisir", ic: "alerte" }
     ],
     actions: [
+      { txt: "J'ai été aidé(e) par Pass'emploi service", ic: "personnes" },
+      { txt: "J'ai été accompagné(e) par la Mission locale", ic: "personnes" },
       { txt: "J'ai participé à un forum stage / apprentissage", ic: "groupe" },
-      { txt: "J'ai été aidé(e) pour mon CV et lettre", ic: "document" },
-      { txt: "J'ai rencontré des entreprises grâce à l'association", ic: "briefcase" },
-      { txt: "J'ai fait des entretiens blancs", ic: "personnes" },
-      { txt: "J'ai été parrainé(e) par un professionnel", ic: "personnes" }
+      { txt: "J'ai été aidé(e) pour mon CV et ma lettre", ic: "document" },
+      { txt: "J'ai rencontré des entreprises lors d'une action « hors les murs »", ic: "briefcase" },
+      { txt: "J'ai fait des entretiens blancs", ic: "personnes" }
     ],
     competences: [
       { txt: "Je sais faire un CV", ic: "document" },
       { txt: "Je sais me présenter en entretien", ic: "parler" },
       { txt: "Je connais des secteurs qui m'intéressent", ic: "ampoule" },
-      { txt: "J'ai pris confiance pour postuler", ic: "ampoule" }
+      { txt: "J'ai confiance pour postuler", ic: "ampoule" }
     ],
     freins_leves: [
-      { txt: "J'ai trouvé un stage", ic: "briefcase" },
+      { txt: "J'ai trouvé un stage / une alternance", ic: "briefcase" },
       { txt: "Je sais faire un CV et une lettre", ic: "document" },
       { txt: "J'ai un projet professionnel", ic: "cible" }
     ],
     resultats: [
       { txt: "J'ai signé un contrat de stage ou d'apprentissage", ic: "briefcase" },
       { txt: "J'ai été embauché(e) après mon stage", ic: "briefcase" },
-      { txt: "J'ai validé ma formation", ic: "diplome" },
-      { txt: "Je sais où chercher pour la suite", ic: "ampoule" }
+      { txt: "J'ai validé ma formation", ic: "diplome" }
     ]
   },
 
   parrainage: {
+    // Objectif visé : déployer parrainage et mentorat (lien RSE / entreprises / lycées pro)
     freins: [
       { txt: "Je n'avais aucun contact dans le monde professionnel", ic: "personnes" },
-      { txt: "Je ne savais pas comment faire fonctionner mon réseau", ic: "alerte" },
-      { txt: "Je ne connaissais aucun(e) professionnel(le) à qui parler", ic: "personnes" },
+      { txt: "Je ne savais pas comment construire un réseau", ic: "alerte" },
       { txt: "Je manquais de confiance pour démarcher", ic: "triste" }
     ],
     actions: [
-      { txt: "J'ai été parrainé(e) par un professionnel (Proxité, Mentorat…)", ic: "personnes" },
-      { txt: "J'ai participé au programme Parcours & Réussite", ic: "groupe" },
-      { txt: "J'ai rencontré régulièrement mon parrain ou marraine", ic: "personnes" },
-      { txt: "J'ai été présenté(e) à des contacts professionnels", ic: "personnes" }
+      { txt: "J'ai été parrainé(e) via Parcours & Réussite", ic: "personnes" },
+      { txt: "J'ai été suivi(e) par un mentor (programme Mentorat)", ic: "personnes" },
+      { txt: "J'ai été accompagné(e) par Proxité", ic: "personnes" },
+      { txt: "Mon parrain ou marraine vient d'une entreprise partenaire (RSE)", ic: "briefcase" },
+      { txt: "J'ai rencontré régulièrement mon parrain ou marraine", ic: "personnes" }
     ],
     competences: [
-      { txt: "Je sais comment construire un réseau", ic: "groupe" },
+      { txt: "Je sais construire un réseau professionnel", ic: "groupe" },
       { txt: "Je sais demander des conseils", ic: "parler" },
       { txt: "J'ai pris confiance grâce à mon parrain ou marraine", ic: "ampoule" }
     ],
@@ -1723,6 +2362,7 @@ const QUESTIONS = {
   },
 
   freins_emploi: {
+    // Objectif visé : généraliser dynamique de parcours pour lever les freins à l'emploi et mobiliser les compétences
     freins: [
       { txt: "Je n'avais pas de mode de garde pour mes enfants", ic: "enfant" },
       { txt: "Je ne pouvais pas me déplacer (pas de permis)", ic: "mobilite" },
@@ -1730,15 +2370,16 @@ const QUESTIONS = {
       { txt: "J'avais des problèmes de logement", ic: "maison" },
       { txt: "Je manquais de confiance en moi", ic: "triste" },
       { txt: "Je ne maîtrisais pas le français", ic: "parler" },
-      { txt: "Je ne connaissais pas mes droits", ic: "document" }
+      { txt: "Je ne connaissais pas mes droits sociaux", ic: "document" }
     ],
     actions: [
       { txt: "J'ai été suivi(e) par Pass'emploi service", ic: "personnes" },
-      { txt: "J'ai été accompagné(e) par la Mission locale", ic: "personnes" },
-      { txt: "J'ai été aidé(e) par Initiative et développement", ic: "briefcase" },
-      { txt: "J'ai bénéficié d'une aide pour la mobilité (permis…)", ic: "mobilite" },
-      { txt: "J'ai été aidé(e) pour la garde d'enfants", ic: "enfant" },
-      { txt: "J'ai participé aux ateliers Amidon 45", ic: "groupe" }
+      { txt: "J'ai été accompagné(e) par Initiative et développement", ic: "briefcase" },
+      { txt: "J'ai été accompagné(e) par Amidon 45", ic: "groupe" },
+      { txt: "J'ai été suivi(e) par la Mission locale", ic: "personnes" },
+      { txt: "J'ai été reçu(e) à la Maison de la Réussite", ic: "porte" },
+      { txt: "J'ai bénéficié d'une aide à la mobilité (permis…)", ic: "mobilite" },
+      { txt: "J'ai été aidé(e) pour la garde d'enfants", ic: "enfant" }
     ],
     competences: [
       { txt: "J'ai pris confiance en moi", ic: "ampoule" },
@@ -1750,7 +2391,7 @@ const QUESTIONS = {
     freins_leves: [
       { txt: "Mes enfants ont un mode de garde", ic: "enfant" },
       { txt: "Je peux me déplacer", ic: "mobilite" },
-      { txt: "Mes problèmes financiers sont moins lourds", ic: "argent" },
+      { txt: "Mes problèmes financiers sont allégés", ic: "argent" },
       { txt: "Mon logement est stable", ic: "maison" },
       { txt: "J'ai retrouvé confiance", ic: "sourire" }
     ],
@@ -1764,15 +2405,17 @@ const QUESTIONS = {
   },
 
   metiers_tension: {
+    // Objectif visé : communiquer sur métiers en tension (logistique, transport, restauration, bâtiment)
     freins: [
       { txt: "Je ne connaissais pas les métiers qui recrutent", ic: "alerte" },
       { txt: "J'avais des idées reçues sur certains métiers", ic: "alerte" },
       { txt: "Je ne savais pas comment me former", ic: "diplome" }
     ],
     actions: [
-      { txt: "J'ai participé à un rendez-vous métier dans le quartier", ic: "groupe" },
-      { txt: "J'ai rencontré des entreprises (logistique, BTP…)", ic: "briefcase" },
-      { txt: "J'ai visité des entreprises locales", ic: "porte" }
+      { txt: "J'ai participé à un rendez-vous métiers dans mon quartier", ic: "groupe" },
+      { txt: "J'ai rencontré des entreprises (logistique, transport, BTP, restauration…)", ic: "briefcase" },
+      { txt: "J'ai participé à un forum emploi avec France Travail / CFA", ic: "groupe" },
+      { txt: "J'ai visité une entreprise d'un parc d'activité", ic: "porte" }
     ],
     competences: [
       { txt: "Je connais les métiers qui recrutent", ic: "ampoule" },
@@ -1790,6 +2433,7 @@ const QUESTIONS = {
   },
 
   entrepreneuriat: {
+    // Objectif visé : permanences entrepreneuriat (Maisons de la Réussite, BGE, Bus, LABO)
     freins: [
       { txt: "J'avais une idée mais je ne savais pas comment faire", ic: "ampoule" },
       { txt: "Je n'avais pas de financement", ic: "argent" },
@@ -1821,23 +2465,26 @@ const QUESTIONS = {
   },
 
   dispositifs_jeunes: {
+    // Objectif visé : E2C, chantiers éducatifs, EPIDE, chantiers formation, réseau Étincelle
     freins: [
-      { txt: "J'étais sorti(e) du système scolaire (NEET)", ic: "alerte" },
-      { txt: "Je ne savais pas quoi faire", ic: "triste" },
+      { txt: "J'étais sorti(e) du système scolaire", ic: "alerte" },
       { txt: "Je n'avais ni emploi ni formation", ic: "alerte" },
-      { txt: "Je ne connaissais pas les dispositifs pour jeunes", ic: "document" }
+      { txt: "Je ne savais pas quoi faire", ic: "triste" },
+      { txt: "Je ne connaissais pas les dispositifs jeunes", ic: "document" }
     ],
     actions: [
       { txt: "Je suis entré(e) à l'École de la 2e chance (E2C)", ic: "diplome" },
       { txt: "J'ai intégré l'EPIDE", ic: "diplome" },
-      { txt: "J'ai participé à un chantier éducatif", ic: "outil" },
       { txt: "J'ai rejoint le réseau Étincelle", ic: "star" },
-      { txt: "J'ai été suivi(e) par la Mission locale", ic: "personnes" }
+      { txt: "J'ai participé à un chantier éducatif", ic: "outil" },
+      { txt: "J'ai participé à un chantier formation", ic: "outil" },
+      { txt: "J'ai été suivi(e) par la Mission locale", ic: "personnes" },
+      { txt: "J'ai été reçu(e) à la Maison de la Réussite", ic: "porte" }
     ],
     competences: [
       { txt: "J'ai retrouvé un cadre et des règles", ic: "diplome" },
       { txt: "Je sais respecter des horaires", ic: "cible" },
-      { txt: "J'ai appris des bases pratiques (CV, lettre, métiers)", ic: "document" },
+      { txt: "J'ai appris des bases pratiques (CV, métiers)", ic: "document" },
       { txt: "J'ai pris confiance en moi", ic: "ampoule" }
     ],
     freins_leves: [
@@ -1847,141 +2494,143 @@ const QUESTIONS = {
     ],
     resultats: [
       { txt: "J'ai validé une formation ou un diplôme", ic: "diplome" },
-      { txt: "J'ai trouvé un emploi ou un apprentissage", ic: "briefcase" },
+      { txt: "J'ai trouvé un emploi ou une alternance", ic: "briefcase" },
       { txt: "Je me suis remis(e) à étudier", ic: "livre" }
     ]
   },
 
-  // ==================== TRANSITION ====================
-  cadre_de_vie: {
+  // ============ TRANSITION ============
+
+  gusp: {
+    // Objectif visé : améliorer GUSP, traiter difficultés espace public, conventions TFPB
     freins: [
-      { txt: "Mon quartier était sale (déchets, encombrants…)", ic: "poubelle" },
+      { txt: "L'espace public était dégradé près de chez moi", ic: "alerte" },
       { txt: "Il y avait des problèmes dans les parties communes", ic: "maison" },
-      { txt: "Le bailleur ne répondait pas vite", ic: "porte" },
-      { txt: "Je ne savais pas à qui signaler les problèmes", ic: "alerte" }
+      { txt: "Mon bailleur ne répondait pas vite", ic: "porte" },
+      { txt: "Je ne savais pas à qui signaler", ic: "alerte" },
+      { txt: "Pas de coordination entre les acteurs (mairie, bailleur…)", ic: "groupe" }
     ],
     actions: [
-      { txt: "J'ai participé à des réunions GUSP", ic: "groupe" },
-      { txt: "J'ai signalé des problèmes (mairie de proximité, bailleur)", ic: "alerte" },
-      { txt: "J'ai participé à des actions de propreté du quartier", ic: "feuille" }
+      { txt: "J'ai participé à une réunion GUSP", ic: "groupe" },
+      { txt: "J'ai été reçu(e) à la mairie de proximité", ic: "porte" },
+      { txt: "J'ai signalé un problème via la convention TFPB", ic: "document" },
+      { txt: "J'ai rencontré l'agent de proximité de mon bailleur", ic: "personnes" },
+      { txt: "Une diagnostic en marchant a eu lieu dans mon quartier", ic: "feuille" }
     ],
     competences: [
       { txt: "Je sais à qui signaler un problème", ic: "personnes" },
       { txt: "Je connais le rôle du bailleur", ic: "porte" },
+      { txt: "Je connais le rôle de la mairie de proximité", ic: "porte" },
       { txt: "Je m'investis dans mon quartier", ic: "groupe" }
     ],
     freins_leves: [
-      { txt: "Mon quartier est plus propre", ic: "feuille" },
+      { txt: "L'espace public est mieux entretenu", ic: "feuille" },
       { txt: "Mes signalements sont pris en compte", ic: "ampoule" },
       { txt: "Je connais mes interlocuteurs", ic: "personnes" }
     ],
     resultats: [
       { txt: "Mon cadre de vie s'est amélioré", ic: "sourire" },
-      { txt: "Je m'engage dans la vie de mon immeuble", ic: "groupe" }
+      { txt: "Je m'engage dans la vie de mon immeuble", ic: "groupe" },
+      { txt: "Les problèmes signalés ont été résolus", ic: "ampoule" }
     ]
   },
 
-  dechets: {
+  transition_eco: {
+    // Objectif visé : réemploi, valorisation, mobilités douces, énergie, agriculture urbaine, tarification sociale transports
     freins: [
-      { txt: "Je ne savais pas trier mes déchets", ic: "alerte" },
-      { txt: "Je ne savais pas où jeter les encombrants", ic: "poubelle" },
-      { txt: "Je jetais trop de choses à la poubelle", ic: "poubelle" }
-    ],
-    actions: [
-      { txt: "J'ai participé à un atelier de sensibilisation", ic: "groupe" },
-      { txt: "J'ai utilisé un composteur collectif", ic: "feuille" },
-      { txt: "J'ai donné mes objets à Ressource Toit / Emmaüs / Envie", ic: "coeur" },
-      { txt: "J'ai été informé(e) sur les encombrants (métropole)", ic: "document" }
-    ],
-    competences: [
-      { txt: "Je sais trier mes déchets", ic: "feuille" },
-      { txt: "Je sais composter", ic: "feuille" },
-      { txt: "Je sais quoi faire de mes encombrants", ic: "ampoule" },
-      { txt: "Je consomme moins (réemploi)", ic: "feuille" }
-    ],
-    freins_leves: [
-      { txt: "Je trie tous mes déchets", ic: "feuille" },
-      { txt: "Je connais les bons gestes", ic: "ampoule" }
-    ],
-    resultats: [
-      { txt: "Je produis moins de déchets", ic: "feuille" },
-      { txt: "J'ai donné une seconde vie à des objets", ic: "coeur" },
-      { txt: "Je composte mes biodéchets", ic: "feuille" }
-    ]
-  },
-
-  energie: {
-    freins: [
+      { txt: "Je jetais beaucoup d'objets encore utilisables", ic: "poubelle" },
       { txt: "Mes factures d'énergie étaient trop élevées", ic: "argent" },
       { txt: "Mon logement était mal isolé", ic: "maison" },
-      { txt: "Je ne connaissais pas les bons gestes", ic: "alerte" }
+      { txt: "Les transports en commun coûtaient trop cher", ic: "argent" },
+      { txt: "Je n'avais pas de local sécurisé pour un vélo", ic: "velo" },
+      { txt: "Je ne connaissais pas les bons gestes écologiques", ic: "alerte" }
     ],
     actions: [
-      { txt: "J'ai visité l'appartement pédagogique", ic: "maison" },
-      { txt: "J'ai participé à un atelier sur les économies d'énergie", ic: "ampoule" },
-      { txt: "J'ai été aidé(e) pour mes factures (chèque énergie…)", ic: "argent" }
+      { txt: "J'ai bénéficié de la tarification sociale des transports", ic: "argent" },
+      { txt: "J'ai donné/récupéré chez Ressource Toit", ic: "coeur" },
+      { txt: "J'ai été aidé(e) par Déchet Gagnant / Interaction", ic: "feuille" },
+      { txt: "J'ai été accompagné(e) par les Compagnons Bâtisseurs", ic: "outil" },
+      { txt: "J'ai donné/récupéré chez Envie ou Emmaüs", ic: "coeur" },
+      { txt: "J'ai utilisé un local vélo dans ma résidence", ic: "velo" },
+      { txt: "J'ai visité l'appartement pédagogique itinérant", ic: "maison" }
     ],
     competences: [
-      { txt: "Je connais les bons gestes pour économiser l'énergie", ic: "ampoule" },
-      { txt: "Je sais lire ma facture", ic: "document" },
-      { txt: "Je connais les aides existantes", ic: "argent" }
+      { txt: "Je connais les bons gestes écologiques", ic: "ampoule" },
+      { txt: "Je sais lire ma facture d'énergie", ic: "document" },
+      { txt: "Je consomme moins (réemploi)", ic: "feuille" },
+      { txt: "Je sais utiliser les transports / le vélo", ic: "velo" }
     ],
     freins_leves: [
       { txt: "Mes factures ont baissé", ic: "argent" },
-      { txt: "Je sais faire des économies", ic: "ampoule" }
+      { txt: "Je me déplace plus facilement", ic: "mobilite" },
+      { txt: "Je consomme mieux", ic: "feuille" }
     ],
     resultats: [
       { txt: "Je consomme moins d'énergie", ic: "feuille" },
-      { txt: "J'ai obtenu une aide", ic: "argent" }
-    ]
-  },
-
-  mobilite_douce: {
-    freins: [
-      { txt: "Je n'osais pas faire du vélo", ic: "velo" },
-      { txt: "Je ne connaissais pas les transports en commun", ic: "mobilite" },
-      { txt: "Je n'avais pas de vélo ou de local sécurisé", ic: "velo" }
-    ],
-    actions: [
-      { txt: "J'ai participé à des ateliers vélo", ic: "velo" },
-      { txt: "J'ai bénéficié d'un local vélo dans ma résidence", ic: "maison" },
-      { txt: "J'ai bénéficié d'une tarification sociale des transports", ic: "argent" }
-    ],
-    competences: [
-      { txt: "Je sais faire du vélo en ville", ic: "velo" },
-      { txt: "Je sais utiliser les transports", ic: "mobilite" },
-      { txt: "Je sais réparer mon vélo", ic: "outil" }
-    ],
-    freins_leves: [
-      { txt: "Je peux me déplacer facilement", ic: "mobilite" },
-      { txt: "Je fais du vélo régulièrement", ic: "velo" }
-    ],
-    resultats: [
+      { txt: "J'ai donné une seconde vie à des objets", ic: "coeur" },
       { txt: "Je vais au travail à vélo / en transports", ic: "velo" },
       { txt: "Je dépense moins en déplacements", ic: "argent" }
     ]
   },
 
+  dechets: {
+    // Objectif visé : économies d'énergie, préservation des ressources, propreté, gestion des déchets, encombrants, composteurs
+    freins: [
+      { txt: "Je ne savais pas trier mes déchets", ic: "alerte" },
+      { txt: "Je ne savais pas où jeter les encombrants", ic: "poubelle" },
+      { txt: "Mon quartier était souvent sale", ic: "alerte" },
+      { txt: "Je jetais mes biodéchets à la poubelle", ic: "poubelle" }
+    ],
+    actions: [
+      { txt: "J'ai participé à un atelier de sensibilisation au tri", ic: "groupe" },
+      { txt: "J'utilise un composteur collectif dans ma résidence", ic: "feuille" },
+      { txt: "J'ai été informé(e) par la métropole sur les encombrants", ic: "document" },
+      { txt: "J'ai participé à une action de propreté du quartier", ic: "feuille" }
+    ],
+    competences: [
+      { txt: "Je sais trier mes déchets", ic: "feuille" },
+      { txt: "Je sais composter", ic: "feuille" },
+      { txt: "Je sais quoi faire de mes encombrants", ic: "ampoule" },
+      { txt: "Je connais les règles de propreté du quartier", ic: "ampoule" }
+    ],
+    freins_leves: [
+      { txt: "Je trie tous mes déchets", ic: "feuille" },
+      { txt: "Mon quartier est plus propre", ic: "sourire" },
+      { txt: "Je connais les bons gestes", ic: "ampoule" }
+    ],
+    resultats: [
+      { txt: "Je produis moins de déchets", ic: "feuille" },
+      { txt: "Je composte mes biodéchets", ic: "feuille" },
+      { txt: "J'évacue mes encombrants correctement", ic: "ampoule" }
+    ]
+  },
+
   logement: {
+    // Objectif visé : NPNRU, services de proximité bailleurs, conventions TFPB
     freins: [
       { txt: "Mon logement était trop petit ou inadapté", ic: "maison" },
-      { txt: "J'avais des relations difficiles avec le bailleur", ic: "porte" },
+      { txt: "J'avais des relations difficiles avec mon bailleur", ic: "porte" },
       { txt: "Je ne connaissais pas mes droits de locataire", ic: "document" },
-      { txt: "Je cherchais un logement sans en trouver", ic: "alerte" }
+      { txt: "Je cherchais un logement sans en trouver", ic: "alerte" },
+      { txt: "Mon immeuble avait besoin de travaux", ic: "outil" }
     ],
     actions: [
       { txt: "J'ai été aidé(e) dans ma demande de logement", ic: "document" },
-      { txt: "J'ai été reçu(e) par un agent de proximité du bailleur", ic: "personnes" },
-      { txt: "J'ai été accompagné(e) dans le cadre du NPNRU", ic: "maison" }
+      { txt: "J'ai été reçu(e) par l'agent de proximité de mon bailleur", ic: "personnes" },
+      { txt: "J'ai été accompagné(e) dans le cadre du NPNRU", ic: "maison" },
+      { txt: "J'ai bénéficié d'une intervention via la convention TFPB", ic: "document" },
+      { txt: "J'ai participé à une réunion locataires/bailleur", ic: "groupe" }
     ],
     competences: [
       { txt: "Je connais mes droits de locataire", ic: "document" },
       { txt: "Je sais à qui m'adresser au bailleur", ic: "personnes" },
-      { txt: "Je sais faire ma demande de logement", ic: "document" }
+      { txt: "Je sais faire ma demande de logement", ic: "document" },
+      { txt: "Je connais le NPNRU et ses étapes", ic: "ampoule" }
     ],
     freins_leves: [
       { txt: "J'ai obtenu un logement adapté", ic: "maison" },
-      { txt: "Mes relations avec le bailleur sont apaisées", ic: "sourire" }
+      { txt: "Mes relations avec le bailleur sont apaisées", ic: "sourire" },
+      { txt: "Mes demandes d'intervention sont suivies", ic: "ampoule" }
     ],
     resultats: [
       { txt: "J'ai obtenu un nouveau logement", ic: "maison" },
@@ -1990,18 +2639,23 @@ const QUESTIONS = {
     ]
   },
 
-  // ==================== TRANQUILLITÉ ====================
+  // ============ TRANQUILLITÉ ============
+
   prevention_delinquance: {
+    // Objectif visé : prévention spécialisée, chantiers éducatifs, suivi collégiens, parentalité
     freins: [
       { txt: "Je traînais dehors sans rien faire", ic: "alerte" },
-      { txt: "Je traînais avec des mauvaises fréquentations", ic: "personnes" },
+      { txt: "J'étais avec des mauvaises fréquentations", ic: "personnes" },
       { txt: "J'avais des problèmes avec la justice", ic: "alerte" },
-      { txt: "Je ne respectais pas toujours les règles", ic: "alerte" }
+      { txt: "Je ne respectais pas toujours les règles", ic: "alerte" },
+      { txt: "Mes parents ne savaient pas comment m'aider", ic: "enfant" }
     ],
     actions: [
       { txt: "J'ai été suivi(e) par un éducateur de prévention spécialisée", ic: "personnes" },
       { txt: "J'ai participé à un chantier éducatif", ic: "outil" },
-      { txt: "Mes parents ont été soutenus dans mon parcours", ic: "enfant" }
+      { txt: "J'ai été suivi(e) en collège (suivi renforcé)", ic: "diplome" },
+      { txt: "Mes parents ont participé à l'action de prévention 14/18 ans (Argonne)", ic: "enfant" },
+      { txt: "J'ai été reçu(e) à la Maison de la Réussite", ic: "porte" }
     ],
     competences: [
       { txt: "Je sais respecter des règles", ic: "diplome" },
@@ -2022,6 +2676,7 @@ const QUESTIONS = {
   },
 
   mediation: {
+    // Objectif visé : professionnaliser médiation sociale, généraliser parents relais, asso Lien Social et Médiation
     freins: [
       { txt: "J'avais des conflits avec mes voisins", ic: "personnes" },
       { txt: "J'avais des conflits avec ma famille", ic: "enfant" },
@@ -2029,9 +2684,10 @@ const QUESTIONS = {
       { txt: "Je n'osais pas parler de mes problèmes", ic: "triste" }
     ],
     actions: [
-      { txt: "J'ai été aidé(e) par un médiateur social", ic: "personnes" },
-      { txt: "J'ai été reçu(e) par l'association Lien social et médiation", ic: "groupe" },
-      { txt: "J'ai été soutenu(e) par un parent relais", ic: "personnes" }
+      { txt: "J'ai été aidé(e) par l'association Lien Social et Médiation", ic: "groupe" },
+      { txt: "Un médiateur social du quartier m'a accompagné(e)", ic: "personnes" },
+      { txt: "J'ai été soutenu(e) par un parent relais", ic: "personnes" },
+      { txt: "J'ai été reçu(e) au sein de mon bailleur (médiation locataires)", ic: "maison" }
     ],
     competences: [
       { txt: "Je sais dialoguer même quand c'est difficile", ic: "parler" },
@@ -2046,163 +2702,729 @@ const QUESTIONS = {
     resultats: [
       { txt: "Mes conflits sont résolus", ic: "sourire" },
       { txt: "Je vis mieux dans mon immeuble", ic: "maison" },
-      { txt: "Je me suis formé(e) pour devenir médiateur/médiatrice", ic: "diplome" }
+      { txt: "Je suis devenu(e) parent relais", ic: "personnes" },
+      { txt: "Je me forme à la médiation sociale", ic: "diplome" }
     ]
   },
 
   police_population: {
+    // Objectif visé : délégués cohésion, action 14/18 ans Argonne, réserves citoyennes, cadets
     freins: [
       { txt: "Je n'avais pas confiance dans la police", ic: "triste" },
       { txt: "Je ne connaissais pas les forces de l'ordre du quartier", ic: "personnes" },
-      { txt: "J'avais des préjugés", ic: "alerte" }
+      { txt: "J'avais des préjugés", ic: "alerte" },
+      { txt: "Je ne pensais pas pouvoir m'engager pour la République", ic: "triste" }
     ],
     actions: [
-      { txt: "J'ai rencontré un délégué cohésion police-population", ic: "personnes" },
+      { txt: "J'ai rencontré le délégué cohésion police-population", ic: "personnes" },
       { txt: "J'ai participé à une action police-population à l'école", ic: "groupe" },
-      { txt: "J'ai visité un commissariat ou une caserne", ic: "porte" }
+      { txt: "Mes parents ont participé à l'action 14/18 ans (Argonne)", ic: "enfant" },
+      { txt: "J'ai intégré le dispositif des cadets", ic: "diplome" },
+      { txt: "J'ai été informé(e) sur les réserves (police, gendarmerie, pompiers, défense)", ic: "police" }
     ],
     competences: [
       { txt: "Je connais le rôle de la police", ic: "ampoule" },
       { txt: "J'ai changé mon regard", ic: "oeil" },
-      { txt: "Je sais à qui m'adresser", ic: "personnes" }
+      { txt: "Je sais à qui m'adresser", ic: "personnes" },
+      { txt: "Je connais les institutions républicaines", ic: "ampoule" }
     ],
     freins_leves: [
       { txt: "Mes préjugés ont diminué", ic: "ampoule" },
-      { txt: "Je peux dialoguer avec la police", ic: "parler" }
+      { txt: "Je peux dialoguer avec la police", ic: "parler" },
+      { txt: "Je m'engage pour la République", ic: "coeur" }
     ],
     resultats: [
       { txt: "Je me sens plus en sécurité dans le quartier", ic: "bouclier" },
-      { txt: "Je connais les forces de l'ordre du quartier", ic: "personnes" }
-    ]
-  },
-
-  reserves_citoyennes: {
-    freins: [
-      { txt: "Je ne connaissais pas les réserves citoyennes", ic: "alerte" },
-      { txt: "Je ne pensais pas pouvoir m'engager", ic: "triste" }
-    ],
-    actions: [
-      { txt: "J'ai été informé(e) sur les réserves (police, pompiers, défense…)", ic: "police" },
-      { txt: "J'ai intégré le dispositif des cadets", ic: "diplome" },
-      { txt: "J'ai participé à des actions citoyennes", ic: "groupe" }
-    ],
-    competences: [
-      { txt: "Je connais les institutions républicaines", ic: "ampoule" },
-      { txt: "Je sais m'engager pour les autres", ic: "coeur" },
-      { txt: "J'ai appris à respecter une discipline", ic: "diplome" }
-    ],
-    freins_leves: [
-      { txt: "Je m'engage pour ma société", ic: "coeur" },
-      { txt: "J'ai trouvé une vocation", ic: "cible" }
-    ],
-    resultats: [
       { txt: "Je suis cadet ou réserviste", ic: "police" },
-      { txt: "Je veux travailler dans ces métiers", ic: "briefcase" }
+      { txt: "Je veux travailler dans ces métiers (police, gendarmerie…)", ic: "briefcase" }
     ]
   },
 
-  parents_relais: {
-    freins: [
-      { txt: "Je voulais aider d'autres parents mais je ne savais pas comment", ic: "personnes" },
-      { txt: "Je ne connaissais pas le dispositif", ic: "alerte" }
-    ],
-    actions: [
-      { txt: "J'ai été formé(e) au dispositif des parents relais", ic: "diplome" },
-      { txt: "J'accompagne d'autres parents du quartier", ic: "personnes" }
-    ],
-    competences: [
-      { txt: "Je sais écouter et orienter d'autres parents", ic: "oeil" },
-      { txt: "Je connais les structures du quartier", ic: "porte" },
-      { txt: "J'ai pris une posture professionnelle", ic: "ampoule" }
-    ],
-    freins_leves: [
-      { txt: "Je suis utile aux autres parents", ic: "coeur" },
-      { txt: "Je connais les ressources du quartier", ic: "ampoule" }
-    ],
-    resultats: [
-      { txt: "Je suis parent relais reconnu(e) dans mon quartier", ic: "star" },
-      { txt: "J'ai accompagné plusieurs familles", ic: "personnes" }
-    ]
-  },
+  // ============ AXE TRANSVERSAL ============
 
-  // ==================== TRANSVERSAL ====================
-  aller_vers: {
+  participation_citoyenne: {
+    // Objectif visé : préciser outils de participation citoyenne au sein des QPV
     freins: [
-      { txt: "Je n'étais pas au courant des actions du quartier", ic: "alerte" },
-      { txt: "Je ne lisais pas les communications de la mairie", ic: "document" },
-      { txt: "Personne ne venait vers moi", ic: "triste" }
+      { txt: "Je ne connaissais pas les outils de participation", ic: "alerte" },
+      { txt: "Je ne donnais jamais mon avis sur le quartier", ic: "triste" },
+      { txt: "Je ne pensais pas pouvoir agir", ic: "triste" },
+      { txt: "Je n'étais pas informé(e) des décisions du quartier", ic: "alerte" }
     ],
     actions: [
-      { txt: "J'ai été abordé(e) par un médiateur dans la rue", ic: "personnes" },
-      { txt: "Un(e) animateur/animatrice est venu(e) me voir chez moi", ic: "porte" },
-      { txt: "J'ai reçu un guide des associations", ic: "livre" }
+      { txt: "J'ai participé au conseil citoyen", ic: "groupe" },
+      { txt: "J'ai donné mon avis lors d'une réunion publique", ic: "parler" },
+      { txt: "J'ai participé à un budget participatif", ic: "argent" },
+      { txt: "J'ai contribué à un diagnostic du quartier", ic: "document" },
+      { txt: "J'ai porté un projet pour le quartier", ic: "ampoule" }
     ],
     competences: [
-      { txt: "Je connais mieux les associations", ic: "groupe" },
-      { txt: "Je connais les actions du quartier", ic: "ampoule" },
-      { txt: "Je sais où trouver les infos", ic: "document" }
+      { txt: "Je sais comment fonctionne la démocratie locale", ic: "ampoule" },
+      { txt: "J'ose donner mon avis", ic: "parler" },
+      { txt: "Je sais construire un projet collectif", ic: "groupe" },
+      { txt: "Je connais les institutions du quartier", ic: "porte" }
     ],
     freins_leves: [
-      { txt: "Je suis au courant de ce qui se passe", ic: "ampoule" },
-      { txt: "Je sais où chercher les infos", ic: "oeil" }
+      { txt: "Je connais les outils de participation", ic: "ampoule" },
+      { txt: "Je donne mon avis sur le quartier", ic: "parler" },
+      { txt: "Je suis informé(e) des décisions", ic: "document" }
     ],
     resultats: [
-      { txt: "Je participe régulièrement aux actions du quartier", ic: "groupe" },
-      { txt: "Je relaie les infos à mes voisins", ic: "personnes" }
-    ]
-  },
-
-  coordination: {
-    freins: [
-      { txt: "Je devais répéter mon histoire à plusieurs structures", ic: "alerte" },
-      { txt: "Les acteurs ne se parlaient pas entre eux", ic: "personnes" },
-      { txt: "Je me perdais entre tous les interlocuteurs", ic: "alerte" }
-    ],
-    actions: [
-      { txt: "J'ai été suivi(e) par un référent unique", ic: "personnes" },
-      { txt: "Plusieurs associations ont travaillé ensemble pour moi", ic: "groupe" }
-    ],
-    competences: [
-      { txt: "Je connais l'écosystème des structures", ic: "ampoule" },
-      { txt: "Je sais qui fait quoi", ic: "oeil" }
-    ],
-    freins_leves: [
-      { txt: "J'ai un référent unique", ic: "personnes" },
-      { txt: "Mon parcours est plus fluide", ic: "sourire" }
-    ],
-    resultats: [
-      { txt: "Mon parcours a été plus rapide", ic: "cible" },
-      { txt: "Je suis bien orienté(e)", ic: "ampoule" }
-    ]
-  },
-
-  vie_associative: {
-    freins: [
-      { txt: "Je ne connaissais aucune association", ic: "alerte" },
-      { txt: "Je ne savais pas qu'on pouvait être bénévole", ic: "coeur" },
-      { txt: "Je n'osais pas m'engager", ic: "triste" }
-    ],
-    actions: [
-      { txt: "J'ai été bénévole dans une association", ic: "coeur" },
-      { txt: "J'ai participé à des projets associatifs", ic: "groupe" },
-      { txt: "J'ai rejoint un conseil d'administration", ic: "diplome" }
-    ],
-    competences: [
-      { txt: "Je sais m'investir dans un projet", ic: "ampoule" },
-      { txt: "Je travaille en équipe", ic: "groupe" },
-      { txt: "J'ai pris des responsabilités", ic: "diplome" }
-    ],
-    freins_leves: [
-      { txt: "Je suis investi(e) dans une association", ic: "coeur" },
-      { txt: "J'ai pris confiance pour m'engager", ic: "ampoule" }
-    ],
-    resultats: [
-      { txt: "Je suis bénévole régulier(ère)", ic: "coeur" },
-      { txt: "J'ai créé une association ou un projet", ic: "star" },
-      { txt: "Je suis administrateur/administratrice", ic: "diplome" }
+      { txt: "Je suis membre du conseil citoyen", ic: "groupe" },
+      { txt: "Mon projet a été retenu / financé", ic: "star" },
+      { txt: "Je relaie l'information dans le quartier", ic: "personnes" }
     ]
   }
 };
+
+// =================================================================
+// BARÈME D'IMPACT SOCIO-ÉCONOMIQUE (€ / an)
+// Pour chaque résultat coché, on associe :
+//   - cout_evite : ce que la collectivité aurait dépensé sinon
+//   - richesse   : ce que la personne génère (salaire, impôts, bénévolat…)
+// Sources : ordres de grandeur publics (UNEDIC, France Travail, INCA,
+//   UFSBD, Cour des comptes décrochage scolaire, France Bénévolat…)
+// Ces valeurs sont des estimations conservatrices et ajustables.
+// =================================================================
+const IMPACT_VALEURS = {
+  // ============ ÉMANCIPATION ============
+  "J'ai obtenu/renouvelé mes papiers d'identité": { cout_evite: 0, richesse: 800 },
+  "J'ai accès à mes droits sociaux (CAF, CPAM…)": { cout_evite: 0, richesse: 3500 }, // non-recours moyen ~30%
+  "J'ai créé mon compte FranceConnect / Ameli": { cout_evite: 200, richesse: 300 },
+  "J'utilise une boîte mail": { cout_evite: 100, richesse: 200 },
+  "J'aide d'autres habitants dans leurs démarches": { cout_evite: 500, richesse: 1500 },
+
+  "J'ai obtenu une certification (DELF / DILF…)": { cout_evite: 1500, richesse: 6000 },
+  "Je fais mes démarches seul(e)": { cout_evite: 800, richesse: 1200 },
+  "Je peux suivre une formation": { cout_evite: 0, richesse: 3000 },
+  "Je peux chercher un emploi": { cout_evite: 2000, richesse: 4000 },
+  "J'ai des contacts dans mon quartier": { cout_evite: 200, richesse: 800 },
+
+  "J'ai pris une licence dans un club": { cout_evite: 600, richesse: 400 },
+  "Je vais régulièrement à des événements culturels": { cout_evite: 300, richesse: 600 },
+  "Je participe à des spectacles ou expositions": { cout_evite: 200, richesse: 800 },
+  "Mes enfants pratiquent une activité régulière": { cout_evite: 1200, richesse: 600 },
+  "Je suis en meilleure forme physique": { cout_evite: 1200, richesse: 0 },
+
+  "Les notes/comportement de mon enfant se sont améliorés": { cout_evite: 8000, richesse: 0 }, // décrochage évité
+  "J'ai retrouvé confiance dans mon rôle de parent": { cout_evite: 1500, richesse: 500 },
+  "Je suis impliqué(e) à l'école (parent d'élève…)": { cout_evite: 800, richesse: 1000 },
+  "Mon enfant a été orienté(e) vers une structure adaptée": { cout_evite: 5000, richesse: 0 },
+
+  "Mon témoignage est visible dans le quartier": { cout_evite: 200, richesse: 800 },
+  "Je porte un projet de valorisation": { cout_evite: 500, richesse: 2500 },
+  "Je relaie les bonnes nouvelles du quartier": { cout_evite: 200, richesse: 600 },
+
+  "Je suis bénévole dans une association": { cout_evite: 1000, richesse: 2800 }, // 17€/h x 3h x 50 sem
+  "J'ai créé ou rejoint un projet collectif": { cout_evite: 800, richesse: 3000 },
+  "Je suis devenu(e) parent relais": { cout_evite: 4000, richesse: 5000 },
+  "Je me sens mieux dans mon quartier": { cout_evite: 1500, richesse: 0 },
+
+  "Je suis dans une dynamique professionnelle": { cout_evite: 6000, richesse: 8000 },
+  "J'aide d'autres femmes du quartier": { cout_evite: 800, richesse: 2500 },
+  "Je me suis engagée dans une association": { cout_evite: 1000, richesse: 2800 },
+  "Je suis sortie d'une situation difficile": { cout_evite: 5000, richesse: 0 },
+  "Je suis plus indépendante": { cout_evite: 2000, richesse: 3000 },
+
+  // ============ SANTÉ ============
+  "J'ai fait un dépistage (cancer, diabète…)": { cout_evite: 3500, richesse: 0 }, // détection précoce
+  "J'ai accès aux soins (médecin, dentiste…)": { cout_evite: 2000, richesse: 0 },
+  "Je suis en meilleure santé": { cout_evite: 1800, richesse: 0 },
+  "J'aide mes proches à prendre soin de leur santé": { cout_evite: 800, richesse: 200 },
+
+  "Je pratique au moins 1 activité par semaine": { cout_evite: 1200, richesse: 0 },
+  "Mon médecin a constaté une amélioration": { cout_evite: 2500, richesse: 0 },
+  "Je me sens mieux dans mon corps": { cout_evite: 800, richesse: 0 },
+
+  "Je suis suivi(e) régulièrement": { cout_evite: 4000, richesse: 0 }, // CLSM, hospitalisations évitées
+  "Je me sens mieux psychologiquement": { cout_evite: 2500, richesse: 1000 },
+
+  // ============ EMPLOI ============
+  "J'ai signé un contrat de stage ou d'apprentissage": { cout_evite: 6000, richesse: 8000 },
+  "J'ai été embauché(e) après mon stage": { cout_evite: 12000, richesse: 18000 }, // chômage moyen 1000€/mois
+  "J'ai validé ma formation": { cout_evite: 3000, richesse: 5000 },
+
+  "J'ai trouvé un emploi grâce au parrainage": { cout_evite: 12000, richesse: 18000 },
+  // "Je suis entré(e) en formation" : libellé partagé entre parrainage et freins_emploi → un seul barème ci-dessous
+  "Je veux à mon tour parrainer quelqu'un": { cout_evite: 0, richesse: 1500 },
+
+  "J'ai un emploi (CDD, CDI, intérim)": { cout_evite: 12000, richesse: 18000 },
+  "Je suis entré(e) en formation": { cout_evite: 5000, richesse: 3000 },
+  "J'ai obtenu mon permis de conduire": { cout_evite: 1000, richesse: 4000 },
+  "J'accède à mes droits sociaux": { cout_evite: 0, richesse: 3500 },
+  "Je peux me projeter dans l'avenir": { cout_evite: 2000, richesse: 1000 },
+
+  "Je suis entré(e) en formation pour un métier en tension": { cout_evite: 5000, richesse: 4000 },
+  "J'ai signé un contrat dans un métier qui recrute": { cout_evite: 12000, richesse: 20000 },
+
+  "J'ai créé mon entreprise (auto-entrepreneur, micro…)": { cout_evite: 8000, richesse: 12000 },
+  "J'ai obtenu un financement": { cout_evite: 0, richesse: 5000 },
+  "Mon activité a démarré": { cout_evite: 6000, richesse: 10000 },
+
+  "J'ai validé une formation ou un diplôme": { cout_evite: 5000, richesse: 5000 },
+  "J'ai trouvé un emploi ou une alternance": { cout_evite: 12000, richesse: 16000 },
+  "Je me suis remis(e) à étudier": { cout_evite: 4000, richesse: 2000 },
+
+  // ============ TRANSITION ============
+  "Mon cadre de vie s'est amélioré": { cout_evite: 1200, richesse: 0 },
+  "Je m'engage dans la vie de mon immeuble": { cout_evite: 800, richesse: 1500 },
+  "Les problèmes signalés ont été résolus": { cout_evite: 1500, richesse: 0 },
+
+  "Je consomme moins d'énergie": { cout_evite: 0, richesse: 400 },
+  "J'ai donné une seconde vie à des objets": { cout_evite: 200, richesse: 300 },
+  "Je vais au travail à vélo / en transports": { cout_evite: 300, richesse: 800 },
+  "Je dépense moins en déplacements": { cout_evite: 0, richesse: 600 },
+
+  "Je produis moins de déchets": { cout_evite: 200, richesse: 100 },
+  "Je composte mes biodéchets": { cout_evite: 150, richesse: 100 },
+  "J'évacue mes encombrants correctement": { cout_evite: 300, richesse: 0 },
+
+  "J'ai obtenu un nouveau logement": { cout_evite: 5000, richesse: 0 },
+  "Mon logement a été rénové": { cout_evite: 1800, richesse: 0 },
+  "Mes problèmes de logement sont réglés": { cout_evite: 3000, richesse: 0 },
+
+  // ============ TRANQUILLITÉ ============
+  "Je suis en formation ou en emploi": { cout_evite: 15000, richesse: 8000 }, // sortie de délinquance
+  "Je suis impliqué(e) dans un projet positif": { cout_evite: 5000, richesse: 1500 },
+  "J'aide d'autres jeunes du quartier": { cout_evite: 3000, richesse: 2000 },
+
+  "Mes conflits sont résolus": { cout_evite: 1200, richesse: 0 },
+  "Je vis mieux dans mon immeuble": { cout_evite: 800, richesse: 0 },
+  // "Je suis devenu(e) parent relais" déjà au-dessus
+  "Je me forme à la médiation sociale": { cout_evite: 0, richesse: 2500 },
+
+  "Je me sens plus en sécurité dans le quartier": { cout_evite: 1000, richesse: 0 },
+  "Je suis cadet ou réserviste": { cout_evite: 0, richesse: 2000 },
+  "Je veux travailler dans ces métiers (police, gendarmerie…)": { cout_evite: 3000, richesse: 4000 },
+
+  // ============ AXE TRANSVERSAL ============
+  "Je suis membre du conseil citoyen": { cout_evite: 500, richesse: 2000 },
+  "Mon projet a été retenu / financé": { cout_evite: 1000, richesse: 5000 },
+  "Je relaie l'information dans le quartier": { cout_evite: 300, richesse: 1000 }
+};
+
+// Fonction utilitaire : calculer l'impact total d'un parcours
+function calculerImpact(resultats) {
+  let coutEvite = 0;
+  let richesse = 0;
+  const detail = [];
+  resultats.forEach(r => {
+    const v = IMPACT_VALEURS[r];
+    if (v) {
+      coutEvite += v.cout_evite;
+      richesse += v.richesse;
+      detail.push({ resultat: r, cout_evite: v.cout_evite, richesse: v.richesse });
+    }
+  });
+  return { coutEvite, richesse, total: coutEvite + richesse, detail };
+}
+
+
+// =================================================================
+// UTILITÉ SOCIALE — 6 DIMENSIONS
+// Mapping : pour chaque sous-thématique, quel poids sur chaque dimension
+// Échelle 0 (aucun lien) → 1 (lien fort principal)
+// =================================================================
+const UTILITE_SOCIALE_POIDS = {
+  droits_numerique:        { acces_droits: 1.0, autonomisation: 0.7, cohesion: 0.2, insertion: 0.4, sante: 0.0, territoire: 0.3 },
+  langue_francaise:        { acces_droits: 0.6, autonomisation: 1.0, cohesion: 0.5, insertion: 0.7, sante: 0.0, territoire: 0.2 },
+  sport_culture:           { acces_droits: 0.0, autonomisation: 0.5, cohesion: 0.8, insertion: 0.2, sante: 0.6, territoire: 0.5 },
+  education_parentalite:   { acces_droits: 0.4, autonomisation: 0.7, cohesion: 0.6, insertion: 0.3, sante: 0.3, territoire: 0.4 },
+  image_quartier:          { acces_droits: 0.0, autonomisation: 0.4, cohesion: 0.7, insertion: 0.0, sante: 0.2, territoire: 1.0 },
+  lien_social:             { acces_droits: 0.0, autonomisation: 0.4, cohesion: 1.0, insertion: 0.2, sante: 0.4, territoire: 0.6 },
+  femmes:                  { acces_droits: 0.7, autonomisation: 1.0, cohesion: 0.6, insertion: 0.6, sante: 0.3, territoire: 0.4 },
+  prevention:              { acces_droits: 0.4, autonomisation: 0.5, cohesion: 0.2, insertion: 0.0, sante: 1.0, territoire: 0.2 },
+  sport_sante:             { acces_droits: 0.0, autonomisation: 0.4, cohesion: 0.4, insertion: 0.0, sante: 1.0, territoire: 0.2 },
+  cls_clsm:                { acces_droits: 0.5, autonomisation: 0.6, cohesion: 0.4, insertion: 0.2, sante: 1.0, territoire: 0.2 },
+  stages_apprentissage:    { acces_droits: 0.2, autonomisation: 0.6, cohesion: 0.3, insertion: 1.0, sante: 0.0, territoire: 0.2 },
+  parrainage:              { acces_droits: 0.2, autonomisation: 0.7, cohesion: 0.5, insertion: 1.0, sante: 0.0, territoire: 0.2 },
+  freins_emploi:           { acces_droits: 0.6, autonomisation: 0.7, cohesion: 0.3, insertion: 1.0, sante: 0.2, territoire: 0.2 },
+  metiers_tension:         { acces_droits: 0.0, autonomisation: 0.5, cohesion: 0.2, insertion: 1.0, sante: 0.0, territoire: 0.3 },
+  entrepreneuriat:         { acces_droits: 0.3, autonomisation: 0.8, cohesion: 0.3, insertion: 1.0, sante: 0.0, territoire: 0.5 },
+  dispositifs_jeunes:      { acces_droits: 0.3, autonomisation: 0.8, cohesion: 0.4, insertion: 1.0, sante: 0.2, territoire: 0.3 },
+  gusp:                    { acces_droits: 0.5, autonomisation: 0.4, cohesion: 0.5, insertion: 0.0, sante: 0.3, territoire: 1.0 },
+  transition_eco:          { acces_droits: 0.2, autonomisation: 0.6, cohesion: 0.4, insertion: 0.2, sante: 0.4, territoire: 0.8 },
+  dechets:                 { acces_droits: 0.0, autonomisation: 0.4, cohesion: 0.5, insertion: 0.0, sante: 0.3, territoire: 1.0 },
+  logement:                { acces_droits: 0.7, autonomisation: 0.5, cohesion: 0.4, insertion: 0.2, sante: 0.4, territoire: 0.8 },
+  prevention_delinquance:  { acces_droits: 0.3, autonomisation: 0.7, cohesion: 0.6, insertion: 0.7, sante: 0.3, territoire: 0.8 },
+  mediation:               { acces_droits: 0.3, autonomisation: 0.5, cohesion: 1.0, insertion: 0.0, sante: 0.3, territoire: 0.7 },
+  police_population:       { acces_droits: 0.3, autonomisation: 0.4, cohesion: 0.7, insertion: 0.3, sante: 0.0, territoire: 0.8 },
+  participation_citoyenne: { acces_droits: 0.5, autonomisation: 0.7, cohesion: 0.8, insertion: 0.2, sante: 0.0, territoire: 1.0 }
+};
+
+const DIMENSIONS = {
+  cohesion:       { label: "Cohésion sociale",         desc: "Liens tissés entre bénéficiaire et communauté",  couleur: "#7c3aed", icon: ICONS.personnes },
+  insertion:      { label: "Insertion professionnelle",desc: "Retour à l'emploi ou à la formation",            couleur: "#ea580c", icon: ICONS.briefcase },
+  autonomisation: { label: "Autonomisation",           desc: "Développement des compétences et autonomie",     couleur: "#db2777", icon: ICONS.ampoule },
+  acces_droits:   { label: "Accès aux droits",         desc: "Accès aux services publics et droits",           couleur: "#2563eb", icon: ICONS.document },
+  sante:          { label: "Bien-être & Santé",        desc: "Impact sur la santé des personnes",              couleur: "#059669", icon: ICONS.coeur },
+  territoire:     { label: "Impact territorial",       desc: "Contribution au développement local",            couleur: "#db2777", icon: ICONS.maison }
+};
+
+// =================================================================
+// CALCUL DES 6 SCORES D'UTILITÉ SOCIALE
+// Combine : poids de la sous-thématique × intensité du parcours
+// Intensité = mix de (résultats cochés, compétences acquises, freins
+//             levés, delta %) ramené à 0-100
+// =================================================================
+function calculerUtiliteSociale(data) {
+  if (!data.sous_thematique || !UTILITE_SOCIALE_POIDS[data.sous_thematique]) {
+    return null;
+  }
+  const poids = UTILITE_SOCIALE_POIDS[data.sous_thematique];
+
+  // 1) Calcul de l'intensité globale du parcours (0 à 1)
+  const nbResultats = data.resultats.length;
+  const nbCompetences = data.competences.length;
+  const nbFreinsLeves = data.freins_leves.length;
+  const nbFreinsInitiaux = Math.max(data.freins.length, 1);
+
+  const ratioFreins = Math.min(nbFreinsLeves / nbFreinsInitiaux, 1);
+  const ratioResultats = Math.min(nbResultats / 5, 1);
+  const ratioCompetences = Math.min(nbCompetences / 5, 1);
+  const ratioDelta = Math.max(0, (data.pct_apres - data.pct_avant) / 100);
+  const pctApres = data.pct_apres / 100;
+
+  // Intensité = moyenne pondérée
+  const intensite =
+    0.30 * ratioResultats +
+    0.20 * ratioCompetences +
+    0.20 * ratioFreins +
+    0.15 * ratioDelta +
+    0.15 * pctApres;
+
+  // 2) Pour chaque dimension, score = poids × intensité, exprimé en %
+  // Plancher à 30% si la dimension a un poids > 0 et que le parcours
+  // a au moins commencé (évite les 0% trop frustrants)
+  const scores = {};
+  const deltas = {};
+  for (const dim of Object.keys(DIMENSIONS)) {
+    const w = poids[dim] || 0;
+    let score = w * intensite * 100;
+    if (w > 0) score = Math.max(30, score);
+    score = Math.round(Math.min(100, score));
+    scores[dim] = score;
+    // Le delta est calculé : score d'arrivée - estimation de score initial
+    // (le score initial = w × intensité_avant, basé sur pct_avant uniquement)
+    let scoreAvant = w * (data.pct_avant / 100) * 100;
+    if (w > 0) scoreAvant = Math.max(20, scoreAvant);
+    scoreAvant = Math.round(Math.min(100, scoreAvant));
+    deltas[dim] = score - scoreAvant;
+  }
+
+  // 3) Étoiles : 1 à 5 selon le score
+  const etoiles = {};
+  for (const dim of Object.keys(scores)) {
+    const s = scores[dim];
+    etoiles[dim] = s >= 85 ? 5 : s >= 70 ? 4 : s >= 55 ? 3 : s >= 40 ? 2 : 1;
+  }
+
+  return { scores, deltas, etoiles, intensite: Math.round(intensite * 100) };
+}
+
+// =================================================================
+// ANALYSE QUALITATIVE — moteur de règles
+// Génère 3 blocs : Points forts, Points de vigilance, Recommandations
+// =================================================================
+function genererAnalyseQualitative(data, util, impact) {
+  const forts = [];
+  const vigilance = [];
+  const recos = [];
+
+  const delta = data.pct_apres - data.pct_avant;
+  const nbR = data.resultats.length;
+  const nbC = data.competences.length;
+  const nbA = data.actions.length;
+  const nbFL = data.freins_leves.length;
+  const nbFI = data.freins.length;
+  const ratioFreins = nbFI > 0 ? nbFL / nbFI : 0;
+
+  // ============ POINTS FORTS ============
+  // Impact socio-éco prioritaire (donnée chiffrée forte)
+  if (impact && impact.total >= 20000) {
+    forts.push("Impact socio-économique élevé : " + formatEuro(impact.total) + " de valeur sociale créée sur 1 an");
+  } else if (impact && impact.total >= 8000) {
+    forts.push("Impact socio-économique significatif : " + formatEuro(impact.total) + " sur 1 an");
+  }
+
+  if (delta >= 30) {
+    forts.push("Très forte progression de la situation perçue (+" + delta + " points)");
+  } else if (delta >= 15) {
+    forts.push("Progression nette de la situation (+" + delta + " points)");
+  } else if (delta >= 5) {
+    forts.push("Progression notable (+" + delta + " points)");
+  }
+
+  if (nbC >= 6) {
+    forts.push("Forte montée en compétences (" + nbC + " compétences acquises)");
+  } else if (nbC >= 4) {
+    forts.push("Bonne acquisition de compétences (+" + nbC + " compétences)");
+  }
+
+  if (nbR >= 5) {
+    forts.push("Objectifs largement atteints selon le bénéficiaire (" + nbR + " résultats concrets)");
+  } else if (nbR >= 3) {
+    forts.push("Plusieurs résultats concrets atteints");
+  }
+
+  if (ratioFreins >= 0.7) {
+    forts.push("Très bonne levée des freins identifiés (" + Math.round(ratioFreins * 100) + "%)");
+  } else if (ratioFreins >= 0.5) {
+    forts.push("Levée significative des freins (" + Math.round(ratioFreins * 100) + "%)");
+  }
+
+  if (nbA >= 5) {
+    forts.push("Forte intensité d'accompagnement (" + nbA + " actions suivies)");
+  }
+
+  if (data.pct_apres >= 80) {
+    forts.push("Très bonne situation perçue à l'arrivée (" + data.pct_apres + "%)");
+  }
+
+  if (util) {
+    const dimsFortes = Object.entries(util.scores)
+      .filter(([k, v]) => v >= 80)
+      .map(([k]) => DIMENSIONS[k].label);
+    if (dimsFortes.length >= 2) {
+      forts.push("Forte utilité sociale sur " + dimsFortes.length + " dimensions : " + dimsFortes.join(", "));
+    } else if (dimsFortes.length === 1) {
+      forts.push("Forte utilité sociale en " + dimsFortes[0].toLowerCase());
+    }
+  }
+
+  // ============ POINTS DE VIGILANCE ============
+  if (delta < 5 && delta >= 0) {
+    vigilance.push("Progression faible (+" + delta + " points) — examiner les leviers non actionnés");
+  } else if (delta < 0) {
+    vigilance.push("Régression de la situation perçue (" + delta + " points) — analyse approfondie nécessaire");
+  }
+
+  if (nbFI > 0 && ratioFreins < 0.4) {
+    vigilance.push("Freins encore peu levés (" + nbFL + "/" + nbFI + ") — accompagnement à prolonger");
+  }
+
+  if (nbR === 0) {
+    vigilance.push("Aucun résultat concret coché — vérifier si le parcours est bien arrivé à terme");
+  } else if (nbR < 2) {
+    vigilance.push("Peu de résultats concrets — le parcours pourrait nécessiter une suite");
+  }
+
+  if (data.pct_apres < 50) {
+    vigilance.push("Situation perçue encore fragile à l'arrivée (" + data.pct_apres + "%)");
+  }
+
+  if (nbC < 2 && nbA >= 3) {
+    vigilance.push("Beaucoup d'actions mais peu de compétences acquises — interroger l'efficacité pédagogique");
+  }
+
+  if (nbA === 0) {
+    vigilance.push("Aucune action coché — le parcours n'a peut-être pas été suffisamment renseigné");
+  }
+
+  if (util) {
+    const dimsFaibles = Object.entries(util.scores)
+      .filter(([k, v]) => v > 0 && v < 40)
+      .map(([k]) => DIMENSIONS[k].label);
+    if (dimsFaibles.length >= 2) {
+      vigilance.push("Dimensions à renforcer : " + dimsFaibles.join(", "));
+    }
+  }
+
+  if (vigilance.length === 0) {
+    vigilance.push("Aucun point de vigilance majeur");
+  }
+
+  // ============ RECOMMANDATIONS ============
+  if (delta >= 20) {
+    recos.push("Capitaliser sur la dynamique de progression pour les prochaines sessions");
+    recos.push("Programmer une évaluation à froid (3-6 mois) pour mesurer les effets durables");
+  } else if (delta >= 10) {
+    recos.push("Maintenir l'accompagnement pour consolider les acquis");
+  } else if (delta < 5) {
+    recos.push("Identifier les freins persistants et adapter l'accompagnement");
+    recos.push("Envisager une orientation complémentaire vers une autre structure");
+  }
+
+  if (nbFI > 0 && ratioFreins < 0.5) {
+    recos.push("Travailler spécifiquement sur les freins non levés en mobilisant les partenaires");
+  }
+
+  if (data.thematique === "emploi" && data.resultats.some(r => r.includes("formation"))) {
+    recos.push("Suivre la sortie de formation pour confirmer l'accès à l'emploi");
+  }
+
+  if (data.thematique === "sante" && data.resultats.length > 0) {
+    recos.push("Vérifier le suivi médical sur la durée");
+  }
+
+  if (data.thematique === "emancipation" && data.sous_thematique === "langue_francaise") {
+    recos.push("Orienter vers des actions complémentaires (emploi, accès aux droits) pour valoriser les acquis FLE");
+  }
+
+  if (nbR >= 4 && data.recommandation !== "Non" && data.recommandation !== "Pas vraiment") {
+    recos.push("Recueillir le témoignage du bénéficiaire pour valoriser le parcours (image du quartier)");
+  }
+
+  if (data.thematique === "transition" && data.bailleur && data.bailleur !== "Autre") {
+    recos.push("Coordonner avec " + data.bailleur + " pour démultiplier l'action sur la résidence");
+  }
+
+  if (recos.length === 0) {
+    recos.push("Maintenir l'accompagnement actuel");
+  }
+
+  // Limiter à 6 forts max, 4 vigilance max, 4 recos max
+  return {
+    forts: forts.slice(0, 6),
+    vigilance: vigilance.slice(0, 4),
+    recommandations: recos.slice(0, 4)
+  };
+}
+
+
+// =================================================================
+// GRILLE PÉDAGOGIQUE — finalité + tableau (freins / actions / compétences)
+// Volontairement générique : sans nom de structures
+// Clés alignées avec celles de THEMATIQUES.sous
+// =================================================================
+const GRILLE_PEDAGOGIQUE = {
+  droits_numerique: {
+    finalite: "Permettre à chaque habitant d'accéder à ses droits, de comprendre les démarches administratives et d'utiliser de manière autonome les outils numériques du quotidien.",
+    lignes: [
+      { f: "Méconnaissance des dispositifs et des droits", a: "Information, orientation et accompagnement individualisé aux démarches", c: "Connaissance de ses droits, capacité à identifier le bon interlocuteur" },
+      { f: "Difficultés à utiliser un ordinateur, un smartphone, internet", a: "Ateliers d'initiation au numérique, accompagnement aux démarches en ligne", c: "Autonomie numérique de base, savoir utiliser une boîte mail, un compte personnel en ligne" },
+      { f: "Peur des administrations, sentiment de complexité", a: "Permanences de proximité, accompagnement physique aux rendez-vous", c: "Confiance dans les institutions, capacité à se présenter et exposer sa demande" },
+      { f: "Non-recours aux droits sociaux", a: "Diagnostic des droits ouverts, simulation, dépôt de dossiers", c: "Capacité à actualiser sa situation, à constituer un dossier complet" },
+      { f: "Incompréhension des courriers officiels", a: "Lecture commentée, traduction du langage administratif", c: "Lecture des documents officiels, vocabulaire administratif de base" }
+    ]
+  },
+  langue_francaise: {
+    finalite: "Donner aux personnes allophones ou en situation d'illettrisme les moyens linguistiques de leur autonomie sociale, professionnelle et citoyenne.",
+    lignes: [
+      { f: "Pas ou peu de maîtrise de la langue orale", a: "Cours collectifs et ateliers conversationnels progressifs", c: "Compréhension et expression orale dans les situations du quotidien" },
+      { f: "Difficultés de lecture en français", a: "Ateliers de lecture, supports adaptés au niveau", c: "Décodage, compréhension de textes courts du quotidien" },
+      { f: "Difficultés à écrire en français", a: "Ateliers d'écriture progressive, production guidée", c: "Rédaction de courriers simples, formulaires, messages" },
+      { f: "Isolement linguistique, peur de prendre la parole", a: "Groupes de conversation, sorties pratiques en français", c: "Aisance à l'oral, capacité à interagir en français" },
+      { f: "Impossibilité d'aider ses enfants à l'école", a: "Ateliers FLE parents-enfants, lien avec l'école", c: "Compréhension des codes scolaires, dialogue avec les enseignants" }
+    ]
+  },
+  sport_culture: {
+    finalite: "Faire du sport et de la culture des leviers d'émancipation, de mixité, de découverte et de réussite éducative pour tous les habitants des quartiers.",
+    lignes: [
+      { f: "Coût des activités sportives et culturelles", a: "Activités gratuites ou à tarif solidaire, prêt de matériel", c: "Découverte d'une discipline, connaissance des structures locales" },
+      { f: "Méconnaissance de l'offre culturelle", a: "Médiation culturelle, sorties accompagnées, dispositifs itinérants", c: "Ouverture culturelle, capacité à fréquenter de nouveaux lieux" },
+      { f: "Sédentarité et faible activité physique", a: "Pratique régulière encadrée, sport adapté", c: "Régularité, gestion de l'effort, hygiène de vie" },
+      { f: "Manque de mixité sociale et de genre", a: "Activités spécifiquement mixtes ou ouvertes aux publics éloignés", c: "Coopération, partage, respect des différences" },
+      { f: "Manque de finalité pédagogique perçue", a: "Projets sportifs ou artistiques structurés (création, restitution)", c: "Engagement dans la durée, exigence, fierté du résultat" }
+    ]
+  },
+  education_parentalite: {
+    finalite: "Soutenir les parents dans leur rôle éducatif, renforcer la coéducation entre familles, école et territoire, et favoriser la réussite scolaire des enfants.",
+    lignes: [
+      { f: "Difficultés à accompagner la scolarité de l'enfant", a: "Ateliers d'accompagnement à la scolarité, aide aux devoirs", c: "Compréhension du système scolaire, posture éducative" },
+      { f: "Isolement parental, sentiment d'incompétence", a: "Espaces parents, groupes de parole, ateliers parents-enfants", c: "Confiance dans son rôle de parent, échanges entre pairs" },
+      { f: "Difficultés de dialogue parents-école", a: "Médiation école-famille, accompagnement aux rendez-vous", c: "Capacité à dialoguer avec l'équipe pédagogique" },
+      { f: "Méconnaissance du développement du jeune enfant", a: "Espaces dédiés à la petite enfance, accompagnement aux 1000 premiers jours", c: "Connaissance des bons gestes, repères de développement" },
+      { f: "Décrochage scolaire ou comportemental", a: "Repérage précoce, suivi individualisé, orientation", c: "Mobilisation autour d'un projet, retour au cadre scolaire" }
+    ]
+  },
+  image_quartier: {
+    finalite: "Valoriser les ressources, les talents et les réussites des quartiers pour transformer le regard des habitants sur leur territoire et faire reconnaître la richesse des QPV.",
+    lignes: [
+      { f: "Sentiment de stigmatisation du quartier", a: "Projets de valorisation, expositions, portraits d'habitants", c: "Capacité à raconter son histoire, fierté d'appartenance" },
+      { f: "Réussites invisibilisées", a: "Mise en récit, communication via différents supports", c: "Prise de parole, expression écrite et orale en public" },
+      { f: "Faible visibilité médiatique des initiatives", a: "Journées portes ouvertes, événements ouverts à l'extérieur", c: "Accueil, animation, mise en avant collective" },
+      { f: "Absence de représentation positive", a: "Témoignages d'habitants ressources, rôles modèles", c: "Engagement, exemplarité, transmission" },
+      { f: "Repli sur le quartier", a: "Projets en réseau avec d'autres territoires, échanges inter-quartiers", c: "Ouverture, capacité à coopérer hors de son cercle" }
+    ]
+  },
+  lien_social: {
+    finalite: "Recréer du lien entre voisins et habitants, soutenir les solidarités de proximité et faire vivre une dynamique collective dans les quartiers.",
+    lignes: [
+      { f: "Isolement, solitude, repli sur soi", a: "Animations de proximité, activités collectives régulières", c: "Capacité à aller vers les autres, à participer" },
+      { f: "Méconnaissance des voisins et des associations", a: "Temps forts, fêtes de quartier, événements ouverts", c: "Connaissance du tissu local, élargissement du réseau" },
+      { f: "Manque d'opportunités d'engagement", a: "Implication dans des projets collectifs, bénévolat de proximité", c: "Coopération, prise d'initiative, responsabilité" },
+      { f: "Tensions intergénérationnelles ou interculturelles", a: "Projets intergénérationnels, médiation interculturelle", c: "Respect, écoute, valorisation des différences" },
+      { f: "Sentiment d'inutilité sociale", a: "Mobilisation des habitants comme acteurs (parents relais, ambassadeurs)", c: "Capacité à transmettre, à accompagner d'autres habitants" }
+    ]
+  },
+  femmes: {
+    finalite: "Valoriser la place des femmes dans les quartiers, favoriser leur expression, leur autonomie et leur accès aux droits, à la santé et à l'emploi.",
+    lignes: [
+      { f: "Assignation au foyer, sortie limitée", a: "Espaces dédiés aux femmes, sorties, activités collectives", c: "Reprise de mobilité personnelle, pratiques personnelles" },
+      { f: "Méconnaissance des droits des femmes", a: "Information juridique, accompagnement spécialisé", c: "Connaissance de ses droits familiaux, professionnels, sociaux" },
+      { f: "Manque de confiance en soi", a: "Ateliers d'expression, de prise de parole, de bien-être", c: "Estime de soi, capacité à porter sa voix" },
+      { f: "Situations de violences ou d'emprise", a: "Repérage, orientation vers des structures spécialisées", c: "Identification des situations à risque, recours aux ressources" },
+      { f: "Difficultés à concilier projet personnel et famille", a: "Accompagnement vers l'emploi/la formation, solutions de garde", c: "Construction d'un projet personnel et professionnel" }
+    ]
+  },
+  prevention: {
+    finalite: "Réduire les inégalités sociales et territoriales de santé en rapprochant la prévention des habitants, en luttant contre le non-recours aux soins et la désinformation.",
+    lignes: [
+      { f: "Recours tardif au médecin, absence de suivi", a: "Bilans de santé, permanences santé de proximité", c: "Identification de ses besoins de santé, suivi régulier" },
+      { f: "Faible recours aux dépistages organisés", a: "Information, sensibilisation, mobilisation collective autour des dépistages", c: "Compréhension de l'intérêt du dépistage précoce" },
+      { f: "Couverture vaccinale incomplète", a: "Information sur les vaccinations recommandées, orientation", c: "Capacité à vérifier ses vaccinations et celles de ses enfants" },
+      { f: "Conduites à risque (tabac, alcool, écrans, alimentation)", a: "Ateliers de prévention, accompagnement personnalisé", c: "Repérage de ses conduites à risque, gestion du quotidien" },
+      { f: "Méconnaissance en vie sexuelle et contraception", a: "Information, ateliers dédiés, orientation médicale", c: "Information éclairée, accès à la contraception" },
+      { f: "Désinformation et fausses informations en santé", a: "Ateliers d'esprit critique, vérification des sources", c: "Capacité à identifier une source fiable" }
+    ]
+  },
+  sport_sante: {
+    finalite: "Faire de l'activité physique adaptée un levier de santé pour les publics les plus éloignés, en lien avec les structures sportives et médicales du territoire.",
+    lignes: [
+      { f: "Sédentarité installée", a: "Pratique d'activité physique régulière encadrée", c: "Régularité, plaisir du mouvement, écoute de son corps" },
+      { f: "Pathologies chroniques mal accompagnées", a: "Activité physique adaptée prescrite, suivi par éducateur sportif formé", c: "Gestion de sa pathologie au quotidien" },
+      { f: "Surpoids, obésité", a: "Programmes mêlant activité physique et accompagnement diététique", c: "Équilibre alimentaire, hygiène de vie globale" },
+      { f: "Méconnaissance des structures et professionnels", a: "Orientation vers les structures locales spécialisées", c: "Connaissance de l'écosystème sport-santé local" }
+    ]
+  },
+  cls_clsm: {
+    finalite: "Prendre en compte la souffrance psychique des habitants des quartiers, prévenir l'isolement et le mal-être, et faciliter l'accès aux soins en santé mentale.",
+    lignes: [
+      { f: "Tabou autour de la santé mentale", a: "Information, sensibilisation, espaces de parole", c: "Capacité à reconnaître son mal-être et à en parler" },
+      { f: "Méconnaissance des ressources locales", a: "Diagnostic territorial, orientation vers des professionnels", c: "Connaissance des dispositifs de soutien psychologique" },
+      { f: "Isolement face à la maladie psychique", a: "Groupes de parole, accompagnement de pairs", c: "Soutien mutuel, sortie de l'isolement" },
+      { f: "Difficulté à soutenir un proche en souffrance", a: "Ateliers premiers secours en santé mentale, soutien aux aidants", c: "Capacité d'écoute, repérage des signaux d'alerte" }
+    ]
+  },
+  stages_apprentissage: {
+    finalite: "Faciliter l'accès des collégiens, lycéens et apprentis des quartiers à des stages et à l'apprentissage, leviers décisifs d'insertion professionnelle.",
+    lignes: [
+      { f: "Absence de réseau professionnel familial", a: "Mise en relation avec des entreprises, viviers de stages", c: "Construction d'un premier réseau, codes du monde du travail" },
+      { f: "Méconnaissance des codes professionnels", a: "Préparation aux entretiens, simulations, visites d'entreprises", c: "Posture professionnelle, communication écrite et orale" },
+      { f: "Outils de candidature inadaptés", a: "Aide au CV et à la lettre, identité numérique professionnelle", c: "Savoir se présenter, mettre en valeur son parcours" },
+      { f: "Méconnaissance des secteurs et métiers", a: "Découverte des métiers, immersions, journées portes ouvertes", c: "Construction d'un projet professionnel cohérent" },
+      { f: "Manque de confiance pour postuler", a: "Coaching individuel, accompagnement à la recherche", c: "Confiance en soi, autonomie de recherche" }
+    ]
+  },
+  parrainage: {
+    finalite: "Mobiliser des professionnels en activité aux côtés des publics des quartiers pour démultiplier leur réseau, leurs codes et leur capacité à viser haut.",
+    lignes: [
+      { f: "Plafond de verre et autocensure", a: "Mise en relation durable avec un parrain ou marraine en activité", c: "Élargissement du champ des possibles, ambition" },
+      { f: "Absence de modèles de réussite", a: "Témoignages de professionnels, rencontres régulières", c: "Identification, motivation, projection" },
+      { f: "Manque de codes culturels et professionnels", a: "Transmission par le mentor, situations professionnelles concrètes", c: "Codes implicites du monde du travail" },
+      { f: "Réseau professionnel inexistant", a: "Présentation à des contacts professionnels du parrain", c: "Savoir activer un réseau, demander un conseil" }
+    ]
+  },
+  freins_emploi: {
+    finalite: "Traiter de manière intégrée et coordonnée l'ensemble des freins périphériques à l'emploi pour permettre une remise en mouvement effective des bénéficiaires.",
+    lignes: [
+      { f: "Pas de mode de garde des enfants", a: "Solutions de garde adaptées à la recherche d'emploi", c: "Organisation familiale et professionnelle" },
+      { f: "Pas de mobilité (permis, véhicule, transports)", a: "Aide au permis, location solidaire, accompagnement à la mobilité", c: "Mobilité physique et géographique élargie" },
+      { f: "Difficultés financières et endettement", a: "Accompagnement budgétaire, microcrédit, accès aux droits", c: "Gestion du budget, anticipation, sortie du surendettement" },
+      { f: "Logement précaire ou inadapté", a: "Accompagnement vers un logement stable, lien avec les bailleurs", c: "Stabilité résidentielle, gestion locative" },
+      { f: "Faible maîtrise du français professionnel", a: "FLE à visée professionnelle, vocabulaire métier", c: "Communication écrite et orale en milieu professionnel" },
+      { f: "Manque de confiance en soi", a: "Accompagnement individualisé, valorisation des acquis", c: "Estime de soi, capacité à se présenter positivement" }
+    ]
+  },
+  metiers_tension: {
+    finalite: "Mettre en relation l'offre des secteurs qui recrutent avec les talents disponibles dans les quartiers, en levant les représentations et en facilitant la formation.",
+    lignes: [
+      { f: "Méconnaissance des secteurs porteurs", a: "Forums et rendez-vous métiers réguliers en QPV", c: "Connaissance du marché du travail local" },
+      { f: "Représentations négatives sur certains métiers", a: "Visites d'entreprises, témoignages de professionnels", c: "Évolution du regard sur les métiers" },
+      { f: "Décalage entre profil et exigences du métier", a: "Pré-qualification, formations courtes adaptées", c: "Compétences de base du métier visé" },
+      { f: "Absence de mise en relation directe", a: "Recrutements directs, job dating en quartier", c: "Capacité à se présenter à un recruteur" }
+    ]
+  },
+  entrepreneuriat: {
+    finalite: "Faire émerger des projets économiques portés par les habitants, soutenir leur faisabilité et leur développement, et attirer l'activité économique dans les quartiers.",
+    lignes: [
+      { f: "Idée de projet floue", a: "Émergence, formalisation, étude d'opportunité", c: "Construction d'un projet, étude de marché simple" },
+      { f: "Méconnaissance des démarches juridiques", a: "Information sur les statuts, accompagnement administratif", c: "Choix du statut, formalités de création" },
+      { f: "Absence de financement", a: "Orientation vers microcrédit, prêts d'honneur, aides", c: "Construction d'un plan de financement" },
+      { f: "Isolement de l'entrepreneur", a: "Espaces de coworking, communautés d'entrepreneurs", c: "Réseau professionnel, partage d'expérience" },
+      { f: "Difficulté à pérenniser l'activité", a: "Suivi post-création, accompagnement à la croissance", c: "Gestion d'entreprise, développement commercial" }
+    ]
+  },
+  dispositifs_jeunes: {
+    finalite: "Offrir aux jeunes éloignés de l'emploi et de la formation un cadre structurant pour reprendre confiance, retrouver des repères et construire un projet.",
+    lignes: [
+      { f: "Sortie du système scolaire sans qualification", a: "Cadre de remobilisation à plein temps, alternance", c: "Retour à l'apprentissage, savoirs de base consolidés" },
+      { f: "Absence de cadre, perte des repères", a: "Cadre structurant (horaires, règles, collectif)", c: "Ponctualité, respect du cadre, vie en collectivité" },
+      { f: "Absence de projet professionnel", a: "Découverte des métiers, immersions, orientation", c: "Construction d'un projet professionnel réaliste" },
+      { f: "Manque de confiance et d'estime de soi", a: "Réussites concrètes, valorisation des progrès", c: "Estime de soi restaurée, capacité à se projeter" },
+      { f: "Isolement social", a: "Vie collective, parrainage, lien à des adultes ressources", c: "Vie en groupe, lien social positif" }
+    ]
+  },
+  gusp: {
+    finalite: "Améliorer concrètement et durablement le cadre de vie des habitants en coordonnant les interventions de la collectivité, des bailleurs et des associations.",
+    lignes: [
+      { f: "Espace public dégradé (déchets, dépôts sauvages, dégradations)", a: "Diagnostic en marchant, plans d'actions partagés, interventions ciblées", c: "Connaissance des circuits de signalement" },
+      { f: "Manque de coordination entre acteurs", a: "Instances de coordination régulières, partage des signalements", c: "Capacité à mobiliser le bon interlocuteur" },
+      { f: "Sentiment d'abandon des habitants", a: "Présence et écoute de proximité, retours visibles aux signalements", c: "Confiance dans les institutions de proximité" },
+      { f: "Méconnaissance du rôle de chaque acteur", a: "Information sur les compétences (bailleur / mairie / métropole)", c: "Connaissance des responsabilités de chacun" },
+      { f: "Faible implication des habitants", a: "Participation à des projets d'amélioration concrets", c: "Engagement citoyen sur le cadre de vie" }
+    ]
+  },
+  transition_eco: {
+    finalite: "Faire de la transition écologique un levier de pouvoir d'achat, de lien social et d'amélioration du cadre de vie pour les habitants des quartiers.",
+    lignes: [
+      { f: "Précarité énergétique, factures élevées", a: "Sensibilisation aux économies d'énergie, rénovation, accompagnement aux aides", c: "Bons gestes, lecture de factures, mobilisation des aides" },
+      { f: "Surconsommation et déchets", a: "Initiatives de réemploi, ressourceries, dons, ateliers de réparation", c: "Consommation responsable, réparation, don" },
+      { f: "Faible accès aux mobilités douces", a: "Apprentissage du vélo, locaux sécurisés, tarification sociale des transports", c: "Pratique du vélo, des transports en commun" },
+      { f: "Méconnaissance des enjeux environnementaux", a: "Animations, ateliers pédagogiques, lieux de démonstration", c: "Compréhension des enjeux et des gestes utiles" },
+      { f: "Faible accès à une alimentation de qualité", a: "Jardins partagés, agriculture urbaine, paniers solidaires", c: "Connaissance des produits, cuisine, autoproduction" }
+    ]
+  },
+  dechets: {
+    finalite: "Faire évoluer durablement les comportements en matière de tri, propreté, encombrants et biodéchets pour un cadre de vie plus agréable et plus respectueux.",
+    lignes: [
+      { f: "Méconnaissance des consignes de tri", a: "Information, animations de proximité, supports adaptés", c: "Tri sélectif, identification des filières" },
+      { f: "Mauvaise gestion des encombrants", a: "Information sur les modes de collecte, points d'apport", c: "Évacuation conforme des encombrants" },
+      { f: "Biodéchets en poubelle classique", a: "Composteurs collectifs en pied d'immeuble, formation des référents", c: "Compostage domestique ou collectif" },
+      { f: "Sentiment d'impunité face aux incivilités", a: "Sensibilisation, médiation, et le cas échéant verbalisation", c: "Responsabilité partagée du cadre de vie" }
+    ]
+  },
+  logement: {
+    finalite: "Améliorer les conditions de logement des habitants, fluidifier les relations avec les bailleurs et accompagner les transformations urbaines des quartiers.",
+    lignes: [
+      { f: "Logement inadapté (taille, état, accessibilité)", a: "Accompagnement à la mutation, à l'adaptation, demande de logement", c: "Connaissance du parcours résidentiel, droits du locataire" },
+      { f: "Délais de réponse des bailleurs", a: "Présence d'agents de proximité, suivi des demandes d'intervention", c: "Capacité à formuler et suivre une demande" },
+      { f: "Méconnaissance des droits et devoirs du locataire", a: "Information juridique, médiation locataires-bailleur", c: "Connaissance du contrat de location, recours possibles" },
+      { f: "Difficultés liées à un projet de rénovation urbaine", a: "Information, concertation, accompagnement au relogement", c: "Compréhension du projet, exercice du choix résidentiel" },
+      { f: "Tensions entre voisins", a: "Médiation, actions collectives dans la résidence", c: "Vivre-ensemble en habitat collectif" }
+    ]
+  },
+  prevention_delinquance: {
+    finalite: "Prévenir l'entrée dans la délinquance, prendre en charge de manière individualisée les jeunes les plus exposés et soutenir les parents dans leur rôle.",
+    lignes: [
+      { f: "Désœuvrement, absence d'activité structurée", a: "Présence éducative, propositions d'activités, chantiers éducatifs", c: "Engagement dans une activité, ponctualité, valorisation par le travail" },
+      { f: "Influence de pairs déviants", a: "Travail individualisé d'éducateurs de prévention spécialisée", c: "Capacité à choisir ses fréquentations, à s'extraire d'un groupe" },
+      { f: "Conduites à risque, transgressions répétées", a: "Accompagnement renforcé, médiation, mesures alternatives", c: "Compréhension des conséquences de ses actes" },
+      { f: "Difficultés parentales face au comportement de l'enfant", a: "Soutien à la parentalité, espaces parents-ados", c: "Posture parentale, dialogue avec l'adolescent" },
+      { f: "Décrochage scolaire associé", a: "Lien renforcé avec les établissements, suivi de scolarité", c: "Retour au parcours scolaire ou de formation" }
+    ]
+  },
+  mediation: {
+    finalite: "Apaiser les tensions du quotidien, faciliter le dialogue entre habitants, institutions et bailleurs, et professionnaliser les habitants ressources du quartier.",
+    lignes: [
+      { f: "Conflits de voisinage, tensions dans les parties communes", a: "Médiation de proximité, présence rassurante", c: "Dialogue, gestion de conflit, écoute active" },
+      { f: "Difficultés familiales et intergénérationnelles", a: "Médiation familiale, accompagnement spécialisé", c: "Communication intrafamiliale apaisée" },
+      { f: "Isolement face à un problème", a: "Habitants relais, écoute, orientation", c: "Capacité à demander de l'aide et à orienter d'autres habitants" },
+      { f: "Manque de reconnaissance de la médiation comme métier", a: "Formation, professionnalisation, valorisation des parcours", c: "Posture professionnelle, déontologie de la médiation" }
+    ]
+  },
+  police_population: {
+    finalite: "Renforcer le dialogue et la confiance entre les forces de l'ordre et les habitants des quartiers, et offrir aux jeunes des voies d'engagement républicain.",
+    lignes: [
+      { f: "Méfiance réciproque police-habitants", a: "Délégués cohésion police-population, rencontres régulières", c: "Dialogue, connaissance mutuelle, désamorçage des tensions" },
+      { f: "Méconnaissance du rôle des forces de l'ordre", a: "Interventions en milieu scolaire, visites de structures", c: "Compréhension des missions de service public" },
+      { f: "Tensions parents-adolescents sur les sorties et risques", a: "Actions de prévention dédiées aux familles d'adolescents", c: "Dialogue parents-ados, posture éducative" },
+      { f: "Absence d'opportunités d'engagement", a: "Réserves citoyennes, dispositif des cadets, service civique", c: "Engagement, discipline, sens du collectif" },
+      { f: "Sentiment d'insécurité au quotidien", a: "Présence rassurante, écoute des habitants, traitement des situations", c: "Sentiment de sécurité retrouvé" }
+    ]
+  },
+  participation_citoyenne: {
+    finalite: "Faire des habitants les acteurs de leur quartier, en leur donnant les outils pour s'informer, s'exprimer, décider et agir collectivement sur leur territoire.",
+    lignes: [
+      { f: "Méconnaissance des outils de participation", a: "Information sur les conseils citoyens, instances de concertation", c: "Connaissance des instances et de leurs rôles" },
+      { f: "Sentiment de ne pas pouvoir agir", a: "Mobilisation autour de projets concrets co-construits", c: "Sens de l'efficacité personnelle et collective" },
+      { f: "Faible représentativité des habitants des QPV", a: "Aller vers, formation des habitants engagés", c: "Prise de parole en réunion, posture de représentation" },
+      { f: "Manque de financement de projets habitants", a: "Budgets participatifs, fonds de soutien aux projets locaux", c: "Construction et portage d'un projet collectif" },
+      { f: "Absence de retour sur les contributions", a: "Communication régulière sur les suites données aux propositions", c: "Confiance dans le processus participatif" }
+    ]
+  }
+};
+
 
 // =================================================================
 // ÉTAT
@@ -2278,7 +3500,139 @@ function selectSousThematique(key) {
     buildCheckGrid('freinsLevesGrid', q.freins_leves, 'freins_leves');
     buildCheckGrid('resultatsGrid', q.resultats, 'resultats');
   }
+  // Afficher l'encart pédagogique avec la grille de la sous-thématique
+  renderGrilleEncart(key);
 }
+
+// =================================================================
+// GRILLE PÉDAGOGIQUE — Encart sur l'étape 2
+// =================================================================
+function renderGrilleEncart(key) {
+  const encart = document.getElementById('grilleEncart');
+  const body = document.getElementById('grilleEncartBody');
+  const grille = GRILLE_PEDAGOGIQUE[key];
+  if (!grille) {
+    encart.style.display = 'none';
+    return;
+  }
+  // Récupérer le label de la sous-thématique pour le titre
+  const sousLabel = THEMATIQUES[state.data.thematique]?.sous[key] || '';
+  body.innerHTML = `
+    <div class="grille-finalite">
+      <strong>Finalité — </strong>${escapeHtml(grille.finalite)}
+    </div>
+    <table class="grille-table">
+      <thead>
+        <tr>
+          <th style="width: 32%">Difficultés / freins</th>
+          <th style="width: 36%">Actions des associations</th>
+          <th style="width: 32%">Compétences mobilisées</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${grille.lignes.map(l => `
+          <tr>
+            <td>${escapeHtml(l.f)}</td>
+            <td>${escapeHtml(l.a)}</td>
+            <td>${escapeHtml(l.c)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  encart.style.display = 'block';
+  // Auto-ouvert au premier choix
+  if (!encart.dataset.firstShown) {
+    encart.classList.add('open');
+    encart.dataset.firstShown = '1';
+  }
+}
+
+function toggleGrilleEncart() {
+  document.getElementById('grilleEncart').classList.toggle('open');
+}
+
+// =================================================================
+// GRILLE PÉDAGOGIQUE — Modale plein écran
+// =================================================================
+function ouvrirGrille(focusKey) {
+  const overlay = document.getElementById('modaleGrille');
+  const navEl = document.getElementById('modaleNav');
+  const sectionsEl = document.getElementById('modaleSections');
+
+  // Construire la nav (24 boutons regroupés par thématique)
+  const navHTML = [];
+  const sectionHTML = [];
+  for (const [thKey, th] of Object.entries(THEMATIQUES)) {
+    for (const [sKey, sLabel] of Object.entries(th.sous)) {
+      const grille = GRILLE_PEDAGOGIQUE[sKey];
+      if (!grille) continue;
+      navHTML.push(`<button class="modale-nav-btn" data-skey="${sKey}" onclick="afficherSectionGrille('${sKey}')">${escapeHtml(sLabel)}</button>`);
+      sectionHTML.push(`
+        <div class="modale-section" data-section="${sKey}">
+          <h3>${escapeHtml(sLabel)}</h3>
+          <div class="sous-titre">${escapeHtml(th.label)}</div>
+          <div class="grille-finalite">
+            <strong>Finalité — </strong>${escapeHtml(grille.finalite)}
+          </div>
+          <table class="grille-table">
+            <thead>
+              <tr>
+                <th style="width: 32%">Difficultés / freins</th>
+                <th style="width: 36%">Actions des associations</th>
+                <th style="width: 32%">Compétences mobilisées</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${grille.lignes.map(l => `
+                <tr>
+                  <td>${escapeHtml(l.f)}</td>
+                  <td>${escapeHtml(l.a)}</td>
+                  <td>${escapeHtml(l.c)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `);
+    }
+  }
+  navEl.innerHTML = navHTML.join('');
+  sectionsEl.innerHTML = sectionHTML.join('');
+
+  // Choix de la section à afficher : focusKey si fourni, sinon sous-thématique du parcours en cours, sinon la première
+  const target = focusKey || state.data.sous_thematique
+    || Object.keys(GRILLE_PEDAGOGIQUE)[0];
+  afficherSectionGrille(target);
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function fermerGrille() {
+  document.getElementById('modaleGrille').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function afficherSectionGrille(key) {
+  document.querySelectorAll('.modale-section').forEach(s =>
+    s.classList.toggle('active', s.dataset.section === key)
+  );
+  document.querySelectorAll('.modale-nav-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.skey === key)
+  );
+  // Scroll en haut de la modale
+  const body = document.querySelector('.modale-body');
+  if (body) body.scrollTop = 0;
+}
+
+// Fermer la modale avec Échap
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const m = document.getElementById('modaleGrille');
+    if (m && m.classList.contains('open')) fermerGrille();
+  }
+});
 
 function buildCheckGrid(containerId, items, stateKey) {
   const grid = document.getElementById(containerId);
@@ -2299,62 +3653,6 @@ function toggleCheck(el, key, value) {
   } else {
     state.data[key] = state.data[key].filter(v => v !== value);
   }
-}
-
-// Ajouter un item personnalisé (saisi par l'utilisateur) à une grille
-function addCustomItem(gridId, stateKey) {
-  const grid = document.getElementById(gridId);
-  if (!grid) return;
-  const card = document.createElement('div');
-  card.className = 'check-card custom-card checked';
-  // Pré-coché par défaut puisque l'utilisateur vient d'ajouter cet item
-  card.innerHTML = `
-    <div class="check-box" onclick="toggleCustomCheck(event, this.parentElement, '${stateKey}')"></div>
-    <input type="text" class="custom-input" placeholder="Écrire ici…"
-           oninput="updateCustomValue(this, '${stateKey}')"
-           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
-    <button type="button" class="remove-btn" onclick="removeCustomItem(this.parentElement, '${stateKey}')" title="Supprimer">×</button>
-  `;
-  grid.appendChild(card);
-  const input = card.querySelector('.custom-input');
-  // Stocker la valeur courante sur le DOM pour pouvoir la retirer/mettre à jour proprement
-  input.dataset.prev = '';
-  setTimeout(() => input.focus(), 50);
-}
-
-// L'utilisateur tape dans l'input personnalisé : on met à jour state.data
-function updateCustomValue(input, stateKey) {
-  const card = input.parentElement;
-  const prev = input.dataset.prev || '';
-  const next = input.value.trim();
-  // Retire l'ancienne valeur
-  if (prev) state.data[stateKey] = state.data[stateKey].filter(v => v !== prev);
-  // Ajoute la nouvelle (si cochée et non vide)
-  if (card.classList.contains('checked') && next) {
-    if (!state.data[stateKey].includes(next)) state.data[stateKey].push(next);
-  }
-  input.dataset.prev = next;
-}
-
-// Cocher / décocher une carte personnalisée
-function toggleCustomCheck(event, card, stateKey) {
-  event.stopPropagation();
-  const input = card.querySelector('.custom-input');
-  const value = input.value.trim();
-  card.classList.toggle('checked');
-  if (card.classList.contains('checked')) {
-    if (value && !state.data[stateKey].includes(value)) state.data[stateKey].push(value);
-  } else {
-    if (value) state.data[stateKey] = state.data[stateKey].filter(v => v !== value);
-  }
-}
-
-// Supprimer une carte personnalisée
-function removeCustomItem(card, stateKey) {
-  const input = card.querySelector('.custom-input');
-  const value = input.value.trim();
-  if (value) state.data[stateKey] = state.data[stateKey].filter(v => v !== value);
-  card.remove();
 }
 
 function bindSliders() {
@@ -2466,6 +3764,44 @@ function renderParcours() {
     deltaBox.textContent = `Situation stable`;
   }
 
+  // VALEUR SOCIALE CRÉÉE
+  const impact = calculerImpact(d.resultats);
+  document.getElementById('cImpactTotal').textContent = formatEuro(impact.total);
+  document.getElementById('valeurCoutEvite').textContent = formatEuro(impact.coutEvite);
+  document.getElementById('valeurRichesse').textContent = formatEuro(impact.richesse);
+  document.getElementById('valeurTotal').textContent = formatEuro(impact.total);
+
+  const detailBody = document.getElementById('valeurDetailBody');
+  if (impact.detail.length > 0) {
+    detailBody.innerHTML = impact.detail
+      .filter(d => d.cout_evite > 0 || d.richesse > 0)
+      .sort((a, b) => (b.cout_evite + b.richesse) - (a.cout_evite + a.richesse))
+      .map(d => `
+        <tr>
+          <td>${escapeHtml(d.resultat)}</td>
+          <td class="num evite">${d.cout_evite > 0 ? formatEuro(d.cout_evite) : '—'}</td>
+          <td class="num richesse">${d.richesse > 0 ? formatEuro(d.richesse) : '—'}</td>
+        </tr>
+      `).join('') + `
+        <tr style="background: #fef3c7; font-weight: 700;">
+          <td>TOTAL</td>
+          <td class="num evite">${formatEuro(impact.coutEvite)}</td>
+          <td class="num richesse">${formatEuro(impact.richesse)}</td>
+        </tr>
+      `;
+  } else {
+    detailBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--gris); padding: 20px;">Aucun résultat coché</td></tr>';
+  }
+
+  // DASHBOARD UTILITÉ SOCIALE
+  const util = calculerUtiliteSociale(d);
+  renderJauges(util);
+  renderUtilDetail(util);
+
+  // ANALYSE QUALITATIVE AUTO
+  const analyse = genererAnalyseQualitative(d, util, impact);
+  renderAnalyseQualitative(analyse);
+
   // RÉCAP
   const recapDepart = d.freins.length
     ? d.freins.slice(0, 6).map(f => `<li>${escapeHtml(f)}</li>`).join('')
@@ -2494,10 +3830,100 @@ function escapeHtml(str) {
   }[c]));
 }
 
+function formatEuro(n) {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0
+  }).format(n);
+}
+
+// =================================================================
+// RENDU DU DASHBOARD UTILITÉ SOCIALE
+// =================================================================
+function renderJauges(util) {
+  const grid = document.getElementById('jaugesGrid');
+  if (!util) {
+    grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color: var(--gris); padding: 20px;">Sélectionnez une sous-thématique pour voir l\'utilité sociale.</div>';
+    return;
+  }
+  // Ordre d'affichage : Cohésion, Insertion, Autonomisation, Accès aux droits, Santé, Territoire
+  const ordre = ['cohesion', 'insertion', 'autonomisation', 'acces_droits', 'sante', 'territoire'];
+  const circ = 2 * Math.PI * 38; // rayon 38 → circ ~239
+
+  grid.innerHTML = ordre.map(dim => {
+    const score = util.scores[dim];
+    const delta = util.deltas[dim];
+    const couleur = DIMENSIONS[dim].couleur;
+    const dash = (score / 100) * circ;
+    const deltaTxt = (delta >= 0 ? '+' : '') + delta + '%';
+    const deltaClass = delta < 0 ? 'jauge-delta neg' : 'jauge-delta';
+
+    return `
+      <div class="jauge-card">
+        <div class="jauge-svg">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" stroke-width="9"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="${couleur}" stroke-width="9"
+                    stroke-linecap="round" stroke-dasharray="${dash} ${circ}"/>
+          </svg>
+          <div class="jauge-text">
+            <div class="jauge-pct" style="color: ${couleur}">${score}%</div>
+            <div class="${deltaClass}">${deltaTxt}</div>
+          </div>
+        </div>
+        <div class="jauge-label">${DIMENSIONS[dim].label}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderUtilDetail(util) {
+  const grid = document.getElementById('utilDetailGrid');
+  if (!util) {
+    grid.innerHTML = '';
+    return;
+  }
+  const ordre = ['cohesion', 'insertion', 'autonomisation', 'acces_droits', 'sante', 'territoire'];
+
+  grid.innerHTML = ordre.map(dim => {
+    const score = util.scores[dim];
+    const stars = util.etoiles[dim];
+    const couleur = DIMENSIONS[dim].couleur;
+    const starsHtml = Array.from({ length: 5 }, (_, i) =>
+      i < stars ? '★' : '<span class="empty-star">★</span>'
+    ).join('');
+
+    return `
+      <div class="util-detail-card" style="border-top-color: ${couleur}">
+        <div class="util-detail-top">
+          <div class="util-detail-icon" style="color: ${couleur}">${DIMENSIONS[dim].icon}</div>
+          <div class="util-detail-pct" style="color: ${couleur}">${score}%</div>
+        </div>
+        <div class="util-detail-stars" style="color: ${couleur}">${starsHtml}</div>
+        <div class="util-detail-titre">${DIMENSIONS[dim].label}</div>
+        <div class="util-detail-desc">${DIMENSIONS[dim].desc}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderAnalyseQualitative(analyse) {
+  document.getElementById('analyseForts').innerHTML =
+    analyse.forts.map(t => `<li>${escapeHtml(t)}</li>`).join('');
+  document.getElementById('analyseVigilance').innerHTML =
+    analyse.vigilance.map(t => `<li>${escapeHtml(t)}</li>`).join('');
+  document.getElementById('analyseRecos').innerHTML =
+    analyse.recommandations.map(t => `<li>${escapeHtml(t)}</li>`).join('');
+}
+
 // =================================================================
 // EXPORT / RESET
 // =================================================================
 function downloadJSON() {
+  const impact = calculerImpact(state.data.resultats);
+  const util = calculerUtiliteSociale(state.data);
+  const analyse = genererAnalyseQualitative(state.data, util, impact);
   const allData = {
     ...state.data,
     thematique_label: THEMATIQUES[state.data.thematique]?.label || null,
@@ -2516,7 +3942,22 @@ function downloadJSON() {
       competences_acquises: state.data.competences.length,
       resultats_obtenus: state.data.resultats.length,
       progression_points: state.data.pct_apres - state.data.pct_avant
-    }
+    },
+    valeur_sociale_eur: {
+      cout_evite: impact.coutEvite,
+      richesse_apportee: impact.richesse,
+      total: impact.total,
+      detail: impact.detail,
+      periode: "12 mois",
+      methodologie: "Estimation basée sur des références publiques (UNEDIC, France Travail, INCA, Cour des comptes, France Bénévolat)"
+    },
+    utilite_sociale: util ? {
+      scores_pct: util.scores,
+      deltas_pct: util.deltas,
+      etoiles: util.etoiles,
+      intensite_globale: util.intensite
+    } : null,
+    analyse_qualitative: analyse
   };
   const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -2534,133 +3975,92 @@ function resetForm() {
   }
 }
 
-// =================================================================
-// MODE EMBED (modal iframe) — pré-sélection thématique + postMessage
-// =================================================================
-const EMBED = (function(){
-  const p = new URLSearchParams(location.search);
-  return {
-    embed: p.get('embed') === '1',
-    actionId: p.get('action') || null,
-    actionTitle: p.get('title') || '',
-    assoName: p.get('asso') || '',
-    theme: p.get('theme') || null,
-    sous: p.get('sous') || null,
-    aggregate: null
-  };
-})();
+init();
 
-function applyEmbedMode(){
-  if(!EMBED.embed) return;
-  // Garder l'étape "Qui êtes-vous ?" au début (pré-remplir asso/action depuis l'action sélectionnée)
-  const assoInp = document.querySelector('input[name="asso"]');
-  if(assoInp && EMBED.assoName) assoInp.value = EMBED.assoName;
-  const actInp = document.querySelector('input[name="action"]');
-  if(actInp && EMBED.actionTitle) actInp.value = EMBED.actionTitle;
-  const steps = document.querySelectorAll('.step');
-  state.totalSteps = steps.length;
-  state.step = 0;
-  steps.forEach((s,i)=> s.classList.toggle('active', i===0));
+// =================================================================
+// MODE EMBED — intégration AssocioBoard (postMessage)
+// =================================================================
+(function(){
+  const params = new URLSearchParams(location.search);
+  const isEmbed = params.get('embed') === '1';
+  if(!isEmbed) return;
 
-  if(EMBED.theme && THEMATIQUES[EMBED.theme]){
-    setTimeout(function(){
-      selectThematique(EMBED.theme);
-      // Les autres thématiques restent cliquables (auto-sélection modifiable)
-      document.querySelectorAll('.thematique-card').forEach(function(el){
-        el.style.opacity=''; el.style.pointerEvents='';
-        if(el.dataset.key !== EMBED.theme){ el.style.opacity='0.85'; }
-      });
-      if(EMBED.sous && THEMATIQUES[EMBED.theme].sous[EMBED.sous]){
-        setTimeout(function(){ selectSousThematique(EMBED.sous); }, 80);
+  // Style allégé pour iframe : pas de fond, padding réduit
+  const css = document.createElement('style');
+  css.textContent = 'body{background:#f9fafb;padding:0}.container{box-shadow:none;border-radius:0;max-width:none}.btn-grille-flottant{display:none}';
+  document.head.appendChild(css);
+
+  // Pré-remplissage depuis l'URL
+  const setVal = (n,v)=>{ const el=document.querySelector(`[name="${n}"]`); if(el && v) el.value=v; };
+  setVal('action', params.get('title')||'');
+  setVal('asso',   params.get('asso')||'');
+
+  // Pré-sélection thématique
+  const wantTheme = params.get('theme');
+  const wantSous  = params.get('sousTheme');
+  if(wantTheme && typeof THEMATIQUES!=='undefined' && THEMATIQUES[wantTheme]){
+    setTimeout(()=>{
+      try{ selectThematique(wantTheme); }catch(e){}
+      if(wantSous){
+        const subKey = Object.keys(THEMATIQUES[wantTheme].sous||{}).find(k =>
+          THEMATIQUES[wantTheme].sous[k].toLowerCase() === String(wantSous).toLowerCase()
+        );
+        if(subKey){ try{ selectSousThematique(subKey); }catch(e){} }
       }
     }, 50);
   }
-  updateProgress();
 
-  const last = document.querySelector('.step:last-child .actions-final');
-  if(last){
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-success';
-    btn.innerHTML = '✓ Enregistrer pour cette action';
-    btn.onclick = sendToParent;
-    last.insertBefore(btn, last.firstChild);
-  }
-}
-
-function buildAggregatePayload(){
-  const d = state.data;
-  return {
-    actionId: EMBED.actionId,
-    thematique: d.thematique,
-    sous_thematique: d.sous_thematique,
-    pct_avant: d.pct_avant,
-    pct_apres: d.pct_apres,
-    freins: d.freins.slice(),
-    actions: d.actions.slice(),
-    competences: d.competences.slice(),
-    freins_leves: d.freins_leves.slice(),
-    resultats: d.resultats.slice(),
-    delta: d.pct_apres - d.pct_avant,
-    ts: Date.now()
+  // Hook sur renderParcours : envoie le payload au parent à l'arrivée à l'étape finale
+  const _origRender = window.renderParcours;
+  window.renderParcours = function(){
+    _origRender.apply(this, arguments);
+    try{
+      const d = state.data;
+      const impact = calculerImpact(d.resultats);
+      const util   = calculerUtiliteSociale(d);
+      const analyse= genererAnalyseQualitative(d, util, impact);
+      const themaLabel = (THEMATIQUES[d.thematique]||{}).label || '';
+      const sousLabel  = (THEMATIQUES[d.thematique]||{}).sous?.[d.sous_thematique] || '';
+      const payload = {
+        actionId: params.get('action') || null,
+        // champs attendus par AssocioBoard
+        freins: d.freins,
+        actions: d.actions,
+        competences: d.competences,
+        freins_leves: d.freins_leves,
+        resultats: d.resultats,
+        pct_avant: d.pct_avant,
+        pct_apres: d.pct_apres,
+        impact_estime: impact.total,
+        // valorisation détaillée
+        cout_evite: impact.coutEvite,
+        richesse: impact.richesse,
+        valeur_totale: impact.total,
+        valeur_detail: impact.detail,
+        // utilité sociale 6 dimensions
+        utilite: util ? { scores: util.scores, deltas: util.deltas, etoiles: util.etoiles, intensite: util.intensite } : null,
+        // analyse auto
+        analyse: analyse,
+        // bénéficiaire
+        beneficiaire: {
+          age: (document.querySelector('[name="age"]')||{}).value || '',
+          genre: (document.querySelector('[name="genre"]')||{}).value || '',
+          quartier: (document.querySelector('[name="quartier"]')||{}).value || '',
+          bailleur: (document.querySelector('[name="bailleur"]')||{}).value || '',
+          asso: (document.querySelector('[name="asso"]')||{}).value || '',
+          action: (document.querySelector('[name="action"]')||{}).value || '',
+          date_debut: (document.querySelector('[name="date_debut"]')||{}).value || ''
+        },
+        thematique: d.thematique,
+        thematique_label: themaLabel,
+        sous_thematique: d.sous_thematique,
+        sous_thematique_label: sousLabel,
+        date_eval: new Date().toISOString()
+      };
+      window.parent && window.parent.postMessage({ type:'survey-complete', payload }, '*');
+    }catch(e){ console.error('embed payload error', e); }
   };
-}
-
-function sendToParent(){
-  if(!window.parent || window.parent === window) return;
-  window.parent.postMessage({ type:'survey-complete', payload: buildAggregatePayload() }, '*');
-}
-
-window.addEventListener('message', function(e){
-  if(!e.data || e.data.type !== 'aggregate-data') return;
-  EMBED.aggregate = e.data.aggregate;
-  if(state.step === state.totalSteps - 1) renderAggregate();
-});
-
-function ensureAggregateBlock(){
-  if(document.getElementById('aggBlock')) return;
-  const wrap = document.querySelector('.resultat-wrap');
-  if(!wrap) return;
-  const div = document.createElement('div');
-  div.id = 'aggBlock';
-  div.style.cssText = 'background:#fff;border-radius:16px;padding:24px;margin-top:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04)';
-  div.innerHTML = '<div style="text-align:center;font-size:13px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px">Moyenne des bénéficiaires de cette action</div><div id="aggBody"></div>';
-  wrap.appendChild(div);
-}
-
-function renderAggregate(){
-  ensureAggregateBlock();
-  const body = document.getElementById('aggBody');
-  if(!body) return;
-  const a = EMBED.aggregate;
-  const cur = buildAggregatePayload();
-  const all = (a && a.responses ? a.responses.concat([cur]) : [cur]);
-  const n = all.length;
-  const avg = function(k){ return Math.round(all.reduce(function(s,r){return s+(r[k]||0);},0)/n); };
-  const moy = function(k){ return Math.round(all.reduce(function(s,r){return s+((r[k]||[]).length||0);},0)/n*10)/10; };
-  const avantM = avg('pct_avant'), apresM = avg('pct_apres');
-  const deltaM = apresM - avantM;
-  body.innerHTML =
-    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px">'
-    +'<div style="text-align:center;padding:14px;background:linear-gradient(135deg,#eff6ff,#f5f3ff);border-radius:12px"><div style="font-size:32px;font-weight:800;color:#2563eb;line-height:1">'+n+'</div><div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-top:4px">Bénéficiaires<br>évalués</div></div>'
-    +'<div style="text-align:center;padding:14px;background:#fef2f2;border-radius:12px"><div style="font-size:32px;font-weight:800;color:#dc2626;line-height:1">'+avantM+'%</div><div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-top:4px">Moyenne<br>avant</div></div>'
-    +'<div style="text-align:center;padding:14px;background:#ecfdf5;border-radius:12px"><div style="font-size:32px;font-weight:800;color:#059669;line-height:1">'+apresM+'%</div><div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-top:4px">Moyenne<br>après</div></div>'
-    +'<div style="text-align:center;padding:14px;background:'+(deltaM>=0?'#ecfdf5':'#fef2f2')+';border-radius:12px"><div style="font-size:32px;font-weight:800;color:'+(deltaM>=0?'#059669':'#dc2626')+';line-height:1">'+(deltaM>=0?'+':'')+deltaM+'</div><div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-top:4px">Progression<br>moyenne (pts)</div></div>'
-    +'</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">'
-    +[['Freins levés', moy('freins_leves'), '#dc2626'],['Actions suivies', moy('actions'), '#7c3aed'],['Compétences acquises', moy('competences'), '#ea580c'],['Résultats obtenus', moy('resultats'), '#059669']].map(function(r){
-      return '<div style="padding:12px;border:1px solid var(--bordure);border-radius:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:'+r[2]+';line-height:1">'+r[1]+'</div><div style="font-size:11px;color:var(--gris);font-weight:600;margin-top:4px">'+r[0]+' / bénéf.</div></div>';
-    }).join('')
-    +'</div>';
-}
-
-const _origRenderParcours = renderParcours;
-renderParcours = function(){
-  _origRenderParcours.apply(this, arguments);
-  if(EMBED.embed) renderAggregate();
-};
-
-init();
-applyEmbedMode();
+})();
 </script>
 </body>
 </html>

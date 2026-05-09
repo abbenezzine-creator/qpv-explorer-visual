@@ -5406,29 +5406,17 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       +'<div><div style="font-size:15px;font-weight:800">Évaluation bénéficiaire</div><div id="benefSub" style="font-size:12px;opacity:0.9;margin-top:2px"></div></div>'
       +'<button onclick="closeBenefModal()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:34px;height:34px;border-radius:8px;font-size:18px;cursor:pointer">✕</button>'
       +'</div>'
-      +'<div id="benefThemeBar" style="display:flex;flex-wrap:wrap;gap:10px;padding:12px 20px;border-bottom:1px solid #e5e7eb;background:#f8fafc;align-items:flex-end">'
-        +'<div style="flex:1;min-width:200px"><label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:4px">Thématique</label><select id="benefThemeSel" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;color:#0f172a;font-family:inherit"></select></div>'
-        +'<div style="flex:1;min-width:200px"><label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:4px">Sous-thématique</label><select id="benefSousThemeSel" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;color:#0f172a;font-family:inherit"></select></div>'
-      +'</div>'
       +'<iframe id="benefFrame" style="flex:1;border:none;width:100%" title="Questionnaire bénéficiaire"></iframe>'
       +'</div>';
     document.body.appendChild(div);
   }
-  function _populateBenefThemeSel(themeSel,subSel,curTheme,curSub){
-    const themes=Object.keys(SOUS_THEMES);
-    themeSel.innerHTML=themes.map(t=>`<option value="${t}"${t===curTheme?' selected':''}>${t}</option>`).join('');
-    const opts=SOUS_THEMES[themeSel.value]||[];
-    subSel.innerHTML='<option value="">— Toutes —</option>'+opts.map(s=>`<option value="${s}"${s===curSub?' selected':''}>${s}</option>`).join('');
-  }
   function _reloadBenefFrame(){
     const a=ACTIONS.find(x=>x.id===benefCurrentId); if(!a) return;
-    const t=document.getElementById('benefThemeSel').value;
-    const s=document.getElementById('benefSousThemeSel').value;
-    const qkey=THEME_TO_QKEY[t]||'transversal';
-    const params=new URLSearchParams({embed:'1',action:String(a.id),title:a.titre||'',asso:getAssocName(a.assocId)||'',theme:qkey,sousTheme:s||''});
+    let theme=a.theme; try{ const auto=(typeof lookupThemeForAction==='function')?lookupThemeForAction(a):null; if(auto) theme=auto; }catch(_){}
+    const qkey=THEME_TO_QKEY[theme]||'transversal';
+    const params=new URLSearchParams({embed:'1',action:String(a.id),title:a.titre||'',asso:getAssocName(a.assocId)||'',theme:qkey,sousTheme:a.sousTheme||''});
     const fr=document.getElementById('benefFrame');
     fr.src='questionnaire.html?'+params.toString();
-    fr.onload=function(){ try{ fr.contentWindow.postMessage({type:'aggregate-data',aggregate:{responses:(a.surveyResponses||[])}},'*'); }catch(err){} };
   }
   window.closeBenefModal = function(){
     const m = document.getElementById('benefModal'); if(m) m.style.display = 'none';
@@ -5440,13 +5428,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     benefCurrentId = id;
     const a = ACTIONS.find(x=>x.id===id); if(!a) return;
     document.getElementById('benefSub').textContent = (a.titre||'') + ' — ' + getAssocName(a.assocId);
-    const themeSel=document.getElementById('benefThemeSel');
-    const subSel=document.getElementById('benefSousThemeSel');
-    let initTheme=SOUS_THEMES[a.theme]?a.theme:Object.keys(SOUS_THEMES)[0];
-    try{ const auto = (typeof lookupThemeForAction==='function') ? lookupThemeForAction(a) : null; if(auto && SOUS_THEMES[auto]) initTheme=auto; }catch(_){}
-    _populateBenefThemeSel(themeSel,subSel,initTheme,a.sousTheme||'');
-    themeSel.onchange=function(){ _populateBenefThemeSel(themeSel,subSel,themeSel.value,''); _reloadBenefFrame(); };
-    subSel.onchange=function(){ _reloadBenefFrame(); };
     _reloadBenefFrame();
     document.getElementById('benefModal').style.display = 'flex';
   };
@@ -5598,12 +5579,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     }
     const sumLen = k => allResp.reduce((s,r)=>s+((r[k]||[]).length||0),0);
     const avg = k => Math.round(allResp.reduce((s,r)=>s+(+r[k]||0),0)/n);
+    const sumNum = k => allResp.reduce((s,r)=>s+(+r[k]||0),0);
     const totFreins = sumLen('freins_leves');
     const totActions = sumLen('actions');
     const totComp = sumLen('competences');
     const totRes = sumLen('resultats');
     const avantM = avg('pct_avant'), apresM = avg('pct_apres');
     const deltaM = apresM - avantM;
+    const totCoutEvite = sumNum('cout_evite');
+    const totRichesse  = sumNum('richesse');
+    const totValeur    = sumNum('valeur_totale') || (totCoutEvite+totRichesse);
     const uniq = (k) => {
       const set = new Set();
       allResp.forEach(r => (r[k]||[]).forEach(v => { const t=(v||'').toString().trim(); if(t) set.add(t); }));
@@ -5612,7 +5597,37 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     const depart = uniq('freins');
     const chemin = Array.from(new Set([...uniq('actions'), ...uniq('competences')])).sort((a,b)=>a.localeCompare(b,'fr'));
     const aujourd = Array.from(new Set([...uniq('freins_leves'), ...uniq('resultats')])).sort((a,b)=>a.localeCompare(b,'fr'));
-    const impactEstime = allResp.reduce((s,r)=> s + (+r.impact_estime||0), 0);
+    const impactEstime = totValeur || allResp.reduce((s,r)=> s + (+r.impact_estime||0), 0);
+
+    // ===== Utilité sociale — moyenne des 6 dimensions =====
+    const DIM_META = {
+      cohesion:       { label:'Cohésion sociale',           color:'#7c3aed' },
+      insertion:      { label:'Insertion professionnelle',  color:'#ea580c' },
+      autonomisation: { label:'Autonomisation',             color:'#db2777' },
+      acces_droits:   { label:'Accès aux droits',           color:'#2563eb' },
+      sante:          { label:'Bien-être & Santé',          color:'#059669' },
+      territoire:     { label:'Impact territorial',         color:'#0891b2' }
+    };
+    const utilAgg = {}; let utilN = 0;
+    allResp.forEach(r => { if(r.utilite && r.utilite.scores){
+      utilN++;
+      Object.keys(DIM_META).forEach(k => { utilAgg[k] = (utilAgg[k]||0) + (+r.utilite.scores[k]||0); });
+    }});
+    const utilMoy = {};
+    Object.keys(DIM_META).forEach(k => { utilMoy[k] = utilN ? Math.round(utilAgg[k]/utilN) : 0; });
+
+    // ===== Analyse qualitative — agrégation =====
+    const aggForts={}, aggVig={}, aggReco={};
+    allResp.forEach(r => {
+      if(!r.analyse) return;
+      (r.analyse.forts||[]).forEach(t => aggForts[t]=(aggForts[t]||0)+1);
+      (r.analyse.vigilance||[]).forEach(t => aggVig[t]=(aggVig[t]||0)+1);
+      (r.analyse.recos||[]).forEach(t => aggReco[t]=(aggReco[t]||0)+1);
+    });
+    const topItems = (obj,k=6) => Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,k);
+
+    const fmtEur = v => v ? Math.round(v).toLocaleString('fr-FR')+' €' : '—';
+
     const iconStat = (icon,val,lbl,color,bg)=>`
       <div style="background:${bg||'#fff'};border:1px solid #e5e7eb;border-radius:14px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
         <div style="font-size:22px;color:${color};line-height:1">${icon}</div>
@@ -5636,6 +5651,18 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:${color}">${pct}%</div>
       </div>`;
     };
+    const jaugeBar = (pct,color)=>`
+      <div style="height:8px;background:#e2e8f0;border-radius:6px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:6px"></div>
+      </div>`;
+    const jaugeCard = (k,m,pct)=>`
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-size:12px;font-weight:700;color:#334155">${m.label}</span>
+          <span style="font-size:18px;font-weight:800;color:${m.color}">${pct}%</span>
+        </div>
+        ${jaugeBar(pct,m.color)}
+      </div>`;
     const listCard = (icon, title, items, color) => `
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
         <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:2px solid ${color};margin-bottom:14px">
@@ -5644,13 +5671,19 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
         </div>
         ${items.length ? '<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">'+items.map(i=>`<li style="display:flex;gap:8px;font-size:13px;color:#334155;line-height:1.45"><span style="color:${color};font-weight:700">•</span><span>${i}</span></li>`).join('')+'</ul>' : '<div style="color:var(--muted-fore);font-size:13px">Aucun élément</div>'}
       </div>`;
+    const analyseBlock = (title, color, bg, items) => `
+      <div style="background:${bg};border-left:4px solid ${color};border-radius:10px;padding:14px 16px">
+        <div style="font-size:12px;font-weight:800;letter-spacing:.06em;color:${color};text-transform:uppercase;margin-bottom:8px">${title}</div>
+        ${items.length ? '<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px">'+items.map(([t,c])=>`<li style="font-size:13px;color:#334155;line-height:1.45;display:flex;justify-content:space-between;gap:8px"><span>• ${t}</span><span style="color:${color};font-weight:700;font-size:11px">×${c}</span></li>`).join('')+'</ul>' : '<div style="color:var(--muted-fore);font-size:13px">—</div>'}
+      </div>`;
+
     body.innerHTML = `
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px">
         ${iconStat('<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>', totFreins, 'Freins levés', '#dc2626')}
         ${iconStat('✓', totActions, 'Actions suivies', '#2563eb')}
         ${iconStat('<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 4 2 10l10 6 10-6Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>', totComp, 'Compétences acquises', '#7c3aed')}
         ${iconStat('✓', totRes, 'Résultats obtenus', '#059669')}
-        ${iconStat('€', (impactEstime?impactEstime.toLocaleString('fr-FR')+' €':'—'), 'Impact estimé / an', '#b45309', '#fdf6e3')}
+        ${iconStat('€', fmtEur(impactEstime), 'Impact estimé / an', '#b45309', '#fdf6e3')}
       </div>
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px 18px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative">
@@ -5681,6 +5714,63 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
           Progression de ${deltaM>=0?'+':''}${deltaM} points · ${totRes} résultat${totRes>1?'s':''} concret${totRes>1?'s':''} obtenu${totRes>1?'s':''}
         </div>
       </div>
+
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <span style="font-size:20px">€</span>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#0f172a">Valeur sociale créée sur 12 mois</div>
+            <div style="font-size:12px;color:#64748b">Estimation socio-économique cumulée des parcours</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <div style="background:#fef3c7;border-radius:12px;padding:16px;text-align:center">
+            <div style="font-size:11px;font-weight:800;color:#92400e;letter-spacing:.06em;text-transform:uppercase">Coût évité</div>
+            <div style="font-size:22px;font-weight:800;color:#92400e;margin-top:6px">${fmtEur(totCoutEvite)}</div>
+            <div style="font-size:11px;color:#78350f;margin-top:2px">à la collectivité</div>
+          </div>
+          <div style="background:#d1fae5;border-radius:12px;padding:16px;text-align:center">
+            <div style="font-size:11px;font-weight:800;color:#065f46;letter-spacing:.06em;text-transform:uppercase">Richesse apportée</div>
+            <div style="font-size:22px;font-weight:800;color:#065f46;margin-top:6px">${fmtEur(totRichesse)}</div>
+            <div style="font-size:11px;color:#047857;margin-top:2px">par les bénéficiaires</div>
+          </div>
+          <div style="background:#dbeafe;border-radius:12px;padding:16px;text-align:center">
+            <div style="font-size:11px;font-weight:800;color:#1e40af;letter-spacing:.06em;text-transform:uppercase">Valeur totale</div>
+            <div style="font-size:22px;font-weight:800;color:#1e40af;margin-top:6px">${fmtEur(totValeur)}</div>
+            <div style="font-size:11px;color:#1e3a8a;margin-top:2px">cumulée sur 1 an</div>
+          </div>
+        </div>
+      </div>
+
+      ${utilN ? `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#0f172a">Utilité sociale — 6 dimensions</div>
+            <div style="font-size:12px;color:#64748b">Moyenne sur ${utilN} parcours évalué${utilN>1?'s':''}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          ${Object.keys(DIM_META).map(k=>jaugeCard(k, DIM_META[k], utilMoy[k])).join('')}
+        </div>
+      </div>` : ''}
+
+      ${(topItems(aggForts).length||topItems(aggVig).length||topItems(aggReco).length) ? `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#0f172a">Analyse qualitative</div>
+            <div style="font-size:12px;color:#64748b">Tendances issues des évaluations</div>
+          </div>
+          <span style="background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:.06em">AUTO</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          ${analyseBlock('Points forts',      '#059669', '#ecfdf5', topItems(aggForts))}
+          ${analyseBlock('Points de vigilance','#d97706','#fffbeb', topItems(aggVig))}
+          ${analyseBlock('Recommandations',   '#2563eb', '#eff6ff', topItems(aggReco))}
+        </div>
+      </div>` : ''}
+
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
         ${listCard('📍','Au départ', depart, '#dc2626')}
         ${listCard('▦','Le chemin', chemin, '#7c3aed')}
