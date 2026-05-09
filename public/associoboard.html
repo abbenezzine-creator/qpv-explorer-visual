@@ -3597,6 +3597,35 @@ function renderBackupList(){
   </div>`).join('');
 }
 
+// ========== RESET COMPLET ==========
+function openResetAllModal(){
+  const i=document.getElementById('resetAllCode'); if(i){ i.value=''; }
+  const e=document.getElementById('resetAllErr'); if(e) e.style.display='none';
+  openModal('resetAllModal');
+  setTimeout(()=>{ try{ document.getElementById('resetAllCode').focus(); }catch(_){} },50);
+}
+function confirmResetAll(){
+  const code=(document.getElementById('resetAllCode').value||'').trim();
+  if(code!=='1234567890'){ document.getElementById('resetAllErr').style.display='block'; return; }
+  try{
+    ASSOCS=[]; ACTIONS=[]; PARTNERS=[]; DOCUMENTS=[]; QUAL_EVALS={};
+    if(typeof EVALUATIONS!=='undefined') EVALUATIONS=[];
+    nextId=1;
+    const keys=['ab_backups','ab_eval_items','ab_subject_themes','ab_actions','ab_assocs','ab_partners','ab_documents','ab_qual_evals','ab_evaluations','ab_beneficiaires','ab_data','ab_state'];
+    keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(_){} });
+  }catch(e){ console.error(e); }
+  closeModal('resetAllModal');
+  showToast('Réinitialisation complète effectuée');
+  try{ renderSettings(); }catch(_){}
+  try{ updateAllSelects(); }catch(_){}
+  try{ renderDashboard(); }catch(_){}
+  try{ renderAllActions(); }catch(_){}
+  try{ renderCalendar(); }catch(_){}
+  try{ renderDocuments(); }catch(_){}
+  try{ renderBackupList(); }catch(_){}
+  try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(_){}
+}
+
 // ========== IMPORT EXCEL — Fiches Actions ==========
 function _xlsxNorm(s){return (s==null?'':String(s)).trim();}
 function _xlsxFindCol(headers, candidates){
