@@ -559,7 +559,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       </button>
       <div class="topbar-title" id="pageTitle">Tableau de Bord</div>
       <div class="topbar-right">
+        <span id="assocSelWrap" style="display:none">
+          <select class="year-sel" id="assocGlobalSel" onchange="switchAssociation(this.value)" style="max-width:180px"><option value="">— Toutes les associations —</option></select>
+        </span>
         <select class="year-sel" id="yearFilter" onchange="onYearChange()"></select>
+        <select class="year-sel" id="globalThemeSel" onchange="onGlobalThemeChange()"><option value="">Toutes thématiques</option></select>
+        <select class="year-sel" id="globalSousThemeSel" onchange="onGlobalSousThemeChange()"><option value="">Toutes sous-thématiques</option></select>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted-fore)"><div class="live-dot"></div>En direct</div>
         <button class="btn btn-primary" id="topNewActionBtn" onclick="openAddActionModal()">
           <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg>
