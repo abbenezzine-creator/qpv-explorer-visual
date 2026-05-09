@@ -485,11 +485,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <button class="btn-login" onclick="doLogin()">Se connecter →</button>
     <div class="login-err" id="loginErr">Identifiant ou mot de passe incorrect.</div>
     <div class="demo-box">
-      <div class="demo-ttl">Comptes démo — cliquer pour remplir</div>
-      <div class="demo-row" onclick="fillDemo('admin','admin2025')"><span class="demo-role">Super Admin</span><span class="demo-creds">admin / admin2025</span></div>
-      <div class="demo-row" onclick="fillDemo('action','action2025')"><span class="demo-role">ACTION</span><span class="demo-creds">action / action2025</span></div>
-      <div class="demo-row" onclick="fillDemo('passemploi','pass2025')"><span class="demo-role">PASS'EMPLOI</span><span class="demo-creds">passemploi / pass2025</span></div>
-      <div class="demo-row" onclick="fillDemo('atlas','atlas2025')"><span class="demo-role">ATLAS ETRE ET SAVOIR</span><span class="demo-creds">atlas / atlas2025</span></div>
+      <div class="demo-ttl">Comptes de démonstration</div>
+      <select id="demoSel" onchange="onDemoSelect(this.value)" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--fore);font-family:inherit;cursor:pointer">
+        <option value="">— Choisir un compte —</option>
+      </select>
     </div>
     <div style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer" onclick="toggleTheme()">
       <div class="tog-track" id="loginTog"><div class="tog-thumb"></div></div>
@@ -776,7 +775,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Associations</div><button class="btn btn-primary btn-sm" onclick="openAddAssocModal()">+ Ajouter</button></div><div class="settings-list" id="assocList"></div></div>
         <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Partenaires évaluateurs</div><button class="btn btn-primary btn-sm" onclick="openAddPartnerModal()">+ Ajouter</button></div><div class="settings-list" id="partnerList"></div></div>
       </div>
-      <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Comptes utilisateurs</div></div><div class="card-body" id="accountsList"></div></div>
+      <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Comptes utilisateurs</div><button class="btn btn-outline btn-sm" onclick="toggleAccountsPwd()" id="togPwdBtn">Afficher mots de passe</button></div><div class="card-body" id="accountsList"></div></div>
+      <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Sauvegarde &amp; restauration</div><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="exportBackup()">⬇ Exporter</button><button class="btn btn-primary btn-sm" onclick="createBackup()">+ Créer une sauvegarde</button></div></div><div class="card-body"><div style="font-size:12px;color:var(--muted-fore);margin-bottom:10px">Sauvegardez l'état complet de l'application (associations, comptes, actions, documents, partenaires). Restaurez à tout moment depuis l'historique ci-dessous.</div><div style="display:flex;gap:9px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><input type="file" id="backupImportFile" accept=".json" class="form-inp" style="flex:1;min-width:200px"/><button class="btn btn-outline btn-sm" onclick="importBackupFile()">Importer un fichier</button></div><div id="backupList"></div></div></div>
       <div class="card"><div class="card-hdr"><div class="card-title">Connexion Google Sheets</div></div><div class="card-body">
   <div style="margin-bottom:14px">
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore);margin-bottom:6px">Web App — Actions & Évaluations</div>
@@ -1142,7 +1142,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <div class="modal-body">
       <div class="form-row full"><div class="form-grp"><label class="form-lbl">Nom *</label><input class="form-inp" id="aa-nom" placeholder="Nom de l'association"/></div></div>
       <div class="form-row"><div class="form-grp"><label class="form-lbl">Thématique</label><select class="form-sel" id="aa-theme"><option>Education / Parentalité</option><option>Emploi</option><option>Santé</option><option>Cohésion sociale</option><option>Citoyenneté</option><option>Accès aux droits</option><option>Culture</option></select></div><div class="form-grp"><label class="form-lbl">Couleur</label><select class="form-sel" id="aa-color"><option value="purple">Violet</option><option value="rose">Rose</option><option value="green">Vert</option><option value="amber">Ambre</option><option value="blue">Bleu</option></select></div></div>
-      <div class="form-row"><div class="form-grp"><label class="form-lbl">Login</label><input class="form-inp" id="aa-login" placeholder="identifiant"/></div><div class="form-grp"><label class="form-lbl">Mot de passe</label><input class="form-inp" id="aa-pwd" type="password" placeholder="mdp2025"/></div></div>
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Login (auto si vide)</label><input class="form-inp" id="aa-login" placeholder="généré depuis le nom"/></div><div class="form-grp"><label class="form-lbl">Mot de passe (auto si vide)</label><input class="form-inp" id="aa-pwd" type="text" placeholder="généré automatiquement"/></div></div>
       <div class="form-row full"><div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" id="aa-email" type="email" placeholder="contact@asso.fr"/></div></div>
     </div>
     <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('addAssocModal')">Annuler</button><button class="btn btn-primary" onclick="addAssociation()">Enregistrer</button></div>
@@ -1324,6 +1324,21 @@ function onYearChange(){
 
 // ========== AUTH ==========
 function fillDemo(u,p){document.getElementById('loginUser').value=u;document.getElementById('loginPwd').value=p;}
+function onDemoSelect(v){
+  if(!v) return;
+  const acc = ACCOUNTS[v]; if(!acc) return;
+  fillDemo(v, acc.pwd);
+}
+function refreshDemoSelect(){
+  const sel = document.getElementById('demoSel'); if(!sel) return;
+  const cur = sel.value;
+  const opts = Object.entries(ACCOUNTS).map(([login,u])=>{
+    const label = u.role==='superadmin' ? 'Super Admin' : (u.nom||login);
+    return `<option value="${login}">${label} — ${login}</option>`;
+  }).join('');
+  sel.innerHTML = '<option value="">— Choisir un compte —</option>' + opts;
+  if(cur && ACCOUNTS[cur]) sel.value = cur;
+}
 function doLogin(){
   const u=document.getElementById('loginUser').value.trim(), p=document.getElementById('loginPwd').value;
   const acc=ACCOUNTS[u]; if(!acc||acc.pwd!==p){document.getElementById('loginErr').style.display='block';return;}
@@ -3179,22 +3194,117 @@ function deleteDoc(id){DOCUMENTS=DOCUMENTS.filter(d=>d.id!==id);renderDocuments(
 // ========== SETTINGS ==========
 function openAddAssocModal(){openModal('addAssocModal');}
 function openAddPartnerModal(){openModal('addPartnerModal');}
+function _slugifyLogin(name){
+  let s = (name||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'').slice(0,16);
+  if(!s) s = 'asso';
+  let base = s, n = 1;
+  while(ACCOUNTS[s]){ s = base + (++n); }
+  return s;
+}
+function _genPwd(){
+  const chars='abcdefghijkmnpqrstuvwxyz23456789';
+  let p=''; for(let i=0;i<8;i++) p += chars[Math.floor(Math.random()*chars.length)];
+  return p;
+}
 function addAssociation(){
   const nom=document.getElementById('aa-nom').value.trim();if(!nom){showToast('Saisissez un nom');return;}
-  const login=document.getElementById('aa-login').value.trim(), pwd=document.getElementById('aa-pwd').value;
+  let login=document.getElementById('aa-login').value.trim().toLowerCase();
+  let pwd=document.getElementById('aa-pwd').value.trim();
+  if(!login) login = _slugifyLogin(nom);
+  if(!pwd) pwd = _genPwd();
   const nid=++nextId;
   ASSOCS.push({id:nid,nom,theme:document.getElementById('aa-theme').value,color:document.getElementById('aa-color').value});
-  if(login&&pwd) ACCOUNTS[login]={role:'association',assocId:nid,pwd,nom,color:'oklch(0.52 0.22 285)'};
-  closeModal('addAssocModal'); renderSettings(); updateAllSelects(); showToast('Association ajoutée : '+nom);
+  ACCOUNTS[login]={role:'association',assocId:nid,pwd,nom,color:'oklch(0.52 0.22 285)'};
+  closeModal('addAssocModal'); renderSettings(); updateAllSelects(); refreshDemoSelect();
+  showToast('Association ajoutée — login: '+login+' · mdp: '+pwd);
   ['aa-nom','aa-login','aa-pwd','aa-email'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
 }
 function addPartner(){const nom=document.getElementById('ap-nom').value.trim();if(!nom){showToast('Saisissez un nom');return;}PARTNERS.push({id:++nextId,nom,type:document.getElementById('ap-type').value});closeModal('addPartnerModal');renderSettings();showToast('Partenaire ajouté : '+nom);document.getElementById('ap-nom').value='';}
-function deleteAssoc(id){ASSOCS=ASSOCS.filter(a=>a.id!==id);renderSettings();updateAllSelects();showToast('Association supprimée');}
+function deleteAssoc(id){
+  ASSOCS=ASSOCS.filter(a=>a.id!==id);
+  Object.keys(ACCOUNTS).forEach(k=>{ if(ACCOUNTS[k].assocId===id) delete ACCOUNTS[k]; });
+  renderSettings(); updateAllSelects(); refreshDemoSelect(); showToast('Association supprimée');
+}
 function deletePartner(id){PARTNERS=PARTNERS.filter(p=>p.id!==id);renderSettings();showToast('Partenaire supprimé');}
+let _showAccountsPwd=false;
+function toggleAccountsPwd(){ _showAccountsPwd=!_showAccountsPwd; const b=document.getElementById('togPwdBtn'); if(b) b.textContent=_showAccountsPwd?'Masquer mots de passe':'Afficher mots de passe'; renderSettings(); }
+function resetAccountPwd(login){
+  if(!ACCOUNTS[login]) return;
+  const np = _genPwd(); ACCOUNTS[login].pwd = np;
+  showToast('Nouveau mot de passe pour '+login+' : '+np);
+  renderSettings(); refreshDemoSelect();
+}
 function renderSettings(){
   const al=document.getElementById('assocList');if(al)al.innerHTML=ASSOCS.map(a=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:9px"><div class="settings-dot" style="background:${cv(a.color)}"></div><div><div class="settings-name">${a.nom}</div><div class="settings-sub">${a.theme}</div></div></div><button class="btn btn-sm btn-danger" onclick="deleteAssoc(${a.id})">✕</button></div>`).join('');
   const pl=document.getElementById('partnerList');if(pl)pl.innerHTML=PARTNERS.map(p=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:9px"><div class="settings-dot" style="background:var(--primary)"></div><div><div class="settings-name">${p.nom}</div><div class="settings-sub">${p.type}</div></div></div><button class="btn btn-sm btn-danger" onclick="deletePartner(${p.id})">✕</button></div>`).join('');
-  const ac=document.getElementById('accountsList');if(ac)ac.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">'+Object.entries(ACCOUNTS).map(([login,u])=>`<div style="background:var(--muted);border-radius:calc(var(--radius)-4px);padding:10px 12px;border:1px solid var(--border)"><div style="font-size:12px;font-weight:700">${login}</div><div style="font-size:11px;color:var(--muted-fore)">${u.role==='superadmin'?'Super Admin':getAssocName(u.assocId)}</div></div>`).join('')+'</div>';
+  const ac=document.getElementById('accountsList');
+  if(ac) ac.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">'+Object.entries(ACCOUNTS).map(([login,u])=>{
+    const pwdShown = _showAccountsPwd ? u.pwd : '••••••••';
+    return `<div style="background:var(--muted);border-radius:calc(var(--radius)-4px);padding:10px 12px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><div style="font-size:12px;font-weight:700">${login}</div><button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="resetAccountPwd('${login}')" title="Régénérer">↻</button></div>
+      <div style="font-size:11px;color:var(--muted-fore)">${u.role==='superadmin'?'Super Admin':getAssocName(u.assocId)}</div>
+      <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--fore);margin-top:4px">🔑 ${pwdShown}</div>
+    </div>`;
+  }).join('')+'</div>';
+  renderBackupList();
+}
+
+// ========== BACKUP & RESTORE ==========
+function _backupSnapshot(){
+  return { v:1, ts:Date.now(), label:new Date().toLocaleString('fr-FR'),
+    ACCOUNTS:JSON.parse(JSON.stringify(ACCOUNTS)),
+    ASSOCS:JSON.parse(JSON.stringify(ASSOCS)),
+    PARTNERS:JSON.parse(JSON.stringify(PARTNERS)),
+    ACTIONS:JSON.parse(JSON.stringify(ACTIONS)),
+    DOCUMENTS:JSON.parse(JSON.stringify(DOCUMENTS)),
+    QUAL_EVALS:JSON.parse(JSON.stringify(QUAL_EVALS||{})),
+    nextId
+  };
+}
+function _backupsRead(){ try{ return JSON.parse(localStorage.getItem('ab_backups')||'[]'); }catch(e){ return []; } }
+function _backupsWrite(arr){ localStorage.setItem('ab_backups', JSON.stringify(arr.slice(-30))); }
+function createBackup(){
+  const arr=_backupsRead(); arr.push(_backupSnapshot()); _backupsWrite(arr);
+  showToast('Sauvegarde créée'); renderBackupList();
+}
+function deleteBackup(ts){
+  const arr=_backupsRead().filter(b=>b.ts!==ts); _backupsWrite(arr); renderBackupList(); showToast('Sauvegarde supprimée');
+}
+function restoreBackup(ts){
+  const arr=_backupsRead(); const b=arr.find(x=>x.ts===ts); if(!b){ showToast('Sauvegarde introuvable'); return; }
+  if(!confirm('Restaurer la sauvegarde du '+b.label+' ? Les données actuelles seront remplacées.')) return;
+  // snapshot de sécurité avant restauration
+  const cur=_backupSnapshot(); cur.label='Avant restauration — '+cur.label; const all=_backupsRead(); all.push(cur); _backupsWrite(all);
+  ACCOUNTS=b.ACCOUNTS; ASSOCS=b.ASSOCS; PARTNERS=b.PARTNERS; ACTIONS=b.ACTIONS; DOCUMENTS=b.DOCUMENTS; QUAL_EVALS=b.QUAL_EVALS||{}; if(b.nextId) nextId=b.nextId;
+  renderSettings(); updateAllSelects(); refreshDemoSelect();
+  try{ renderDashboard(); }catch(e){} try{ renderAllActions(); }catch(e){} try{ renderDocuments(); }catch(e){}
+  showToast('Restauration effectuée');
+}
+function exportBackup(){
+  const snap=_backupSnapshot();
+  const blob=new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download='associoboard-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+function importBackupFile(){
+  const f=document.getElementById('backupImportFile').files[0]; if(!f){ showToast('Sélectionnez un fichier'); return; }
+  const r=new FileReader();
+  r.onload=function(){ try{
+    const b=JSON.parse(r.result); if(!b||!b.ACCOUNTS){ showToast('Fichier invalide'); return; }
+    b.ts=Date.now(); b.label='Importé — '+new Date().toLocaleString('fr-FR');
+    const arr=_backupsRead(); arr.push(b); _backupsWrite(arr); renderBackupList(); showToast('Sauvegarde importée');
+  }catch(e){ showToast('Fichier invalide'); } };
+  r.readAsText(f);
+}
+function renderBackupList(){
+  const el=document.getElementById('backupList'); if(!el) return;
+  const arr=_backupsRead().slice().reverse();
+  if(!arr.length){ el.innerHTML='<div style="font-size:12px;color:var(--muted-fore);padding:8px 0">Aucune sauvegarde dans l\'historique.</div>'; return; }
+  el.innerHTML=arr.map(b=>`<div class="settings-row" style="border:1px solid var(--border);margin-bottom:6px">
+    <div><div class="settings-name">${b.label}</div><div class="settings-sub">${(b.ASSOCS||[]).length} assoc · ${(b.ACTIONS||[]).length} actions · ${(b.DOCUMENTS||[]).length} docs</div></div>
+    <div style="display:flex;gap:6px"><button class="btn btn-primary btn-sm" onclick="restoreBackup(${b.ts})">Restaurer</button><button class="btn btn-sm btn-danger" onclick="deleteBackup(${b.ts})">✕</button></div>
+  </div>`).join('');
 }
 
 // ========== IMPORT EXCEL — Fiches Actions ==========
@@ -4767,7 +4877,7 @@ function init(){
   applyCollapse();
 }
 
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('loginPage').classList.add('show');});
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('loginPage').classList.add('show'); try{refreshDemoSelect();}catch(e){}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal','addActionModal','addAssocModal','addPartnerModal','uploadDocModal'].forEach(id=>{const m=document.getElementById(id);if(m)m.classList.remove('open');});document.body.style.overflow='';}});
 </script>
 <script>
