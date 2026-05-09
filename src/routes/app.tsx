@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,18 @@ function AppPage() {
   const { page } = Route.useSearch();
   const ref = useRef<HTMLIFrameElement>(null);
   const [u, setUser] = useState<AbUser | null>(() => getUser());
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data as { type?: string; to?: string } | undefined;
+      if (d?.type === "ab-navigate" && typeof d.to === "string" && d.to.startsWith("/")) {
+        navigate({ to: d.to });
+      }
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [navigate]);
 
   useEffect(() => {
     const sync = () => setUser(getUser());

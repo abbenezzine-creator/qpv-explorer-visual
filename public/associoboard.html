@@ -528,7 +528,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       <button class="nav-btn" onclick="nav('diagnostic')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="9" r="7.5"/><line x1="9" y1="1.5" x2="9" y2="16.5"/><path d="M1.5 9h15"/><path d="M4 4s2 2 5 2 5-2 5-2"/><path d="M4 14s2-2 5-2 5 2 5 2"/></svg><span class="nav-lbl">Diagnostic Territorial</span></button>
       <div class="sb-nav-lbl" style="margin-top:8px">Principal</div>
       <button class="nav-btn active" onclick="nav('dashboard')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="9" width="4.5" height="7.5" rx="1"/><rect x="7" y="5.5" width="4.5" height="11" rx="1"/><rect x="12.5" y="2" width="4" height="14.5" rx="1"/></svg><span class="nav-lbl">Tableau de bord</span></button>
-      <button class="nav-btn" onclick="nav('agenda')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="2.5" width="15" height="14" rx="2"/><line x1="1.5" y1="7" x2="16.5" y2="7"/><line x1="5" y1="1" x2="5" y2="4.5"/><line x1="13" y1="1" x2="13" y2="4.5"/></svg><span class="nav-lbl">Agenda actions</span><span class="nav-badge" id="agendaBadge">0</span></button>
+      <button class="nav-btn" style="display:none" onclick="nav('agenda')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="2.5" width="15" height="14" rx="2"/><line x1="1.5" y1="7" x2="16.5" y2="7"/><line x1="5" y1="1" x2="5" y2="4.5"/><line x1="13" y1="1" x2="13" y2="4.5"/></svg><span class="nav-lbl">Agenda actions</span><span class="nav-badge" id="agendaBadge">0</span></button>
       <button class="nav-btn" onclick="nav('qualite')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 1.5l2.1 4.6 5 .7-3.6 3.5.8 5L9 13l-4.3 2.3.8-5-3.6-3.5 5-.7z"/></svg><span class="nav-lbl">Référentiel Qualité</span></button>
       <button class="nav-btn" onclick="nav('guide')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 3h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><line x1="5" y1="7" x2="13" y2="7"/><line x1="5" y1="10" x2="10" y2="10"/></svg><span class="nav-lbl">Guide du Référentiel</span></button>
       <div class="sb-nav-lbl" style="margin-top:8px">Évaluation</div>
@@ -594,38 +594,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       <div class="card"><div class="card-hdr"><div class="card-title">Chronologie</div></div><div class="card-body"><div class="timeline" id="dashTL"></div></div></div>
     </div>
 
-    <!-- AGENDA -->
+    <!-- AGENDA (déplacé vers React /app/actions) -->
     <div class="page" id="page-agenda">
-      <div class="page-hdr">
-        <div><div class="page-title">Agenda des actions</div><div class="page-sub">Calendrier et liste des actions associatives</div></div>
-        <button class="btn btn-primary" onclick="openAddActionModal()"><svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>Ajouter</button>
-      </div>
-      <div class="card" style="margin-bottom:18px">
-        <div class="card-hdr" style="flex-wrap:wrap;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <button onclick="prevMonth()" style="background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--foreground)">‹</button>
-            <div style="font-family:'Lexend',sans-serif;font-weight:700;font-size:15px" id="calMonth"></div>
-            <button onclick="nextMonth()" style="background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--foreground)">›</button>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:auto">
-            <span class="badge badge-purple">■ Formation</span><span class="badge badge-amber">■ Accompagnement</span>
-            <span class="badge badge-rose">■ Animation</span><span class="badge badge-blue">■ Permanence</span>
-          </div>
-        </div>
-        <div style="padding:0 12px 12px"><div style="display:grid;grid-template-columns:repeat(7,1fr)" id="calDayHdr"></div><div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;align-items:start"></div></div>
-      </div>
-      <div class="card">
-        <div class="card-hdr">
-          <div class="card-title">Liste des actions</div>
-          <div style="display:flex;gap:7px;flex-wrap:wrap">
-            <select class="form-sel" style="width:auto;padding:4px 8px;font-size:12px" id="filterType" onchange="renderAllActions()"><option value="">Tous types</option><option>Formation</option><option>Accompagnement</option><option>Animation</option><option>Permanence</option></select>
-            <select class="form-sel" style="width:auto;padding:4px 8px;font-size:12px" id="filterTheme" onchange="renderAllActions()"><option value="">Toutes thématiques</option><option>Education / Parentalité</option><option>Emploi</option><option>Santé</option><option>Cohésion sociale</option><option>Citoyenneté</option><option>Accès aux droits</option></select>
-            <select class="form-sel" style="width:auto;padding:4px 8px;font-size:12px" id="filterQpv" onchange="renderAllActions()"><option value="">Tous QPV</option><option>Argonne</option><option>La Source</option><option>Dauphine</option><option>Blossières</option></select>
-            <button type="button" class="btn btn-outline btn-sm" onclick="toggleAllThemes()" id="toggleAllThemesBtn" style="font-size:11px;padding:4px 8px">Tout dérouler</button>
-          </div>
-        </div>
-        <div class="card-body" style="padding:8px 14px" id="allActionsList"></div>
-      </div>
+      <div class="page-hdr"><div><div class="page-title">Agenda des actions</div><div class="page-sub">Cette section a été migrée</div></div></div>
+      <div class="card"><div class="card-body" style="padding:32px;text-align:center">
+        <div style="font-size:15px;font-weight:600;margin-bottom:8px">Cette section a été déplacée vers la nouvelle interface</div>
+        <div style="font-size:13px;color:var(--muted-fore);margin-bottom:18px">La gestion des actions est désormais persistée dans la base Supabase via la nouvelle interface React.</div>
+        <button class="btn btn-primary" onclick="goReact('/app/actions')">→ Ouvrir Actions</button>
+      </div></div>
     </div>
 
     <!-- QUALITE -->
@@ -772,7 +748,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <div class="page" id="page-parametres">
       <div class="page-hdr"><div><div class="page-title">Paramètres</div><div class="page-sub">Administration — Super Administrateur</div></div></div>
       <div class="settings-grid" style="margin-bottom:16px">
-        <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Associations</div><button class="btn btn-primary btn-sm" onclick="openAddAssocModal()">+ Ajouter</button></div><div class="settings-list" id="assocList"></div></div>
+        <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Associations</div></div><div class="card-body" style="padding:14px"><div style="font-size:13px;color:var(--muted-fore);margin-bottom:12px">La gestion des associations a été déplacée vers la nouvelle interface React (persistée dans Supabase).</div><button class="btn btn-primary btn-sm" onclick="goReact('/app/associations')">→ Ouvrir Associations</button><div id="assocList" style="display:none"></div></div></div>
         <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Partenaires évaluateurs</div><button class="btn btn-primary btn-sm" onclick="openAddPartnerModal()">+ Ajouter</button></div><div class="settings-list" id="partnerList"></div></div>
       </div>
       <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Comptes utilisateurs</div><button class="btn btn-outline btn-sm" onclick="toggleAccountsPwd()" id="togPwdBtn">Afficher mots de passe</button></div><div class="card-body" id="accountsList"></div></div>
@@ -1405,7 +1381,13 @@ function setupUserCtx(){
 
 // ========== NAV ==========
 const PT={dashboard:'Tableau de Bord',agenda:'Agenda des Actions',qualite:'Référentiel Qualité',guide:'Guide du Référentiel',questionnaire:'Questionnaire Bénéficiaires','questionnaire-thematique':'Questionnaire thématique',utilite:'Utilité Sociale',resultats:'Résultats & Impacts',documents:'Documents',parametres:'Paramètres',sauvegarde:'Sauvegarde & restauration',connexion:'Connexion',diagnostic:'Diagnostic Territorial'};
+function goReact(path){
+  try{ window.parent?.postMessage({type:'ab-navigate', to:path}, '*'); }catch(e){}
+}
 function nav(id){
+  // Sections déplacées vers React
+  if(id==='agenda'){ goReact('/app/actions'); return; }
+  if(id==='associations'){ goReact('/app/associations'); return; }
   if((id==='parametres'||id==='questionnaire-thematique'||id==='sauvegarde'||id==='connexion')&&currentUser?.role!=='superadmin'){showToast('Réservé au Super Administrateur');return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -2383,7 +2365,9 @@ function addAction(){
 const DAYS=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 function renderCalendar(){
   const yr=currentMonth.getFullYear(),mo=currentMonth.getMonth();
-  document.getElementById('calMonth').textContent=MONTHS[mo]+' '+yr;
+  const calMonthEl=document.getElementById('calMonth');
+  if(!calMonthEl) return; // agenda déplacé vers React
+  calMonthEl.textContent=MONTHS[mo]+' '+yr;
   // Day headers
   document.getElementById('calDayHdr').innerHTML=DAYS.map(d=>`<div style="text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted-fore);padding:7px 0;font-weight:600">${d}</div>`).join('');
   const grid=document.getElementById('calGrid');
