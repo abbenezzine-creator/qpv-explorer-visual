@@ -12,6 +12,7 @@ import {
   Library,
   ListChecks,
   DatabaseBackup,
+  Plug,
 } from "lucide-react";
 
 import {
