@@ -2178,7 +2178,7 @@ function getHeureDisplay(){
 }
 
 // ========== ADD ACTION ==========
-function openAddActionModal(){
+function openAddActionModal(editId){
   const sel=document.getElementById('fa-assoc');
   const isAdmin=currentUser?.role==='superadmin';
   sel.innerHTML='<option value="">— Choisir —</option>'+ASSOCS.map(a=>`<option value="${a.id}"${(!isAdmin&&a.id===currentAssocId)?' selected':''}>${a.nom}</option>`).join('');
@@ -2208,6 +2208,34 @@ function openAddActionModal(){
   document.getElementById('fa-img-prev').style.display='none';
   document.getElementById('fa-pdf-prev').style.display='none';
   ['fa-titre','fa-heure-debut','fa-heure-fin','fa-lieu','fa-desc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  // Edit mode : préremplir
+  editingActionId = editId || null;
+  const titleEl=document.querySelector('#addActionModal .modal-ttl');
+  const submitBtn=document.querySelector('#addActionModal .modal-footer .btn-primary');
+  if(editingActionId){
+    const a=ACTIONS.find(x=>x.id===editingActionId);
+    if(a){
+      _applyPayloadToForm({
+        titre:a.titre,type:a.type,theme:a.theme,annee:a.annee,assocId:a.assocId,
+        date:a.date,dateFin:a.dateFin,heure:a.heure,jours:a.jours,recurrence:a.recurrence,
+        recurrenceDetail:a.recurrenceDetail,recurrenceFin:a.recurrenceFin,
+        quartiers:a.quartiers,ages:a.ages,fonctions:a.fonctions,
+        lieu:a.lieu,lieux:a.lieux,nb:a.nb,statut:a.statut,desc:a.desc,
+        budgetLines:a.budgetLines
+      });
+      if(a.fileData){
+        pendingFile={data:a.fileData,type:a.fileType,name:a.fileName};
+        const ip=document.getElementById('fa-img-prev'), pp=document.getElementById('fa-pdf-prev');
+        if(a.fileType?.startsWith('image')){ip.src=a.fileData;ip.style.display='block';}
+        else{pp.style.display='block';pp.innerHTML=`<div class="file-prev-pdf"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="oklch(0.58 0.22 25)" stroke-width="1.5" stroke-linecap="round"><path d="M9 1.5H4a1.5 1.5 0 0 0-1.5 1.5v10a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5V6l-4-4.5z"/></svg><span style="font-size:12px;font-weight:600">${a.fileName||''}</span></div>`;}
+      }
+    }
+    if(titleEl) titleEl.textContent='Modifier une action';
+    if(submitBtn) submitBtn.textContent='Enregistrer les modifications';
+  } else {
+    if(titleEl) titleEl.textContent='Ajouter / Modifier une action';
+    if(submitBtn) submitBtn.textContent="Ajouter l'action";
+  }
   openModal('addActionModal');
 }
 function handleFileSelect(input){
