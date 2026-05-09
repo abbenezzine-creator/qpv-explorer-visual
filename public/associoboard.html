@@ -544,6 +544,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       <button class="nav-btn" onclick="nav('documents')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 1.5H4a1.5 1.5 0 0 0-1.5 1.5v12a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V7l-5-5.5z"/><path d="M10 1.5V7h5"/><line x1="5.5" y1="10" x2="12.5" y2="10"/><line x1="5.5" y1="13" x2="10" y2="13"/></svg><span class="nav-lbl">Documents</span></button>
       <div class="sb-nav-lbl nav-admin-only" id="navAdminLbl" style="margin-top:8px">Administration</div>
       <button class="nav-btn nav-admin-only" id="navParams" onclick="nav('parametres')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="9" r="2.5"/><path d="M9 1.5v1.5M9 15v1.5M1.5 9H3M15 9h1.5M3.5 3.5l1 1M13.5 13.5l1 1M14.5 3.5l-1 1M4.5 13.5l-1 1"/></svg><span class="nav-lbl">Paramètres</span></button>
+      <button class="nav-btn nav-admin-only" id="navSauvegarde" onclick="nav('sauvegarde')"><svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 3.5h13v11h-13z"/><path d="M5.5 3.5v4h7v-4"/><circle cx="9" cy="11" r="2"/></svg><span class="nav-lbl">Sauvegarde</span></button>
     </div>
     <div class="sb-bottom">
       <div class="theme-row" onclick="toggleTheme()">
@@ -776,7 +777,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Partenaires évaluateurs</div><button class="btn btn-primary btn-sm" onclick="openAddPartnerModal()">+ Ajouter</button></div><div class="settings-list" id="partnerList"></div></div>
       </div>
       <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Comptes utilisateurs</div><button class="btn btn-outline btn-sm" onclick="toggleAccountsPwd()" id="togPwdBtn">Afficher mots de passe</button></div><div class="card-body" id="accountsList"></div></div>
-      <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Sauvegarde &amp; restauration</div><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="exportBackup()">⬇ Exporter</button><button class="btn btn-primary btn-sm" onclick="createBackup()">+ Créer une sauvegarde</button></div></div><div class="card-body"><div style="font-size:12px;color:var(--muted-fore);margin-bottom:10px">Sauvegardez l'état complet de l'application (associations, comptes, actions, documents, partenaires). Restaurez à tout moment depuis l'historique ci-dessous.</div><div style="display:flex;gap:9px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><input type="file" id="backupImportFile" accept=".json" class="form-inp" style="flex:1;min-width:200px"/><button class="btn btn-outline btn-sm" onclick="importBackupFile()">Importer un fichier</button></div><div id="backupList"></div></div></div>
+      
       <div class="card"><div class="card-hdr"><div class="card-title">Connexion Google Sheets</div></div><div class="card-body">
   <div style="margin-bottom:14px">
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fore);margin-bottom:6px">Web App — Actions & Évaluations</div>
@@ -797,6 +798,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   </div>
   <div id="importXlsxStatus" style="margin-top:10px;font-size:12px;color:var(--muted-fore)"></div>
 </div></div>
+    </div>
+
+    <!-- SAUVEGARDE & RESTAURATION -->
+    <div class="page" id="page-sauvegarde">
+      <div class="page-hdr"><div><div class="page-title">Sauvegarde &amp; restauration</div><div class="page-sub">Historique, export et restauration des données</div></div></div>
+      <div class="card" style="margin-bottom:16px"><div class="card-hdr"><div class="card-title">Sauvegarde &amp; restauration</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="exportBackup()">⬇ Exporter</button><button class="btn btn-primary btn-sm" onclick="createBackup()">+ Créer &amp; télécharger</button></div></div><div class="card-body"><div style="font-size:12px;color:var(--muted-fore);margin-bottom:10px">Sauvegardez l'état complet de l'application (associations, comptes, actions, documents, partenaires). La création génère automatiquement un fichier téléchargeable et l'ajoute à l'historique. Restaurez à tout moment ci-dessous.</div><div style="display:flex;gap:9px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><input type="file" id="backupImportFile" accept=".json" class="form-inp" style="flex:1;min-width:200px"/><button class="btn btn-outline btn-sm" onclick="importBackupFile()">Importer un fichier</button></div><div id="backupList"></div></div></div>
     </div>
   <!-- DIAGNOSTIC TERRITORIAL -->
     <div class="page" id="page-diagnostic">
@@ -1363,9 +1370,9 @@ function setupUserCtx(){
 }
 
 // ========== NAV ==========
-const PT={dashboard:'Tableau de Bord',agenda:'Agenda des Actions',qualite:'Référentiel Qualité',guide:'Guide du Référentiel',questionnaire:'Questionnaire Bénéficiaires','questionnaire-thematique':'Questionnaire thématique',utilite:'Utilité Sociale',resultats:'Résultats & Impacts',documents:'Documents',parametres:'Paramètres',diagnostic:'Diagnostic Territorial'};
+const PT={dashboard:'Tableau de Bord',agenda:'Agenda des Actions',qualite:'Référentiel Qualité',guide:'Guide du Référentiel',questionnaire:'Questionnaire Bénéficiaires','questionnaire-thematique':'Questionnaire thématique',utilite:'Utilité Sociale',resultats:'Résultats & Impacts',documents:'Documents',parametres:'Paramètres',sauvegarde:'Sauvegarde & restauration',diagnostic:'Diagnostic Territorial'};
 function nav(id){
-  if((id==='parametres'||id==='questionnaire-thematique')&&currentUser?.role!=='superadmin'){showToast('Réservé au Super Administrateur');return;}
+  if((id==='parametres'||id==='questionnaire-thematique'||id==='sauvegarde')&&currentUser?.role!=='superadmin'){showToast('Réservé au Super Administrateur');return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id)?.classList.add('active');
@@ -1377,6 +1384,7 @@ function nav(id){
   if(id==='guide') renderGuide();
   if(id==='resultats') renderResultatsPage();
   if(id==='parametres') renderSettings();
+  if(id==='sauvegarde') renderBackupList();
   if(id==='documents') renderDocuments();
   if(id==='utilite') renderUtilite();
   try { const nb=document.getElementById('topNewActionBtn'); if(nb) nb.style.display=(id==='dashboard'||id==='agenda')?'':'none'; } catch(e){}
@@ -3234,6 +3242,24 @@ function resetAccountPwd(login){
   showToast('Nouveau mot de passe pour '+login+' : '+np);
   renderSettings(); refreshDemoSelect();
 }
+function editAccount(login){
+  if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; }
+  const acc=ACCOUNTS[login]; if(!acc) return;
+  const newLogin=(prompt('Identifiant de connexion :', login)||'').trim();
+  if(!newLogin) return;
+  if(newLogin!==login && ACCOUNTS[newLogin]){ showToast('Identifiant déjà utilisé'); return; }
+  const newPwd=(prompt('Mot de passe (laisser vide pour conserver l\'actuel) :', acc.pwd)||'').trim();
+  let newAssocId=acc.assocId;
+  if(acc.role!=='superadmin'){
+    const list=ASSOCS.map(a=>a.id+' = '+a.nom).join('\n');
+    const v=(prompt('ID association liée :\n'+list, String(acc.assocId||''))||'').trim();
+    if(v){ const n=parseInt(v,10); if(!isNaN(n) && ASSOCS.find(a=>a.id===n)) newAssocId=n; }
+  }
+  const updated={...acc, pwd:newPwd||acc.pwd, assocId:newAssocId};
+  if(newLogin!==login){ delete ACCOUNTS[login]; }
+  ACCOUNTS[newLogin]=updated;
+  showToast('Compte mis à jour'); renderSettings(); refreshDemoSelect();
+}
 function renderSettings(){
   const al=document.getElementById('assocList');if(al)al.innerHTML=ASSOCS.map(a=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:9px"><div class="settings-dot" style="background:${cv(a.color)}"></div><div><div class="settings-name">${a.nom}</div><div class="settings-sub">${a.theme}</div></div></div><button class="btn btn-sm btn-danger" onclick="deleteAssoc(${a.id})">✕</button></div>`).join('');
   const pl=document.getElementById('partnerList');if(pl)pl.innerHTML=PARTNERS.map(p=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:9px"><div class="settings-dot" style="background:var(--primary)"></div><div><div class="settings-name">${p.nom}</div><div class="settings-sub">${p.type}</div></div></div><button class="btn btn-sm btn-danger" onclick="deletePartner(${p.id})">✕</button></div>`).join('');
@@ -3241,7 +3267,7 @@ function renderSettings(){
   if(ac) ac.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">'+Object.entries(ACCOUNTS).map(([login,u])=>{
     const pwdShown = _showAccountsPwd ? u.pwd : '••••••••';
     return `<div style="background:var(--muted);border-radius:calc(var(--radius)-4px);padding:10px 12px;border:1px solid var(--border)">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><div style="font-size:12px;font-weight:700">${login}</div><button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="resetAccountPwd('${login}')" title="Régénérer">↻</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><div style="font-size:12px;font-weight:700">${login}</div><div style="display:flex;gap:4px"><button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="editAccount('${login.replace(/'/g,"\\'")}')" title="Modifier">✎</button><button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="resetAccountPwd('${login.replace(/'/g,"\\'")}')" title="Régénérer mot de passe">↻</button></div></div>
       <div style="font-size:11px;color:var(--muted-fore)">${u.role==='superadmin'?'Super Admin':getAssocName(u.assocId)}</div>
       <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--fore);margin-top:4px">🔑 ${pwdShown}</div>
     </div>`;
@@ -3264,8 +3290,16 @@ function _backupSnapshot(){
 function _backupsRead(){ try{ return JSON.parse(localStorage.getItem('ab_backups')||'[]'); }catch(e){ return []; } }
 function _backupsWrite(arr){ localStorage.setItem('ab_backups', JSON.stringify(arr.slice(-30))); }
 function createBackup(){
-  const arr=_backupsRead(); arr.push(_backupSnapshot()); _backupsWrite(arr);
-  showToast('Sauvegarde créée'); renderBackupList();
+  const snap=_backupSnapshot();
+  const arr=_backupsRead(); arr.push(snap); _backupsWrite(arr);
+  // Téléchargement automatique du fichier
+  try{
+    const blob=new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download='associoboard-backup-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.json';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }catch(e){}
+  showToast('Sauvegarde créée et téléchargée'); renderBackupList();
 }
 function deleteBackup(ts){
   const arr=_backupsRead().filter(b=>b.ts!==ts); _backupsWrite(arr); renderBackupList(); showToast('Sauvegarde supprimée');
