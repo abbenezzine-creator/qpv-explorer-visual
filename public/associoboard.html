@@ -654,10 +654,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <div style="margin-left:auto;font-size:12px;color:var(--muted-fore)">Score global : <strong id="qualGlobalScore" style="color:var(--primary);font-family:'JetBrains Mono',monospace">—</strong></div>
       </div>
       <div class="ref-grid" id="refGrid"></div>
-      <div style="margin-top:14px;display:flex;gap:9px;justify-content:flex-end">
-        <button class="btn btn-primary" onclick="saveQualite()">
-          <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 1H3L1 3v9a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 13 12V3z"/><path d="M4 1v4h6V1"/><rect x="3.5" y="8" width="7" height="5"/></svg>
-          Enregistrer l'évaluation
+      <div style="margin-top:14px;display:flex;gap:9px;justify-content:flex-end;align-items:center">
+        <button class="btn btn-outline" type="button" onclick="openQualiteHistory()" title="Historique des versions">
+          <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><polyline points="7 4 7 7 9.2 8.3"/></svg>
+          Historique
+        </button>
+        <button class="btn btn-primary" id="btnSaveQualite" type="button" onclick="saveQualite()">
+          <svg id="btnSaveQualiteIcn" viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 1H3L1 3v9a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 13 12V3z"/><path d="M4 1v4h6V1"/><rect x="3.5" y="8" width="7" height="5"/></svg>
+          <span id="btnSaveQualiteLbl">Enregistrer l'évaluation</span>
         </button>
       </div>
     </div>
@@ -2538,17 +2542,147 @@ function updateQualGlobalScore(){
   if(!all.length){document.getElementById('qualGlobalScore').textContent='—';return;}
   document.getElementById('qualGlobalScore').textContent=Math.round(all.reduce((s,v)=>s+v,0)/all.length/5*100)+'%';
 }
-function saveQualite(){
-  if(SCRIPT_URL) gsPost('Qualité',{horodatage:new Date().toLocaleString('fr-FR'),key:currentEvalKey,scores:JSON.stringify(QUAL_EVALS[currentEvalKey]||{})});
-  updateEvalTabs();
-  // Refresh "Évaluation partenaires" et toutes les cards liées
-  try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
-  try{ if(typeof renderCalendar==='function') renderCalendar(); }catch(e){}
-  try{ if(typeof renderAllActions==='function') renderAllActions(); }catch(e){}
-  try{ if(typeof renderActionsList==='function') renderActionsList('dashActions', (typeof filteredActions==='function'?filteredActions():ACTIONS), 4); }catch(e){}
-  try{ if(typeof updateBadge==='function') updateBadge(); }catch(e){}
-  showToast('Évaluation qualité enregistrée — retour au tableau de bord');
-  setTimeout(()=>{ try{ nav('dashboard'); }catch(e){} }, 600);
+// ========== HISTORIQUE QUALITÉ (versions persistées en localStorage) ==========
+const QUAL_HIST_KEY = 'ab_qual_history_v1';
+function _loadQualHistory(){ try{ return JSON.parse(localStorage.getItem(QUAL_HIST_KEY)||'[]'); }catch(e){ return []; } }
+function _saveQualHistory(arr){ try{ localStorage.setItem(QUAL_HIST_KEY, JSON.stringify(arr.slice(-200))); }catch(e){} }
+function _diffScores(prev, next){
+  const keys = new Set([...Object.keys(prev||{}), ...Object.keys(next||{})]);
+  const changes = [];
+  keys.forEach(k=>{ const a=prev?.[k]??null, b=next?.[k]??null; if(a!==b) changes.push({critId:k, before:a, after:b}); });
+  return changes;
+}
+function _scoreOf(scores){
+  const v=Object.values(scores||{}); if(!v.length) return 0;
+  return Math.round(v.reduce((s,x)=>s+x,0)/v.length/5*100);
+}
+function _qualKeyParts(key){
+  // key format = `${actionId}_${evaluator}` (ex 4_anon ou 4_action)
+  const [aid, ...rest] = String(key||'').split('_');
+  return { actionId: parseInt(aid)||null, evaluator: rest.join('_')||'—' };
+}
+
+async function saveQualite(){
+  const btn=document.getElementById('btnSaveQualite');
+  const lbl=document.getElementById('btnSaveQualiteLbl');
+  const icn=document.getElementById('btnSaveQualiteIcn');
+  const prevLbl = lbl?.textContent;
+  if(!currentEvalKey){
+    showToast('Sélectionnez une action et un évaluateur avant d\'enregistrer','error');
+    return;
+  }
+  // État de chargement
+  if(btn){ btn.disabled=true; btn.style.opacity='.75'; btn.style.cursor='wait'; }
+  if(lbl) lbl.textContent='Enregistrement…';
+  if(icn) icn.outerHTML='<span id="btnSaveQualiteIcn" style="display:inline-block;width:11px;height:11px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span>';
+  if(!document.getElementById('_spinKf')){ const s=document.createElement('style'); s.id='_spinKf'; s.textContent='@keyframes spin{to{transform:rotate(360deg)}}'; document.head.appendChild(s); }
+
+  const scores = JSON.parse(JSON.stringify(QUAL_EVALS[currentEvalKey]||{}));
+  try{
+    // 1) Push Google Sheets si configuré (best effort, n'empêche pas l'enregistrement local)
+    if(SCRIPT_URL){
+      try{ await Promise.resolve(gsPost('Qualité',{horodatage:new Date().toLocaleString('fr-FR'),key:currentEvalKey,scores:JSON.stringify(scores)})); }catch(e){}
+    }
+    // 2) Historique (versions) — diff par rapport à la dernière version pour cette clé
+    const hist = _loadQualHistory();
+    const last = [...hist].reverse().find(h=>h.key===currentEvalKey);
+    const diff = _diffScores(last?.scores||{}, scores);
+    const parts = _qualKeyParts(currentEvalKey);
+    const action = ACTIONS.find(x=>x.id===parts.actionId);
+    const entry = {
+      id: 'v'+Date.now(),
+      ts: new Date().toISOString(),
+      tsLabel: new Date().toLocaleString('fr-FR'),
+      key: currentEvalKey,
+      actionId: parts.actionId,
+      actionTitle: action?.titre || '—',
+      assocId: action?.assocId || null,
+      assocName: action ? getAssocName(action.assocId) : '—',
+      evaluator: parts.evaluator,
+      user: currentUser?.nom || currentUser?.login || 'inconnu',
+      userRole: currentUser?.role || '—',
+      scores,
+      globalPct: _scoreOf(scores),
+      changes: diff,
+    };
+    hist.push(entry);
+    _saveQualHistory(hist);
+    // 3) Refresh des cards liées
+    updateEvalTabs();
+    try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
+    try{ if(typeof renderCalendar==='function') renderCalendar(); }catch(e){}
+    try{ if(typeof renderAllActions==='function') renderAllActions(); }catch(e){}
+    try{ if(typeof renderActionsList==='function') renderActionsList('dashActions', (typeof filteredActions==='function'?filteredActions():ACTIONS), 4); }catch(e){}
+    try{ if(typeof updateBadge==='function') updateBadge(); }catch(e){}
+    showToast(`Évaluation enregistrée · v${hist.length} (${entry.globalPct}%) — cards actualisées`,'success');
+    setTimeout(()=>{ try{ nav('dashboard'); }catch(e){} }, 700);
+  }catch(err){
+    console.error('saveQualite error', err);
+    showToast('Échec de l\'enregistrement — réessayez','error');
+  }finally{
+    if(btn){ btn.disabled=false; btn.style.opacity=''; btn.style.cursor=''; }
+    if(lbl && prevLbl) lbl.textContent=prevLbl;
+    const sp=document.getElementById('btnSaveQualiteIcn');
+    if(sp && sp.tagName==='SPAN'){
+      sp.outerHTML='<svg id="btnSaveQualiteIcn" viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 1H3L1 3v9a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 13 12V3z"/><path d="M4 1v4h6V1"/><rect x="3.5" y="8" width="7" height="5"/></svg>';
+    }
+  }
+}
+
+// ========== HISTORIQUE — Modal ==========
+function openQualiteHistory(){
+  const hist = _loadQualHistory().slice().reverse();
+  let modal = document.getElementById('qualHistModal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'qualHistModal';
+    modal.className = 'overlay';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:9500;display:flex;align-items:center;justify-content:center;padding:18px;opacity:1;pointer-events:auto';
+    modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+    document.body.appendChild(modal);
+  }
+  const fmtChange = c => {
+    const lab = (v)=> v==null?'—':v+'/5';
+    return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;background:var(--muted);border:1px solid var(--border);border-radius:6px;padding:2px 6px;margin:2px 3px 0 0"><strong style="color:var(--primary)">${c.critId}</strong> ${lab(c.before)} → <strong>${lab(c.after)}</strong></span>`;
+  };
+  modal.innerHTML = `
+    <div style="background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:14px;width:100%;max-width:880px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,oklch(0.52 0.22 285/.08),oklch(0.62 0.22 340/.08))">
+        <div>
+          <div style="font-family:'Lexend',sans-serif;font-weight:800;font-size:16px">Historique du Référentiel Qualité</div>
+          <div style="font-size:11.5px;color:var(--muted-fore)">${hist.length} version${hist.length>1?'s':''} enregistrée${hist.length>1?'s':''} · qui a modifié quoi et quand</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" type="button" onclick="exportQualiteHistory()">Exporter JSON</button>
+          ${currentUser?.role==='superadmin'?'<button class="btn btn-outline btn-sm" type="button" onclick="if(confirm(\'Supprimer tout l\\'historique ?\')){localStorage.removeItem(QUAL_HIST_KEY);openQualiteHistory();}" style="color:oklch(0.58 0.22 25);border-color:oklch(0.58 0.22 25)">Vider</button>':''}
+          <button class="btn btn-ghost btn-sm" type="button" onclick="document.getElementById('qualHistModal').remove()">✕</button>
+        </div>
+      </div>
+      <div style="overflow:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px">
+        ${hist.length ? hist.map(h=>`
+          <div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px;background:var(--muted)">
+            <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:6px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--primary)">${h.tsLabel}</span>
+              <span style="font-size:12px;font-weight:700">${h.user}</span>
+              <span style="font-size:10.5px;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.4px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1px 6px">${h.userRole}</span>
+              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:oklch(0.55 0.18 150)">${h.globalPct}%</span>
+            </div>
+            <div style="font-size:12px;color:var(--foreground);margin-bottom:4px"><strong>${h.assocName}</strong> — ${h.actionTitle} <span style="color:var(--muted-fore);font-size:11px">(évaluateur : ${h.evaluator})</span></div>
+            <div style="font-size:11px;color:var(--muted-fore);margin-top:4px">
+              ${h.changes && h.changes.length ? `<strong style="color:var(--foreground)">${h.changes.length} modification${h.changes.length>1?'s':''} :</strong><br>${h.changes.map(fmtChange).join('')}` : '<em>Première version enregistrée pour ce périmètre.</em>'}
+            </div>
+          </div>`).join('') : '<p style="color:var(--muted-fore);font-size:13px;text-align:center;padding:24px">Aucune version enregistrée pour le moment.</p>'}
+      </div>
+    </div>`;
+}
+function exportQualiteHistory(){
+  const hist = _loadQualHistory();
+  const blob = new Blob([JSON.stringify(hist,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'historique-referentiel-qualite-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 500);
 }
 
 // ========== QUESTIONNAIRE ==========
@@ -4954,7 +5088,7 @@ async function connectSheetsFromParam(){document.getElementById('gsUrl').value=d
 async function gsPost(sheet,row){if(!SCRIPT_URL)return;try{await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({sheet,row})});}catch(e){}}
 
 // ========== TOAST ==========
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.transform='translateY(0)';t.style.opacity='1';setTimeout(()=>{t.style.transform='translateY(60px)';t.style.opacity='0';},3000);}
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;const grads={success:'linear-gradient(135deg,oklch(0.55 0.18 150),oklch(0.62 0.16 165))',error:'linear-gradient(135deg,oklch(0.58 0.22 25),oklch(0.62 0.22 15))',info:'linear-gradient(135deg,oklch(0.55 0.18 240),oklch(0.6 0.18 260))'};t.style.background=grads[type]||'var(--grad-rose)';t.style.transform='translateY(0)';t.style.opacity='1';clearTimeout(window._toastTm);window._toastTm=setTimeout(()=>{t.style.transform='translateY(60px)';t.style.opacity='0';},3200);}
 
 // ========== INIT ==========
 function init(){
