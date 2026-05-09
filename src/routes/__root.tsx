@@ -115,11 +115,17 @@ function RootShell({ children }: { children: React.ReactNode }) {
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { initAuthListener } from "@/lib/auth";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const isAuthScreen = path === "/login";
+  const isAuthScreen = path === "/login" || path === "/signup" || path === "/reset-password";
+
+  useEffect(() => {
+    initAuthListener();
+  }, []);
 
   if (isAuthScreen) {
     return (

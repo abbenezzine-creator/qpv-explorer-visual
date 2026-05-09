@@ -1,39 +1,46 @@
-import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { login, getUser } from "@/lib/auth";
+import { login, requestPasswordReset } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { LogIn, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: () => {
-    if (typeof window !== "undefined" && getUser()) {
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
       throw redirect({ to: "/app", search: { page: "dashboard" } });
     }
   },
   component: LoginPage,
 });
 
-const DEMO = [
-  { u: "admin",      p: "admin2025",  label: "Super Admin" },
-  { u: "action",     p: "action2025", label: "ACTION" },
-  { u: "passemploi", p: "pass2025",   label: "PASS'EMPLOI" },
-  { u: "atlas",      p: "atlas2025",  label: "ATLAS" },
-  { u: "laos",       p: "laos2025",   label: "DES JEUNES DU LAOS" },
-];
-
 function LoginPage() {
   const navigate = useNavigate();
-  const [u, setU] = useState("");
-  const [p, setP] = useState("");
+  const [email, setEmail] = useState("");
+  const [pwd, setPwd] = useState("");
   const [err, setErr] = useState("");
+  const [info, setInfo] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const user = login(u, p);
+    setErr(""); setInfo(""); setLoading(true);
+    const { user, error } = await login(email, pwd);
+    setLoading(false);
     if (!user) {
-      setErr("Identifiant ou mot de passe incorrect.");
+      setErr(error ?? "Identifiant ou mot de passe incorrect.");
       return;
     }
     navigate({ to: "/app", search: { page: "dashboard" } });
+  };
+
+  const onForgot = async () => {
+    setErr(""); setInfo("");
+    if (!email.trim()) { setErr("Saisissez votre email pour réinitialiser le mot de passe."); return; }
+    const { ok, error } = await requestPasswordReset(email);
+    if (!ok) { setErr(error ?? "Impossible d'envoyer l'email."); return; }
+    setInfo("Email de réinitialisation envoyé. Vérifiez votre boîte de réception.");
   };
 
   return (
@@ -51,17 +58,17 @@ function LoginPage() {
 
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Identifiant</label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</label>
             <input
-              value={u} onChange={(e) => setU(e.target.value)} autoFocus autoComplete="username"
+              type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus autoComplete="email"
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-              placeholder="admin"
+              placeholder="vous@exemple.fr"
             />
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mot de passe</label>
             <input
-              type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password"
+              type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} autoComplete="current-password"
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
               placeholder="••••••••"
             />
@@ -69,30 +76,21 @@ function LoginPage() {
           {err && (
             <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</div>
           )}
-          <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
-            <LogIn className="h-4 w-4" /> Se connecter
+          {info && (
+            <div className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary">{info}</div>
+          )}
+          <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60">
+            <LogIn className="h-4 w-4" /> {loading ? "Connexion…" : "Se connecter"}
           </button>
         </form>
 
-        <div className="mt-6 border-t border-border pt-4">
-          <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Comptes de démonstration
-          </label>
-          <select
-            defaultValue=""
-            onChange={(e) => {
-              const d = DEMO.find((x) => x.u === e.target.value);
-              if (d) { setU(d.u); setP(d.p); }
-            }}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-          >
-            <option value="" disabled>Sélectionner une association…</option>
-            {DEMO.map((d) => (
-              <option key={d.u} value={d.u}>
-                {d.label} — {d.u} / {d.p}
-              </option>
-            ))}
-          </select>
+        <div className="mt-4 flex items-center justify-between text-xs">
+          <button type="button" onClick={onForgot} className="text-primary hover:underline">
+            Mot de passe oublié ?
+          </button>
+          <Link to="/signup" className="text-primary hover:underline">
+            Créer un compte
+          </Link>
         </div>
       </div>
     </div>
