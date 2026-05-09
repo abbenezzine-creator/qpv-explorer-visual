@@ -5442,7 +5442,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     document.getElementById('benefSub').textContent = (a.titre||'') + ' — ' + getAssocName(a.assocId);
     const themeSel=document.getElementById('benefThemeSel');
     const subSel=document.getElementById('benefSousThemeSel');
-    const initTheme=SOUS_THEMES[a.theme]?a.theme:Object.keys(SOUS_THEMES)[0];
+    let initTheme=SOUS_THEMES[a.theme]?a.theme:Object.keys(SOUS_THEMES)[0];
+    try{ const auto = (typeof lookupThemeForAction==='function') ? lookupThemeForAction(a) : null; if(auto && SOUS_THEMES[auto]) initTheme=auto; }catch(_){}
     _populateBenefThemeSel(themeSel,subSel,initTheme,a.sousTheme||'');
     themeSel.onchange=function(){ _populateBenefThemeSel(themeSel,subSel,themeSel.value,''); _reloadBenefFrame(); };
     subSel.onchange=function(){ _reloadBenefFrame(); };
