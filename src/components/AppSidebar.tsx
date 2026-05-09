@@ -47,7 +47,8 @@ const territoire: NavItem[] = [
 
 const principal: NavItem[] = [
   { title: "Tableau de bord", to: "/app", search: { page: "dashboard" }, icon: LayoutDashboard },
-  { title: "Actions", to: "/app", search: { page: "agenda" }, icon: CalendarDays },
+  { title: "Actions", to: "/app/actions", icon: CalendarDays },
+  { title: "Associations", to: "/app/associations", icon: Building2 },
 ];
 
 const evaluation: NavItem[] = [
