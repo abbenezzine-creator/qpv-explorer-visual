@@ -214,11 +214,19 @@ export function AppSidebar() {
         {isSuperAdmin && renderGroup("Administration", admin)}
       </SidebarContent>
       <SidebarFooter>
+        {mounted && user && !collapsed && (
+          <div className="px-2 pb-2">
+            <div className="rounded-md border border-border bg-muted/40 px-2 py-1.5">
+              <div className="truncate text-xs font-semibold">{user.nom}</div>
+              <div className="truncate text-[11px] text-muted-foreground">{roleLabel[user.role] ?? user.role}</div>
+            </div>
+          </div>
+        )}
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout} className="text-destructive hover:text-destructive">
               <LogOut className="h-4 w-4" />
-              {!collapsed && <span>Déconnexion</span>}
+              {!collapsed && <span>Se déconnecter</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
