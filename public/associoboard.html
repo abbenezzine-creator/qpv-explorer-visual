@@ -3242,6 +3242,24 @@ function resetAccountPwd(login){
   showToast('Nouveau mot de passe pour '+login+' : '+np);
   renderSettings(); refreshDemoSelect();
 }
+function editAccount(login){
+  if(currentUser?.role!=='superadmin'){ showToast('Réservé au Super Administrateur'); return; }
+  const acc=ACCOUNTS[login]; if(!acc) return;
+  const newLogin=(prompt('Identifiant de connexion :', login)||'').trim();
+  if(!newLogin) return;
+  if(newLogin!==login && ACCOUNTS[newLogin]){ showToast('Identifiant déjà utilisé'); return; }
+  const newPwd=(prompt('Mot de passe (laisser vide pour conserver l\'actuel) :', acc.pwd)||'').trim();
+  let newAssocId=acc.assocId;
+  if(acc.role!=='superadmin'){
+    const list=ASSOCS.map(a=>a.id+' = '+a.nom).join('\n');
+    const v=(prompt('ID association liée :\n'+list, String(acc.assocId||''))||'').trim();
+    if(v){ const n=parseInt(v,10); if(!isNaN(n) && ASSOCS.find(a=>a.id===n)) newAssocId=n; }
+  }
+  const updated={...acc, pwd:newPwd||acc.pwd, assocId:newAssocId};
+  if(newLogin!==login){ delete ACCOUNTS[login]; }
+  ACCOUNTS[newLogin]=updated;
+  showToast('Compte mis à jour'); renderSettings(); refreshDemoSelect();
+}
 function renderSettings(){
   const al=document.getElementById('assocList');if(al)al.innerHTML=ASSOCS.map(a=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:9px"><div class="settings-dot" style="background:${cv(a.color)}"></div><div><div class="settings-name">${a.nom}</div><div class="settings-sub">${a.theme}</div></div></div><button class="btn btn-sm btn-danger" onclick="deleteAssoc(${a.id})">✕</button></div>`).join('');
   const pl=document.getElementById('partnerList');if(pl)pl.innerHTML=PARTNERS.map(p=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:9px"><div class="settings-dot" style="background:var(--primary)"></div><div><div class="settings-name">${p.nom}</div><div class="settings-sub">${p.type}</div></div></div><button class="btn btn-sm btn-danger" onclick="deletePartner(${p.id})">✕</button></div>`).join('');
