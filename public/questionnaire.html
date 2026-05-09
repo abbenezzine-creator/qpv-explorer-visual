@@ -2539,20 +2539,15 @@ const EMBED = (function(){
 
 function applyEmbedMode(){
   if(!EMBED.embed) return;
-  const step0 = document.querySelector('.step[data-step="0"]');
-  if(step0) step0.remove();
+  // Garder l'étape "Qui êtes-vous ?" au début (pré-remplir asso/action depuis l'action sélectionnée)
+  const assoInp = document.querySelector('input[name="asso"]');
+  if(assoInp && EMBED.assoName) assoInp.value = EMBED.assoName;
+  const actInp = document.querySelector('input[name="action"]');
+  if(actInp && EMBED.actionTitle) actInp.value = EMBED.actionTitle;
   const steps = document.querySelectorAll('.step');
-  steps.forEach((s,i)=> s.dataset.step = String(i));
   state.totalSteps = steps.length;
   state.step = 0;
   steps.forEach((s,i)=> s.classList.toggle('active', i===0));
-
-  const hidden = document.createElement('div'); hidden.style.display='none';
-  hidden.innerHTML = '<input name="asso" value="'+EMBED.assoName.replace(/"/g,'&quot;')+'">'
-    +'<input name="action" value="'+EMBED.actionTitle.replace(/"/g,'&quot;')+'">'
-    +'<input name="date_debut" value=""><input name="age" value=""><input name="quartier" value="">'
-    +'<input name="genre" value=""><input name="bailleur" value="">';
-  document.body.appendChild(hidden);
 
   if(EMBED.theme && THEMATIQUES[EMBED.theme]){
     setTimeout(function(){
