@@ -1291,7 +1291,7 @@ let SCRIPT_URL=localStorage.getItem('gs_url')||'';
 let currentMonth=new Date(2025,4,1);
 let nextId=30;
 let pendingFile={data:null,type:null,name:null};
-let currentTheme=localStorage.getItem('theme')||'light';
+let currentThemeMode=localStorage.getItem('theme')||'light';
 let collapsed=localStorage.getItem('sb-col')==='1';
 let currentDetailId=null;
 let editingDocId=null;
@@ -1299,13 +1299,13 @@ let currentYear=new Date().getFullYear();
 
 // ========== THEME ==========
 function applyTheme(t){
-  currentTheme=t; document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t);
+  currentThemeMode=t; document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t);
   const on=t==='dark';
   ['themeTrack','loginTog'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',on);});
   ['themeLbl','loginThemeLbl'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=on?'Mode clair':'Mode sombre';});
 }
-function toggleTheme(){applyTheme(currentTheme==='dark'?'light':'dark');}
-applyTheme(currentTheme);
+function toggleTheme(){applyTheme(currentThemeMode==='dark'?'light':'dark');}
+applyTheme(currentThemeMode);
 
 // ========== YEAR FILTER ==========
 function initYearFilter(){
