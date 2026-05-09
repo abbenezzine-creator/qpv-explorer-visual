@@ -5550,34 +5550,79 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     const depart = uniq('freins');
     const chemin = Array.from(new Set([...uniq('actions'), ...uniq('competences')])).sort((a,b)=>a.localeCompare(b,'fr'));
     const aujourd = Array.from(new Set([...uniq('freins_leves'), ...uniq('resultats')])).sort((a,b)=>a.localeCompare(b,'fr'));
-    const stat = (lbl,val,color,bg) => `<div class="stat-card" style="background:${bg||'#fff'}"><div class="stat-blob" style="background:${color}"></div><div class="stat-lbl">${lbl}</div><div class="stat-val" style="color:${color}">${val}</div></div>`;
-    const list = (title, items, color) => `
-      <div class="card">
-        <div class="card-hdr"><div class="card-title" style="color:${color}">${title}</div><span style="font-size:12px;color:var(--muted-fore)">${items.length} élément${items.length>1?'s':''}</span></div>
-        <div class="card-body">
-          ${items.length ? '<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px">'+items.map(i=>`<li style="padding:8px 12px;background:#f8fafc;border-left:3px solid ${color};border-radius:6px;font-size:13px">${i}</li>`).join('')+'</ul>' : '<div style="color:var(--muted-fore);font-size:13px">Aucun élément</div>'}
+    const impactEstime = allResp.reduce((s,r)=> s + (+r.impact_estime||0), 0);
+    const iconStat = (icon,val,lbl,color,bg)=>`
+      <div style="background:${bg||'#fff'};border:1px solid #e5e7eb;border-radius:14px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+        <div style="font-size:22px;color:${color};line-height:1">${icon}</div>
+        <div style="font-size:26px;font-weight:800;color:${color}">${val}</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.05em;color:#64748b;text-align:center;text-transform:uppercase">${lbl}</div>
+      </div>`;
+    const journeyStep = (icon,title,titleColor,sub,subColor,big,bigColor)=>`
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:90px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.08em;color:${titleColor};text-transform:uppercase">${title}</div>
+        <div style="width:54px;height:54px;border-radius:50%;border:2px solid ${titleColor};display:flex;align-items:center;justify-content:center;color:${titleColor};font-size:22px;background:#fff">${icon}</div>
+        <div style="font-size:12px;color:#475569;text-align:center">${sub}</div>
+        ${big?`<div style="font-size:14px;font-weight:800;color:${bigColor||titleColor}">${big}</div>`:''}
+      </div>`;
+    const donut = (pct,color,bg)=>{
+      const r=42, c=2*Math.PI*r, off=c*(1-(pct||0)/100);
+      return `<div style="position:relative;width:130px;height:130px">
+        <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg)">
+          <circle cx="50" cy="50" r="${r}" fill="none" stroke="${bg}" stroke-width="10"/>
+          <circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:${color}">${pct}%</div>
+      </div>`;
+    };
+    const listCard = (icon, title, items, color) => `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+        <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:2px solid ${color};margin-bottom:14px">
+          <span style="color:${color};font-size:18px">${icon}</span>
+          <span style="font-size:13px;font-weight:800;letter-spacing:.06em;color:${color};text-transform:uppercase">${title}</span>
         </div>
+        ${items.length ? '<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">'+items.map(i=>`<li style="display:flex;gap:8px;font-size:13px;color:#334155;line-height:1.45"><span style="color:${color};font-weight:700">•</span><span>${i}</span></li>`).join('')+'</ul>' : '<div style="color:var(--muted-fore);font-size:13px">Aucun élément</div>'}
       </div>`;
     body.innerHTML = `
-      <div class="stats-grid" style="margin-bottom:18px">
-        ${stat('Bénéficiaires évalués', n, 'var(--primary)')}
-        ${stat('Freins levés', totFreins, '#dc2626')}
-        ${stat('Actions suivies', totActions, '#7c3aed')}
-        ${stat('Compétences acquises', totComp, '#ea580c')}
-        ${stat('Résultats obtenus', totRes, '#059669')}
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px">
+        ${iconStat('📍', totFreins, 'Freins levés', '#dc2626')}
+        ${iconStat('✓', totActions, 'Actions suivies', '#2563eb')}
+        ${iconStat('💡', totComp, 'Compétences acquises', '#7c3aed')}
+        ${iconStat('✓', totRes, 'Résultats obtenus', '#059669')}
+        ${iconStat('$', (impactEstime?impactEstime.toLocaleString('fr-FR')+' €':'—'), 'Impact estimé / an', '#b45309', '#fdf6e3')}
       </div>
-      <div class="stats-grid" style="margin-bottom:18px">
-        ${stat('Moyenne % au départ', avantM+'%', '#dc2626')}
-        ${stat("Moyenne % aujourd'hui", apresM+'%', '#059669')}
-        ${stat("Mesure d'impact moyenne", apresM+'%', 'var(--info)')}
-        ${stat('Progression moyenne', (deltaM>=0?'+':'')+deltaM+' pts', deltaM>=0?'#059669':'#dc2626')}
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px 18px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative">
+          <div style="position:absolute;left:8%;right:8%;top:42%;height:1px;background:#e2e8f0;z-index:0"></div>
+          <div style="display:flex;justify-content:space-between;width:100%;position:relative;z-index:1;gap:8px">
+            ${journeyStep('⚑','Départ','#dc2626','Avant','', avantM+'%', '#dc2626')}
+            ${journeyStep('👤','Difficultés','#2563eb', totFreins+' freins<br/><span style="font-size:10px;color:#94a3b8">levés</span>')}
+            ${journeyStep('◎','Actions','#7c3aed', totActions+' actions<br/><span style="font-size:10px;color:#94a3b8">suivies</span>')}
+            ${journeyStep('◉','Compétences','#ea580c', totComp+' compétences<br/><span style="font-size:10px;color:#94a3b8">mobilisées</span>')}
+            ${journeyStep('✓','Arrivée','#059669','Après','', apresM+'%', '#059669')}
+          </div>
+        </div>
       </div>
-      <div class="two-col" style="margin-bottom:18px">
-        ${list('Au départ', depart, '#dc2626')}
-        ${list('Le chemin', chemin, '#7c3aed')}
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+        <div style="text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;color:#94a3b8;text-transform:uppercase;margin-bottom:18px">Mesure d'impact</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            ${donut(avantM,'#dc2626','#fee2e2')}
+            <div style="font-size:12px;font-weight:800;letter-spacing:.08em;color:#475569">AVANT</div>
+          </div>
+          <div style="font-size:32px;color:#94a3b8">→</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            ${donut(apresM,'#059669','#d1fae5')}
+            <div style="font-size:12px;font-weight:800;letter-spacing:.08em;color:#475569">APRÈS</div>
+          </div>
+        </div>
+        <div style="margin-top:18px;background:#ecfdf5;color:#047857;text-align:center;padding:12px;border-radius:10px;font-weight:700;font-size:14px">
+          Progression de ${deltaM>=0?'+':''}${deltaM} points · ${totRes} résultat${totRes>1?'s':''} concret${totRes>1?'s':''} obtenu${totRes>1?'s':''}
+        </div>
       </div>
-      <div style="margin-bottom:18px">
-        ${list("Aujourd'hui", aujourd, '#059669')}
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+        ${listCard('📍','Au départ', depart, '#dc2626')}
+        ${listCard('▦','Le chemin', chemin, '#7c3aed')}
+        ${listCard('✓',"Aujourd'hui", aujourd, '#059669')}
       </div>`;
   };
 
