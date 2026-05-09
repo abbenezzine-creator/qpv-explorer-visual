@@ -1815,7 +1815,9 @@ function openActionDetail(id){
   document.getElementById('detailHeroTitle').textContent=a.titre;
   const bc=TCOL[a.type]||'purple';
   document.getElementById('detailBadges').innerHTML=`<span class="badge badge-${bc}">${a.type}</span><span class="badge badge-gray">${a.theme}</span>${(a.quartiers||[]).map(q=>`<span class="badge badge-gray">${q}</span>`).join('')}`;
-  document.getElementById('detailStatut').innerHTML=`<span class="badge badge-${bc}" style="padding:4px 12px;font-size:12px">${a.statut}</span>`;
+  const STATUT_COL={'Favorable':'green','Non retenu':'red','Ajournée':'amber','Orienté vers un autre dispositif':'blue','En cours':'blue','Planifié':'gray','Récurrent':'purple','Terminé':'green'};
+  const sbc=STATUT_COL[a.statut]||bc;
+  document.getElementById('detailStatut').innerHTML=`<span class="badge badge-${sbc}" style="padding:4px 12px;font-size:12px">${a.statut}</span>`;
   document.getElementById('detailInfoGrid').innerHTML=`
     <div class="info-block"><div class="info-lbl">Association</div><div class="info-val">${getAssocName(a.assocId)}</div></div>
     <div class="info-block"><div class="info-lbl">Date début</div><div class="info-val">${a.date.split('-').reverse().join('/')}</div></div>
