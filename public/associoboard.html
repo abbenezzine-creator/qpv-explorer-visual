@@ -2675,6 +2675,12 @@ function openQualiteHistory(){
       </div>
     </div>`;
 }
+function clearQualiteHistory(){
+  if(confirm("Supprimer tout l'historique ?")){
+    localStorage.removeItem(QUAL_HIST_KEY);
+    openQualiteHistory();
+  }
+}
 function exportQualiteHistory(){
   const hist = _loadQualHistory();
   const blob = new Blob([JSON.stringify(hist,null,2)], {type:'application/json'});
