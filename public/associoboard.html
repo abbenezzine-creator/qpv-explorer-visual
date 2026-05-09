@@ -3131,13 +3131,20 @@ function generateAIDetailedAnalysis(){
 // ========== DOCUMENTS ==========
 function renderDocuments(){
   const isAdmin=currentUser?.role==='superadmin';
-  document.getElementById('docsSubtitle').textContent=isAdmin?'Tous les documents':'Documents de votre association';
-  const docs=DOCUMENTS.filter(d=>{
+  const filterAssocId = isAdmin ? (typeof currentAssocId!=='undefined'?currentAssocId:null) : currentUser?.assocId;
+  const filterName = filterAssocId ? (ASSOCS.find(x=>x.id===filterAssocId)?.nom||'') : '';
+  document.getElementById('docsSubtitle').textContent = isAdmin
+    ? (filterAssocId ? ('Documents — '+filterName) : 'Tous les documents')
+    : 'Documents de votre association';
+  let docs=DOCUMENTS.filter(d=>{
     if(isAdmin) return true;
     if(d.visib==='admin') return false;
     if(d.visib==='assoc') return (d.assocVis||[]).includes(currentUser?.assocId)||d.assocId===currentUser?.assocId;
     return true; // 'all'
   });
+  if(filterAssocId){
+    docs = docs.filter(d => d.assocId===filterAssocId || (d.assocVis||[]).includes(filterAssocId) || (!d.assocId && d.visib==='all'));
+  }
   const grid=document.getElementById('docsGrid');if(!grid) return;
   if(!docs.length){grid.innerHTML='<p style="color:var(--muted-fore);font-size:13px">Aucun document disponible</p>';return;}
   const cc={Convention:'oklch(0.52 0.22 285)',Bilan:'oklch(0.76 0.17 75)',Rapport:'oklch(0.62 0.22 340)',Formulaire:'oklch(0.6 0.17 240)',Guide:'oklch(0.52 0.16 150)',Autre:'var(--muted-fore)'};
