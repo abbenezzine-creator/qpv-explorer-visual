@@ -1750,7 +1750,7 @@ function renderQualiteProgressDash(){
                 <span class="qual-crit-id" style="color:${ax.color};min-width:26px">${it.id}</span>
                 <span class="qual-crit-txt" style="font-size:11.5px">${it.text}</span>
                 <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-                  <div class="qual-crit-bar" style="width:60px"><div class="qual-crit-bar-fill" style="width:${it.avg}%;background:${ax.color}"></div></div>
+                  <span style="display:inline-flex;gap:1px;line-height:1">${makeStars(it.avg, ax.color, 13)}</span>
                   <span class="qual-crit-pct" style="color:${ax.color};min-width:32px;text-align:right">${it.avg}%</span>
                 </div>
               </div>`).join('')}
