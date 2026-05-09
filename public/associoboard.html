@@ -416,12 +416,33 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .q-wrap{max-width:700px}
 .sb-overlay{display:none;position:fixed;inset:0;background:oklch(0 0 0/.5);z-index:99}
 .sb-overlay.show{display:block}
-@media(max-width:800px){
-  .sidebar{transform:translateX(-100%)}.sidebar.mobile-open{transform:translateX(0)}
-  .main{margin-left:0!important}.mob-toggle{display:flex;align-items:center}
+@media(max-width:1024px){
+  .sidebar{transform:translateX(-100%);box-shadow:var(--shadow-glow)}
+  .sidebar.collapsed{width:260px}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .mob-toggle{display:inline-flex;align-items:center;justify-content:center}
+  .topbar{padding:0 14px}
+  .topbar-title{font-size:15px}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .form-row{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr 1fr}
-  .two-col,.settings-grid{grid-template-columns:1fr}.circ-grid{grid-template-columns:repeat(3,1fr)}
+  .two-col,.settings-grid{grid-template-columns:1fr}
+  .info-grid{grid-template-columns:1fr 1fr}
+  .circ-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:640px){
+  .topbar{height:54px;padding:0 10px;gap:6px}
+  .topbar-title{font-size:14px}
+  .topbar-right{gap:6px}
+  .topbar-right .btn span,.topbar-right .btn-sm span{display:none}
+  .page-hdr{flex-direction:column;align-items:flex-start}
+  .page-title{font-size:20px}
+  .stats-grid,.info-grid,.form-row{grid-template-columns:1fr}
+  .circ-grid{grid-template-columns:repeat(2,1fr)}
+  .main>*{padding-left:14px!important;padding-right:14px!important}
+  .modal-content,.modal-card{width:96vw!important;max-width:96vw!important;max-height:92vh!important}
+  table{font-size:12px}
+  .gs-banner{flex-wrap:wrap;padding:8px 10px}
+  .gs-inp{flex:1 1 100%;min-width:0}
 }
 
 /* ===== CALENDAR FULL CELLS ===== */
