@@ -79,9 +79,34 @@ export type Action = {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  type_action: string | null;
+  annee: number | null;
+  heure_debut: string | null;
+  heure_fin: string | null;
+  duree: string | null;
+  jours: string[] | null;
+  recurrence: string | null;
+  recurrence_detail: string | null;
+  recurrence_fin: string | null;
+  recurrence_nb: number | null;
+  thematique: string | null;
+  quartiers: string[] | null;
+  tranches_age: string[] | null;
+  fonctions: string[] | null;
+  lieux: LieuItem[] | null;
+  lieu_principal: string | null;
+  budget_financeurs: BudgetLine[] | null;
 };
 
-export type Association = { id: string; nom: string };
+export type Association = {
+  id: string;
+  nom: string;
+  description?: string | null;
+  commune?: string | null;
+  qpv_key?: string | null;
+  login?: string | null;
+  password?: string | null;
+};
 
 export type Evaluation = {
   id: string;
