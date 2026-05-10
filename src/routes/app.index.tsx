@@ -32,16 +32,17 @@ type IframeWin = Window & {
 };
 
 function AppIndexPage() {
-  const { page, year, assoc, theme, qualiteAction } = Route.useSearch();
+  const { page, year, assoc, theme, dashAction, qualiteAction } = Route.useSearch();
   const navigate = useNavigate({ from: "/app/" });
   const ref = useRef<HTMLIFrameElement>(null);
   const [u, setUser] = useState<AbUser | null>(() => getUser());
   const [iframeReady, setIframeReady] = useState(false);
   const filters = useMemo<DashboardFilters>(() => ({
-    year: year ?? new Date().getFullYear(),
+    year: year ?? null,
     assocId: assoc ?? null,
     thematique: theme ?? null,
-  }), [year, assoc, theme]);
+    actionId: dashAction ?? null,
+  }), [year, assoc, theme, dashAction]);
   const [evalActionId, setEvalActionId] = useState<string | null>(null);
   const qc = useQueryClient();
 
