@@ -61,6 +61,9 @@ export type BudgetLine = {
   type: string;
   /** legacy single amount (kept for backward compat) */
   montant?: number;
+  /** Année N-1 (subvention obtenue année précédente) */
+  annee_n1?: string;
+  montant_n1?: number;
   montant_sollicite?: number;
   montant_favorable?: number;
 };
