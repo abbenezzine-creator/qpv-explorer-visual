@@ -76,7 +76,11 @@ function AppIndexPage() {
       const win = f.contentWindow as IframeWin | null;
       if (win?.nav) win.nav(page);
     } catch { /* noop */ }
-  }, [page]);
+    // Auto-refresh data when navigating to a page
+    qc.invalidateQueries({ queryKey: ["dashboard-data"] });
+    if (page === "impacts-beneficiaires") qc.invalidateQueries({ queryKey: ["impacts-evaluations"] });
+    if (page === "evaluations") qc.invalidateQueries({ queryKey: ["evaluations-list"] });
+  }, [page, qc]);
 
   // ===== Dashboard data bridge (React Query → iframe via postMessage) =====
   const dashQ = useQuery({
