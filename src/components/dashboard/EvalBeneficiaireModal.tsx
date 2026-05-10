@@ -24,7 +24,7 @@ type SurveyPayload = {
   [k: string]: unknown;
 };
 
-export function EvalBeneficiaireModal({ actionId, onClose }: Props) {
+export function EvalBeneficiaireModal({ actionId, onClose, prefill }: Props) {
   const open = !!actionId;
   const qc = useQueryClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
