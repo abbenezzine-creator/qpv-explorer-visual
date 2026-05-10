@@ -4,11 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getUser } from "@/lib/auth";
 import {
-  AXIS_OPTIONS,
+  QUARTIERS_OPTIONS,
   canEditAction,
   fetchActionById,
   fetchThemes,
-  labelOf,
   type ThemeQuestion,
 } from "@/lib/actions-data";
 import { Button } from "@/components/ui/button";
@@ -40,10 +39,12 @@ function EvaluationFormPage() {
   const themes = themesQ.data ?? [];
 
   const matchedTheme = useMemo(() => {
-    if (!action?.axis_key) return null;
-    const axisLabel = labelOf(AXIS_OPTIONS, action.axis_key).toLowerCase();
-    return themes.find((t) => t.name.toLowerCase().includes(axisLabel)) ?? null;
-  }, [action?.axis_key, themes]);
+    if (!action?.thematique) return null;
+    const t = action.thematique.toLowerCase();
+    return themes.find((th) => th.name.toLowerCase() === t)
+      ?? themes.find((th) => th.name.toLowerCase().includes(t) || t.includes(th.name.toLowerCase()))
+      ?? null;
+  }, [action?.thematique, themes]);
 
   const [themeId, setThemeId] = useState<string>("");
   useEffect(() => {
@@ -55,6 +56,7 @@ function EvaluationFormPage() {
   const [nom, setNom] = useState("");
   const [age, setAge] = useState("");
   const [genre, setGenre] = useState("");
+  const [quartier, setQuartier] = useState("");
   const [commentaire, setCommentaire] = useState("");
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
@@ -88,7 +90,7 @@ function EvaluationFormPage() {
       beneficiaire_nom: nom.trim() || null,
       beneficiaire_age: age ? Number(age) : null,
       beneficiaire_genre: genre || null,
-      reponses: { theme_id: themeId || null, theme_name: theme?.name ?? null, answers } as never,
+      reponses: { theme_id: themeId || null, theme_name: theme?.name ?? null, quartier: quartier || null, answers } as never,
       commentaire: commentaire.trim() || null,
       created_by: user?.id ?? null,
     });
@@ -147,6 +149,15 @@ function EvaluationFormPage() {
                 <SelectItem value="F">Femme</SelectItem>
                 <SelectItem value="H">Homme</SelectItem>
                 <SelectItem value="Autre">Autre</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Quartier</Label>
+            <Select value={quartier} onValueChange={setQuartier}>
+              <SelectTrigger><SelectValue placeholder="Choisir un quartier…" /></SelectTrigger>
+              <SelectContent>
+                {QUARTIERS_OPTIONS.map((q) => <SelectItem key={q} value={q}>{q}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
