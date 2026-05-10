@@ -8,6 +8,8 @@ import {
   STATUT_OPTIONS,
   STATUT_VARIANT,
   THEMATIQUE_OPTIONS,
+  actionStartDate,
+  actionEndDate,
   fetchActions,
   fetchAssociations,
   labelOf,
@@ -196,6 +198,8 @@ function ActionsListPage() {
             {filtered.map((a) => {
               const editable = canEditAction(user, a);
               const sollicite = (a.budget_financeurs ?? []).reduce((s, l) => s + (Number(l.montant_sollicite ?? l.montant ?? 0) || 0), 0);
+              const dateDebut = actionStartDate(a);
+              const dateFin = actionEndDate(a);
               return (
                 <tr
                   key={a.id}
@@ -206,8 +210,8 @@ function ActionsListPage() {
                   <td className="px-3 py-2 font-medium">{a.titre}</td>
                   <td className="px-3 py-2">{assocMap.get(a.assoc_id) ?? "—"}</td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
-                    <div><span className="text-foreground/70">Début :</span> {frDate(a.date_debut)}</div>
-                    <div><span className="text-foreground/70">Fin :</span> {frDate(a.date_fin)}</div>
+                    <div><span className="text-foreground/70">Début :</span> {frDate(dateDebut)}</div>
+                    <div><span className="text-foreground/70">Fin :</span> {frDate(dateFin)}</div>
                   </td>
                   <td className="px-3 py-2 max-w-[24rem] align-top">
                     {(a.description || a.objectifs) ? (
@@ -364,8 +368,8 @@ function ActionsListPage() {
                     <div><dt className="text-xs uppercase text-muted-foreground">QPV</dt><dd className="font-medium">{labelOf(QPV_OPTIONS, viewing.qpv_key)}</dd></div>
                     <div><dt className="text-xs uppercase text-muted-foreground">Thématique</dt><dd className="font-medium">{viewing.thematique ?? "—"}</dd></div>
                     <div><dt className="text-xs uppercase text-muted-foreground">Type</dt><dd className="font-medium">{viewing.type_action ?? "—"}</dd></div>
-                    <div><dt className="text-xs uppercase text-muted-foreground">Date début</dt><dd className="font-medium">{frDate(viewing.date_debut)}</dd></div>
-                    <div><dt className="text-xs uppercase text-muted-foreground">Date fin</dt><dd className="font-medium">{frDate(viewing.date_fin)}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Date début</dt><dd className="font-medium">{frDate(actionStartDate(viewing))}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Date fin</dt><dd className="font-medium">{frDate(actionEndDate(viewing))}</dd></div>
                     <div><dt className="text-xs uppercase text-muted-foreground">Bénéficiaires prévus</dt><dd className="font-medium">{viewing.nb_beneficiaires_prevu ?? "—"}</dd></div>
                   </dl>
                   {viewing.description && (
