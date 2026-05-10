@@ -29,11 +29,16 @@ type IframeWin = Window & {
 };
 
 function AppIndexPage() {
-  const { page } = Route.useSearch();
+  const { page, year, assoc, theme } = Route.useSearch();
+  const navigate = useNavigate({ from: "/app/" });
   const ref = useRef<HTMLIFrameElement>(null);
   const [u, setUser] = useState<AbUser | null>(() => getUser());
   const [iframeReady, setIframeReady] = useState(false);
-  const [filters, setFilters] = useState<DashboardFilters>({ year: new Date().getFullYear(), assocId: null, thematique: null });
+  const filters = useMemo<DashboardFilters>(() => ({
+    year: year ?? new Date().getFullYear(),
+    assocId: assoc ?? null,
+    thematique: theme ?? null,
+  }), [year, assoc, theme]);
   const [evalActionId, setEvalActionId] = useState<string | null>(null);
   const qc = useQueryClient();
 
