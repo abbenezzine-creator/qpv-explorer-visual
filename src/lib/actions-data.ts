@@ -56,7 +56,15 @@ export const RECURRENCE_OPTIONS = [
   { key: "custom", label: "Personnalisée" },
 ] as const;
 
-export type BudgetLine = { annee: string; financeur: string; type: string; montant: number };
+export type BudgetLine = {
+  annee: string;
+  financeur: string;
+  type: string;
+  /** legacy single amount (kept for backward compat) */
+  montant?: number;
+  montant_sollicite?: number;
+  montant_favorable?: number;
+};
 export type LieuItem = { nom: string };
 
 export type QpvKey = (typeof QPV_OPTIONS)[number]["key"];
@@ -70,6 +78,7 @@ export type Action = {
   axis_key: AxisKey | null;
   titre: string;
   description: string | null;
+  objectifs: string | null;
   date_debut: string | null;
   date_fin: string | null;
   budget: number | null;
