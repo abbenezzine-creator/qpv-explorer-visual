@@ -334,15 +334,16 @@ function ActionsListPage() {
 
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
         <DialogContent
-          className="max-w-none sm:rounded-none p-0 gap-0 overflow-hidden top-0 left-0 translate-x-0 translate-y-0 grid-rows-[auto_1fr] border-0"
+          className="flex max-w-none sm:rounded-none p-0 gap-0 overflow-hidden top-0 left-0 translate-x-0 translate-y-0 border-0"
           style={{
             width: "100vw",
             height: "100vh",
+            maxHeight: "100vh",
           }}
         >
           {viewing && (
-            <div className="flex h-full flex-col">
-              <div className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
+            <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
+              <div className="flex shrink-0 items-center justify-between border-b border-border bg-card px-6 py-3">
                 <Button variant="ghost" size="sm" onClick={() => setViewing(null)}>
                   <ArrowLeft className="mr-2 h-4 w-4" /> Retour à la table
                 </Button>
@@ -357,8 +358,8 @@ function ActionsListPage() {
                   )}
                 </div>
               </div>
-              <div className="flex-1 overflow-auto p-8" style={{ scrollbarGutter: "stable" }}>
-                <div className="mx-auto max-w-5xl space-y-6">
+              <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto p-8 pb-20" style={{ scrollbarGutter: "stable" }}>
+                <div className="mx-auto min-w-[900px] max-w-5xl space-y-6">
                   <div>
                     <div className="text-xs uppercase text-muted-foreground">{viewing.annee ?? ""} · {assocMap.get(viewing.assoc_id) ?? ""}</div>
                     <h2 className="text-3xl font-bold">{viewing.titre}</h2>
