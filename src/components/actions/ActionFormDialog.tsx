@@ -472,41 +472,47 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
           {/* PUBLIC PAR QUARTIER */}
           <Section icon={Building2} title="Public touché par quartier" tone="emerald">
             <div className="col-span-2">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  Total : <strong className="text-foreground">{publicQuartiers.reduce((s, p) => s + (Number(p.nombre) || 0), 0)}</strong> bénéficiaires
+              <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+                <span>Saisir les nombres prévisionnels et réalisés par quartier</span>
+                <span>
+                  Total prévisionnel : <strong className="text-foreground">{QUARTIER_COLS.reduce((s, q) => s + getPq(q, "previsionnel"), 0)}</strong>
+                  {" · "}
+                  Total réalisé : <strong className="text-foreground">{QUARTIER_COLS.reduce((s, q) => s + getPq(q, "realise"), 0)}</strong>
                 </span>
-                <Button type="button" size="sm" variant="outline" onClick={() => setPublicQuartiers([...publicQuartiers, { quartier: "", nombre: 0 }])}>
-                  <Plus className="h-3 w-3 mr-1" />Ajouter un quartier
-                </Button>
               </div>
-              <div className="space-y-2">
-                <div className="grid grid-cols-12 gap-2 px-1 text-xs text-muted-foreground">
-                  <div className="col-span-8">Quartier</div>
-                  <div className="col-span-3">Nombre</div>
-                  <div className="col-span-1"></div>
-                </div>
-                {publicQuartiers.map((p, i) => (
-                  <div key={i} className="grid grid-cols-12 gap-2">
-                    <Select
-                      value={p.quartier || undefined}
-                      onValueChange={(v) => {
-                        const n = [...publicQuartiers]; n[i] = { ...p, quartier: v }; setPublicQuartiers(n);
-                      }}
-                    >
-                      <SelectTrigger className="col-span-8"><SelectValue placeholder="Choisir un quartier…" /></SelectTrigger>
-                      <SelectContent>
-                        {QUARTIERS_OPTIONS.map(q => <SelectItem key={q} value={q}>{q}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Input className="col-span-3" type="number" min={0} value={p.nombre} onChange={(e) => {
-                      const n = [...publicQuartiers]; n[i] = { ...p, nombre: Number(e.target.value) || 0 }; setPublicQuartiers(n);
-                    }} />
-                    <Button type="button" size="sm" variant="ghost" className="col-span-1" onClick={() => setPublicQuartiers(publicQuartiers.filter((_, j) => j !== i))}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+              <div className="overflow-x-auto rounded-md border bg-background">
+                <table className="w-full text-sm">
+                  <thead className="bg-emerald-500/10 text-emerald-800">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Type</th>
+                      {QUARTIER_COLS.map(q => (
+                        <th key={q} className="px-3 py-2 text-center font-medium">{q}</th>
+                      ))}
+                      <th className="px-3 py-2 text-center font-medium">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(["previsionnel", "realise"] as const).map(type => (
+                      <tr key={type} className="border-t">
+                        <td className="px-3 py-2 font-medium capitalize">{type === "previsionnel" ? "Prévisionnel" : "Réalisé"}</td>
+                        {QUARTIER_COLS.map(q => (
+                          <td key={q} className="px-2 py-1">
+                            <Input
+                              type="number"
+                              min={0}
+                              className="h-9 text-center"
+                              value={getPq(q, type)}
+                              onChange={(e) => setPq(q, type, Number(e.target.value) || 0)}
+                            />
+                          </td>
+                        ))}
+                        <td className="px-3 py-2 text-center font-semibold">
+                          {QUARTIER_COLS.reduce((s, q) => s + getPq(q, type), 0)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </Section>
