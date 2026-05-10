@@ -542,7 +542,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
               <Select value={thematique} onValueChange={setThematique}>
                 <SelectTrigger><SelectValue placeholder="Aucune" /></SelectTrigger>
                 <SelectContent>
-                  {THEMATIQUE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {(thematiqueOptions && thematiqueOptions.length > 0 ? thematiqueOptions : THEMATIQUE_OPTIONS).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
