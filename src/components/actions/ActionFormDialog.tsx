@@ -367,13 +367,8 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
           {/* PUBLIC */}
           <Section icon={Users} title="Public" tone="emerald">
             <div>
-              <Label>Thématique</Label>
-              <Select value={thematique} onValueChange={setThematique}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {THEMATIQUE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label>Nb. participants prévus</Label>
+              <Input type="number" min={1} value={nbPrevu} onChange={(e) => setNbPrevu(e.target.value)} placeholder="20" />
             </div>
             <div>
               <Label>Nb. participants prévus</Label>
