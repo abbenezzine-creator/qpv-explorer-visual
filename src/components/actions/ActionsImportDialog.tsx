@@ -556,37 +556,28 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
 
               <TabsContent value="budget" className="space-y-4 pt-4">
                 <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-                  Choisissez deux sources distinctes — une pour <strong>Sollicité (€)</strong> et une pour <strong>Favorable (€)</strong>. Les lignes sont fusionnées par <strong>Réf.</strong> + Financeur pour reconstituer une seule ligne budgétaire complète.
+                  Choisissez jusqu'à trois sources distinctes — <strong>Subvention N-1</strong>, <strong>Sollicité (€)</strong> et <strong>Favorable (€)</strong>. Les lignes sont fusionnées par <strong>Réf.</strong> + Financeur pour reconstituer une seule ligne budgétaire complète. Pour chaque source, mappez aussi le <strong>Type de financeur</strong> (subvention, prestation, mécénat…).
                 </div>
 
-                <div>
-                  <Label>Année par défaut du budget</Label>
-                  <Input
-                    type="number"
-                    value={budgetDefaultYear}
-                    onChange={(e) => setBudgetDefaultYear(e.target.value)}
-                    className="max-w-[160px]"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Année en cours par défaut. Utilisée si la colonne Année n'est pas renseignée.
-                  </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Année par défaut (Sollicité / Favorable)</Label>
+                    <Input type="number" value={budgetDefaultYear} onChange={(e) => setBudgetDefaultYear(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label>Année par défaut (Subvention N-1)</Label>
+                    <Input type="number" value={n1DefaultYear} onChange={(e) => setN1DefaultYear(e.target.value)} />
+                  </div>
                 </div>
 
-                {(["sollicite", "favorable"] as const).map((kind) => {
-                  const isSol = kind === "sollicite";
-                  const sheet = isSol ? solSheet : favSheet;
-                  const setSheet = isSol ? setSolSheet : setFavSheet;
-                  const setH = isSol ? setSolHeaders : setFavHeaders;
-                  const setR = isSol ? setSolRows : setFavRows;
-                  const setM = isSol ? setSolMap : setFavMap;
-                  const hdrs = isSol ? solHeaders : favHeaders;
-                  const rws = isSol ? solRows : favRows;
-                  const map = isSol ? solMap : favMap;
-                  const setMap = isSol ? setSolMap : setFavMap;
-                  const amountKey = (isSol ? "montant_sollicite" : "montant_favorable") as
-                    "montant_sollicite" | "montant_favorable";
-                  const color = isSol ? "text-amber-600" : "text-emerald-600";
-                  const label = isSol ? "Sollicité (€)" : "Favorable (€)";
+                {(["n1", "sollicite", "favorable"] as const).map((kind) => {
+                  const cfg = {
+                    n1:        { sheet: n1Sheet,  setSheet: setN1Sheet,  setH: setN1Headers,  setR: setN1Rows,  setM: setN1Map,  hdrs: n1Headers,  rws: n1Rows,  map: n1Map,  amountKey: "montant_n1" as const,         color: "text-violet-600", label: "Subvention N-1 (€)" },
+                    sollicite: { sheet: solSheet, setSheet: setSolSheet, setH: setSolHeaders, setR: setSolRows, setM: setSolMap, hdrs: solHeaders, rws: solRows, map: solMap, amountKey: "montant_sollicite" as const,  color: "text-amber-600",  label: "Sollicité (€)" },
+                    favorable: { sheet: favSheet, setSheet: setFavSheet, setH: setFavHeaders, setR: setFavRows, setM: setFavMap, hdrs: favHeaders, rws: favRows, map: favMap, amountKey: "montant_favorable" as const,  color: "text-emerald-600", label: "Favorable (€)" },
+                  }[kind];
+                  const { sheet, setSheet, setH, setR, setM, hdrs, rws, map, amountKey, color, label } = cfg;
+                  const setMap = setM;
 
                   return (
                     <div key={kind} className="rounded-lg border bg-card p-3">
@@ -621,6 +612,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
                           {[
                             { key: "ref", label: "Réf. (lien action)", required: true },
                             { key: "financeur", label: "Financeur" },
+                            { key: "type", label: "Type de financeur" },
                             { key: "annee", label: "Année" },
                             { key: "amount", label: `Colonne ${label}`, required: true },
                           ].map((f) => (
