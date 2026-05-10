@@ -167,7 +167,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
     setReferenceAdmin((initial as unknown as { reference_administrative?: string | null })?.reference_administrative ?? "");
     setCommune((initial as unknown as { commune?: string | null })?.commune ?? "");
     const pq = (initial as unknown as { public_quartiers?: PublicQuartierItem[] | null })?.public_quartiers;
-    setPublicQuartiers(pq && pq.length ? pq : [{ quartier: "", nombre: 0 }]);
+    setPublicQuartiers(pq && pq.length ? pq : []);
     setBudgetLines(initial?.budget_financeurs?.length
       ? initial.budget_financeurs.map(b => ({
           annee: b.annee,
