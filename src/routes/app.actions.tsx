@@ -334,10 +334,9 @@ function ActionsListPage() {
 
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
         <DialogContent
-          className="max-w-none sm:rounded-none p-0 gap-0 overflow-hidden top-0 translate-x-0 translate-y-0 grid-rows-[auto_1fr] border-l"
+          className="max-w-none sm:rounded-none p-0 gap-0 overflow-hidden top-0 left-0 translate-x-0 translate-y-0 grid-rows-[auto_1fr] border-0"
           style={{
-            left: sidebarOffset,
-            width: `calc(100vw - ${sidebarOffset})`,
+            width: "100vw",
             height: "100vh",
           }}
         >
@@ -358,7 +357,7 @@ function ActionsListPage() {
                   )}
                 </div>
               </div>
-              <div className="flex-1 overflow-y-scroll p-8" style={{ scrollbarGutter: "stable" }}>
+              <div className="flex-1 overflow-auto p-8" style={{ scrollbarGutter: "stable" }}>
                 <div className="mx-auto max-w-5xl space-y-6">
                   <div>
                     <div className="text-xs uppercase text-muted-foreground">{viewing.annee ?? ""} · {assocMap.get(viewing.assoc_id) ?? ""}</div>
