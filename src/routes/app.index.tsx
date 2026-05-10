@@ -91,11 +91,15 @@ function AppIndexPage() {
       if (d.type === "ab-iframe-ready") {
         setIframeReady(true);
       } else if (d.type === "ab-filters-changed") {
-        setFilters(prev => ({
-          year: typeof d.year === "number" ? d.year : prev.year,
-          assocId: d.assocId !== undefined ? (d.assocId || null) : prev.assocId,
-          thematique: d.thematique !== undefined ? (d.thematique || null) : prev.thematique,
-        }));
+        navigate({
+          search: (prev) => ({
+            ...prev,
+            year: typeof d.year === "number" ? d.year : prev.year,
+            assoc: d.assocId !== undefined ? (d.assocId || undefined) : prev.assoc,
+            theme: d.thematique !== undefined ? (d.thematique || undefined) : prev.theme,
+          }),
+          replace: true,
+        });
       } else if (d.type === "ab-refresh-dashboard") {
         qc.invalidateQueries({ queryKey: ["dashboard-data"] });
       } else if (d.type === "ab-open-eval-modal" && typeof d.actionId === "string") {
