@@ -152,6 +152,15 @@ function EvaluationFormPage() {
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <Label>Quartier</Label>
+            <Select value={quartier} onValueChange={setQuartier}>
+              <SelectTrigger><SelectValue placeholder="Choisir un quartier…" /></SelectTrigger>
+              <SelectContent>
+                {QUARTIERS_OPTIONS.map((q) => <SelectItem key={q} value={q}>{q}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="mb-4 space-y-4 rounded-md border border-border bg-muted/20 p-4">
