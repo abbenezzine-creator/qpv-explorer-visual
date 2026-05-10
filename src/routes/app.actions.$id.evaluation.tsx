@@ -90,7 +90,7 @@ function EvaluationFormPage() {
       beneficiaire_nom: nom.trim() || null,
       beneficiaire_age: age ? Number(age) : null,
       beneficiaire_genre: genre || null,
-      reponses: { theme_id: themeId || null, theme_name: theme?.name ?? null, answers } as never,
+      reponses: { theme_id: themeId || null, theme_name: theme?.name ?? null, quartier: quartier || null, answers } as never,
       commentaire: commentaire.trim() || null,
       created_by: user?.id ?? null,
     });
