@@ -383,24 +383,50 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
       </div>`).join("")
     : '<p style="color:var(--muted-fore);font-size:12px;padding:6px 0">Aucune évaluation qualité dans le périmètre</p>';
 
-  // Moyenne par axe C1-C10
-  const axesHtml = QUALITE_AXES.map(ax => {
+  // Moyenne par axe C1-C10 — calcul
+  const axesData = QUALITE_AXES.map(ax => {
     const vals = refs.map(r => r[ax.key] as number | null).filter((v): v is number => v != null);
     const avg = vals.length ? Math.round(vals.reduce((s, v) => s + v, 0) / vals.length) : 0;
-    return `
-      <div class="qual-axe" style="border-radius:calc(var(--radius));margin-bottom:6px">
-        <div class="qual-axe-hdr">
-          <div class="qual-axe-name" style="color:${ax.color};font-size:12px">
-            <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="${ax.color}" stroke-width="1.5" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>
-            ${escapeHtml(ax.name)}
-          </div>
-          <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
-            <div style="width:70px;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${avg}%;height:100%;background:${ax.color};border-radius:3px;transition:width .7s"></div></div>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${ax.color};min-width:34px">${avg}%</span>
-          </div>
+    return { ...ax, avg, n: vals.length };
+  });
+
+  const starsHtml = (pct: number, color: string) => {
+    const filled = pct / 20; // 5 étoiles
+    let out = '';
+    for (let i = 1; i <= 5; i++) {
+      const ratio = Math.max(0, Math.min(1, filled - (i - 1)));
+      const pctFill = Math.round(ratio * 100);
+      out += `<span style="position:relative;display:inline-block;width:14px;height:14px;line-height:1">
+        <span style="color:var(--border);font-size:14px;line-height:1">★</span>
+        <span style="position:absolute;left:0;top:0;width:${pctFill}%;overflow:hidden;color:${color};font-size:14px;line-height:1">★</span>
+      </span>`;
+    }
+    return `<span style="display:inline-flex;gap:1px;align-items:center">${out}</span>`;
+  };
+
+  const axeRowHtml = (ax: typeof axesData[number]) => `
+    <div class="qual-axe" data-axe="${ax.id}" style="border-radius:calc(var(--radius));margin-bottom:6px">
+      <div class="qual-axe-hdr">
+        <div class="qual-axe-name" style="color:${ax.color};font-size:12px">
+          <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="${ax.color}" stroke-width="1.5" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>
+          ${escapeHtml(ax.name)}
         </div>
-      </div>`;
-  }).join("");
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          ${starsHtml(ax.avg, ax.color)}
+          <div style="width:60px;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${ax.avg}%;height:100%;background:${ax.color};border-radius:3px;transition:width .7s"></div></div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${ax.color};min-width:34px;text-align:right">${ax.avg}%</span>
+        </div>
+      </div>
+    </div>`;
+
+  const axesAllHtml = axesData.map(axeRowHtml).join("");
+  const axesByIdJson = JSON.stringify(
+    Object.fromEntries(axesData.map(ax => [ax.id, axeRowHtml(ax)]))
+  ).replace(/</g, "\\u003c");
+
+  const optionsHtml = QUALITE_AXES.map(ax =>
+    `<option value="${ax.id}">${escapeHtml(ax.id)} — ${escapeHtml(ax.name.replace(/^C\d+\s*—\s*/, ""))}</option>`
+  ).join("");
 
   void assocHtml;
   return `
@@ -408,8 +434,25 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
       <div style="font-size:11px;color:var(--muted-fore)">${escapeHtml(scopeName)} · <strong>Moyenne ${refs.length} évaluation${refs.length > 1 ? "s" : ""}</strong></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg || "—"}${globalAvg ? "%" : ""}</div>
     </div>
-    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Critères C1 → C10</div>
-    ${axesHtml}`;
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 8px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px">Critères C1 → C10</div>
+      <select id="qualAxeSelect" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--background);color:var(--foreground);cursor:pointer">
+        <option value="__all__">Tous les critères</option>
+        ${optionsHtml}
+      </select>
+    </div>
+    <div id="qualAxesContainer">${axesAllHtml}</div>
+    <script>(function(){
+      var sel = document.getElementById('qualAxeSelect');
+      var box = document.getElementById('qualAxesContainer');
+      if (!sel || !box) return;
+      var all = ${JSON.stringify(axesAllHtml).replace(/</g, "\\u003c")};
+      var byId = ${axesByIdJson};
+      sel.addEventListener('change', function(){
+        var v = sel.value;
+        box.innerHTML = (v === '__all__') ? all : (byId[v] || all);
+      });
+    })();</script>`;
 }
 
 export function buildDashboardPayload(data: DashboardData, filters: DashboardFilters) {
