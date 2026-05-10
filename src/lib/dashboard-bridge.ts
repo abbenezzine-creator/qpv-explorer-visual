@@ -152,21 +152,27 @@ function fmtDate(s: string | null): string {
   return d && m && y ? `${d}/${m}/${y}` : s;
 }
 
-function actionCardHtml(a: Action, assocName: string): string {
+function actionCardHtml(a: Action, assocName: string, refsCount: number, evalsCount: number): string {
   const badge = STATUT_BADGE[a.statut] ?? "gray";
   const statutLbl = STATUT_LABEL[a.statut] ?? a.statut;
   const quartiers = (a.quartiers ?? []).map(q => `<span class="badge badge-gray">${escapeHtml(q)}</span>`).join("");
   const ages = (a.tranches_age ?? []).slice(0, 2).map(g => `<span class="badge badge-blue">${escapeHtml(g)}</span>`).join("");
   const nb = a.nb_beneficiaires_reel ?? a.nb_beneficiaires_prevu ?? 0;
   const budget = a.budget ? Math.round(a.budget).toLocaleString("fr-FR") : "0";
+  const refState = refsCount > 0 ? "is-done" : "is-pending";
+  const refLbl = refsCount > 0 ? `Référentiel Qualité <span class="cnt">${refsCount}</span>` : `Référentiel Qualité`;
+  const bfState = evalsCount > 0 ? "is-filled" : "is-empty";
+  const bfLbl = evalsCount > 0
+    ? `Évaluer bénéficiaires <span class="cnt">${evalsCount}</span>`
+    : `Évaluer bénéficiaires`;
   return `<div class="action-card" style="position:relative" onclick="window.parent && window.parent.postMessage({type:'ab-open-action',actionId:'${a.id}'},'*')">
     <div class="ac-bar" style="background:linear-gradient(135deg,var(--primary),var(--accent-rose))"></div>
     <div class="ac-ref"><span>${escapeHtml(assocName.toUpperCase())}</span><span class="badge badge-${badge}">${escapeHtml(statutLbl)}</span></div>
     <div class="ac-title">${escapeHtml(a.titre)}</div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">${quartiers}${ages}</div>
-    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">
-      <button type="button" class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 10px" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-open-eval-modal',actionId:'${a.id}'},'*')">Évaluer bénéficiaires</button>
-      <button type="button" class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 10px" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-open-qualite',actionId:'${a.id}'},'*')">Référentiel Qualité</button>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap">
+      <button type="button" class="btn-bf ${bfState}" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-open-eval-modal',actionId:'${a.id}'},'*')">${bfLbl}</button>
+      <button type="button" class="btn-ref ${refState}" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-open-qualite',actionId:'${a.id}'},'*')">${refLbl}</button>
     </div>
     <div class="ac-footer" style="margin-top:8px">
       <span>${fmtDate(a.date_debut)} · ${escapeHtml(a.heure_debut ?? "")}</span>
@@ -182,7 +188,16 @@ function actionsListHtml(data: DashboardData, filters: DashboardFilters, limit =
     .slice(0, limit);
   if (!acts.length) return `<p style="color:var(--muted-fore);font-size:12px;padding:9px 0">Aucune action</p>`;
   const assocMap = new Map(data.associations.map(a => [a.id, a.nom]));
-  return acts.map(a => actionCardHtml(a, assocMap.get(a.assoc_id) ?? "—")).join("");
+  const refsByAction = new Map<string, number>();
+  for (const r of data.refs) refsByAction.set(r.action_id, (refsByAction.get(r.action_id) ?? 0) + 1);
+  const evalsByAction = new Map<string, number>();
+  for (const e of data.evals) evalsByAction.set(e.action_id, (evalsByAction.get(e.action_id) ?? 0) + 1);
+  return acts.map(a => actionCardHtml(
+    a,
+    assocMap.get(a.assoc_id) ?? "—",
+    refsByAction.get(a.id) ?? 0,
+    evalsByAction.get(a.id) ?? 0,
+  )).join("");
 }
 
 function timelineHtml(data: DashboardData, filters: DashboardFilters): string {
