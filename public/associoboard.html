@@ -3459,7 +3459,9 @@ function renderSettings(){
   if(!window._showPwdRow) window._showPwdRow={};
   if(ac) ac.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">'+Object.entries(ACCOUNTS).map(([login,u])=>{
     const isSuper = currentUser?.role==='superadmin';
-    const shownThisRow = isSuper && (_showAccountsPwd || window._showPwdRow[login]);
+    // Toujours afficher le mot de passe du superadmin pour le superadmin connecté
+    const isSuperRow = u.role==='superadmin';
+    const shownThisRow = isSuper && (isSuperRow || _showAccountsPwd || window._showPwdRow[login]);
     const pwdShown = shownThisRow ? (u.pwd||'') : '••••••••';
     const eyeBtn = isSuper ? `<button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="togglePwdRow('${login.replace(/'/g,"\\'")}')" title="${shownThisRow?'Masquer':'Afficher'} le mot de passe">${shownThisRow?'🙈':'👁'}</button>` : '';
     const copyBtn = isSuper ? `<button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:10px" onclick="copyPwd('${login.replace(/'/g,"\\'")}')" title="Copier le mot de passe">⧉</button>` : '';
