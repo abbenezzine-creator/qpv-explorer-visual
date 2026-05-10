@@ -33,10 +33,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
-const FR_DATE = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+const FR_DATE = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 function frDate(s: string | null | undefined): string {
   if (!s) return "—";
-  const d = new Date(s);
+  const isoDate = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const d = isoDate
+    ? new Date(Date.UTC(Number(isoDate[1]), Number(isoDate[2]) - 1, Number(isoDate[3])))
+    : new Date(s);
   if (isNaN(d.getTime())) return s;
   return FR_DATE.format(d);
 }
