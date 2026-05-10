@@ -20,6 +20,7 @@ export const Route = createFileRoute("/app/")({
     year: typeof s.year === "string" && /^\d{4}$/.test(s.year) ? Number(s.year) : (typeof s.year === "number" ? s.year : undefined),
     assoc: typeof s.assoc === "string" && s.assoc ? s.assoc : undefined,
     theme: typeof s.theme === "string" && s.theme ? s.theme : undefined,
+    dashAction: typeof s.dashAction === "string" && s.dashAction ? s.dashAction : undefined,
     qualiteAction: typeof s.qualiteAction === "string" && s.qualiteAction ? s.qualiteAction : undefined,
   }),
 });
@@ -31,16 +32,17 @@ type IframeWin = Window & {
 };
 
 function AppIndexPage() {
-  const { page, year, assoc, theme, qualiteAction } = Route.useSearch();
+  const { page, year, assoc, theme, dashAction, qualiteAction } = Route.useSearch();
   const navigate = useNavigate({ from: "/app/" });
   const ref = useRef<HTMLIFrameElement>(null);
   const [u, setUser] = useState<AbUser | null>(() => getUser());
   const [iframeReady, setIframeReady] = useState(false);
   const filters = useMemo<DashboardFilters>(() => ({
-    year: year ?? new Date().getFullYear(),
+    year: year ?? null,
     assocId: assoc ?? null,
     thematique: theme ?? null,
-  }), [year, assoc, theme]);
+    actionId: dashAction ?? null,
+  }), [year, assoc, theme, dashAction]);
   const [evalActionId, setEvalActionId] = useState<string | null>(null);
   const qc = useQueryClient();
 
@@ -92,7 +94,7 @@ function AppIndexPage() {
   // Listen for messages FROM the iframe
   useEffect(() => {
     const onMsg = async (ev: MessageEvent) => {
-      const d = ev.data as { type?: string; year?: number; assocId?: string | null; thematique?: string | null; actionId?: string; scoreGlobal?: number; axisScores?: Record<string, number | null> } | undefined;
+      const d = ev.data as { type?: string; year?: number | null; assocId?: string | null; thematique?: string | null; actionId?: string | null; scoreGlobal?: number; axisScores?: Record<string, number | null>; id?: string; titre?: string; docType?: string; url?: string | null; description?: string | null; fileName?: string; fileType?: string; fileSize?: number; fileBase64?: string } | undefined;
       if (!d || typeof d.type !== "string") return;
       if (d.type === "ab-iframe-ready") {
         setIframeReady(true);
@@ -106,12 +108,23 @@ function AppIndexPage() {
           }),
           replace: true,
         });
+      } else if (d.type === "ab-dash-filters") {
+        navigate({
+          search: (prev: { page?: string; year?: number; assoc?: string; theme?: string; dashAction?: string }) => ({
+            ...prev,
+            year: typeof d.year === "number" ? d.year : (d.year === null ? undefined : prev.year),
+            assoc: d.assocId ? d.assocId : undefined,
+            theme: d.thematique ? d.thematique : undefined,
+            dashAction: d.actionId ? d.actionId : undefined,
+          }),
+          replace: true,
+        });
       } else if (d.type === "ab-refresh-dashboard") {
         qc.invalidateQueries({ queryKey: ["dashboard-data"] });
       } else if (d.type === "ab-open-eval-modal" && typeof d.actionId === "string") {
         setEvalActionId(d.actionId);
       } else if (d.type === "ab-open-qualite" && typeof d.actionId === "string") {
-        navigate({ search: (prev: { page?: string; qualiteAction?: string }) => ({ ...prev, page: "qualite", qualiteAction: d.actionId }) });
+        navigate({ search: (prev: { page?: string; qualiteAction?: string }) => ({ ...prev, page: "qualite", qualiteAction: d.actionId as string }) });
       } else if (d.type === "ab-save-qualite" && typeof d.actionId === "string") {
         try {
           const { data: actRow } = await supabase.from("actions").select("assoc_id").eq("id", d.actionId).maybeSingle();
@@ -132,11 +145,103 @@ function AppIndexPage() {
         } catch (err) {
           console.error("ab-save-qualite handler", err);
         }
+      } else if (d.type === "ab-save-document") {
+        const win = ref.current?.contentWindow;
+        try {
+          const { data: userData } = await supabase.auth.getUser();
+          const userId = userData.user?.id;
+          if (!userId) { win?.postMessage({ type: "ab-document-saved", success: false, error: "non authentifié" }, "*"); return; }
+          const { data: prof } = await supabase.from("profiles").select("assoc_id").eq("id", userId).maybeSingle();
+          const assocId = prof?.assoc_id;
+          if (!assocId) { win?.postMessage({ type: "ab-document-saved", success: false, error: "association manquante" }, "*"); return; }
+          let filePath: string | null = null;
+          let fileSize: number | null = null;
+          let mimeType: string | null = null;
+          if (d.fileBase64 && d.fileName) {
+            const bin = atob(d.fileBase64);
+            const arr = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+            const safeName = d.fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+            const path = `${assocId}/${Date.now()}_${safeName}`;
+            const { error: upErr } = await supabase.storage.from("documents").upload(path, arr, { contentType: d.fileType ?? "application/octet-stream", upsert: false });
+            if (upErr) { win?.postMessage({ type: "ab-document-saved", success: false, error: upErr.message }, "*"); return; }
+            filePath = path;
+            fileSize = d.fileSize ?? arr.byteLength;
+            mimeType = d.fileType ?? null;
+          }
+          const { error: insErr } = await supabase.from("documents").insert({
+            assoc_id: assocId,
+            titre: d.titre ?? "Document",
+            type: d.docType ?? null,
+            description: d.description ?? null,
+            url: d.url ?? null,
+            file_path: filePath,
+            file_size: fileSize,
+            mime_type: mimeType,
+            created_by: userId,
+          });
+          if (insErr) { win?.postMessage({ type: "ab-document-saved", success: false, error: insErr.message }, "*"); return; }
+          win?.postMessage({ type: "ab-document-saved", success: true }, "*");
+          qc.invalidateQueries({ queryKey: ["documents-list"] });
+        } catch (err) {
+          console.error("ab-save-document", err);
+          ref.current?.contentWindow?.postMessage({ type: "ab-document-saved", success: false, error: String(err) }, "*");
+        }
+      } else if (d.type === "ab-delete-document" && typeof d.id === "string") {
+        try {
+          const { data: row } = await supabase.from("documents").select("file_path").eq("id", d.id).maybeSingle();
+          if (row?.file_path) await supabase.storage.from("documents").remove([row.file_path]);
+          await supabase.from("documents").delete().eq("id", d.id);
+          qc.invalidateQueries({ queryKey: ["documents-list"] });
+        } catch (err) { console.error("ab-delete-document", err); }
+      } else if (d.type === "ab-open-document" && typeof d.id === "string") {
+        try {
+          const { data: row } = await supabase.from("documents").select("file_path, url").eq("id", d.id).maybeSingle();
+          let openUrl = row?.url ?? null;
+          if (row?.file_path) {
+            const { data: signed } = await supabase.storage.from("documents").createSignedUrl(row.file_path, 60 * 5);
+            if (signed?.signedUrl) openUrl = signed.signedUrl;
+          }
+          if (openUrl) ref.current?.contentWindow?.postMessage({ type: "ab-document-url", url: openUrl }, "*");
+        } catch (err) { console.error("ab-open-document", err); }
       }
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
   }, [qc, navigate]);
+
+  // Documents query — push to iframe when on documents page
+  const docsQ = useQuery({
+    queryKey: ["documents-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("id, assoc_id, titre, type, description, url, file_path, file_size, mime_type, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: page === "documents",
+    staleTime: 30_000,
+  });
+  useEffect(() => {
+    if (page !== "documents" || !iframeReady || !docsQ.data) return;
+    const win = ref.current?.contentWindow;
+    if (!win) return;
+    const t = setTimeout(() => {
+      try { win.postMessage({ type: "ab-load-documents", documents: docsQ.data }, "*"); } catch { /* noop */ }
+    }, 120);
+    return () => clearTimeout(t);
+  }, [page, iframeReady, docsQ.data]);
+  // Realtime documents
+  useEffect(() => {
+    const ch = supabase
+      .channel("documents-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "documents" },
+        () => qc.invalidateQueries({ queryKey: ["documents-list"] }))
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [qc]);
 
   // ===== Realtime → invalidate dashboard cache on any backend change =====
   useEffect(() => {
