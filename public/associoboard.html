@@ -1247,24 +1247,25 @@ function openDashAllActions(){
   try{
     var modal = document.getElementById('dashAllActionsModal'); if(!modal) return;
     var c = window.__abDashCache || {};
-    var meta = window.__abDashMeta || {};
+    var meta = window.__dashMeta || {};
+    var sel = window.__dashFilters || {};
     var assocSel = document.getElementById('dashAllAssocSel');
     var themeSel = document.getElementById('dashAllThemeSel');
     var yearSel = document.getElementById('dashAllYearSel');
     if(meta.assocs && assocSel){
       assocSel.innerHTML = '<option value="">Toutes associations</option>' +
         meta.assocs.map(function(a){ return '<option value="'+a.id+'">'+(a.nom||'').replace(/</g,'&lt;')+'</option>'; }).join('');
-      assocSel.value = (meta.selected && meta.selected.assocId) || '';
+      assocSel.value = sel.assoc || '';
     }
     if(meta.themes && themeSel){
       themeSel.innerHTML = '<option value="">Toutes thématiques</option>' +
         meta.themes.map(function(t){ return '<option value="'+(t||'').replace(/</g,'&lt;')+'">'+(t||'').replace(/</g,'&lt;')+'</option>'; }).join('');
-      themeSel.value = (meta.selected && meta.selected.thematique) || '';
+      themeSel.value = sel.theme || '';
     }
     if(meta.years && yearSel){
       var ys = meta.years.length ? meta.years : [new Date().getFullYear()];
       yearSel.innerHTML = ys.map(function(y){ return '<option value="'+y+'">'+y+'</option>'; }).join('');
-      yearSel.value = (meta.selected && meta.selected.year) || ys[0];
+      yearSel.value = sel.year || String(ys[0]);
     }
     var box = document.getElementById('dashAllActions');
     if(box) box.innerHTML = c.allActions || '<p style="color:var(--muted-fore);font-size:12px;padding:18px;text-align:center">Chargement…</p>';
