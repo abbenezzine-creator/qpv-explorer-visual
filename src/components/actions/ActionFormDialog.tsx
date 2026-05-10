@@ -140,9 +140,10 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
     setAssocId(initial?.assoc_id ?? (isSuperadmin ? associations[0]?.id ?? "" : user?.assocId ?? ""));
     setTypeAction(initial?.type_action ?? "Formation");
     setTitre(initial?.titre ?? "");
-    setAnnee(String(initial?.annee ?? currentYear));
-    setDateDebut(initial?.date_debut ?? "");
-    setDateFin(initial?.date_fin ?? "");
+    const yearVal = Number(initial?.annee ?? currentYear) || currentYear;
+    setAnnee(String(yearVal));
+    setDateDebut(initial?.date_debut ?? `${yearVal}-01-01`);
+    setDateFin(initial?.date_fin ?? `${yearVal}-12-31`);
     setHeureDebut(initial?.heure_debut ?? "");
     setHeureFin(initial?.heure_fin ?? "");
     setDuree(initial?.duree ?? "");
