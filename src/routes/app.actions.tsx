@@ -57,6 +57,22 @@ const ALL = "__all__";
 const QPV_ORLEANS = "__qpv_orleans__";
 const ORLEANS_QPV_KEYS = ["argonne", "lasource", "dauphine", "blossieres"];
 
+const THEMATIQUE_COLORS: Record<string, string> = {
+  "Santé": "#ec4899",                    // rose
+  "Emploi & Développement": "#f97316",   // orange
+  "Transition écologique": "#22c55e",    // vert
+  "Education / Parentalité": "#3b82f6",  // bleu
+  "Cohésion sociale": "#14b8a6",         // teal
+  "Citoyenneté": "#6366f1",              // indigo
+  "Accès aux droits": "#0ea5e9",         // ciel
+  "Prévention": "#a855f7",               // violet
+  "Culture": "#eab308",                  // jaune
+};
+function thematiqueColor(t: string | null | undefined): string {
+  if (!t) return "transparent";
+  return THEMATIQUE_COLORS[t] ?? "#94a3b8";
+}
+
 function ActionsListPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
