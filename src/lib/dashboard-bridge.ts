@@ -329,17 +329,58 @@ function fmtTimelineDate(iso: string): string {
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
 }
 
-const QUALITE_AXES: { key: keyof RefQualite; id: string; name: string; color: string }[] = [
-  { key: "c1",  id: "C1",  name: "C1 — COMMUNICATION",                color: "oklch(0.52 0.22 285)" },
-  { key: "c2",  id: "C2",  name: "C2 — OBJECTIFS",                    color: "oklch(0.62 0.22 340)" },
-  { key: "c3",  id: "C3",  name: "C3 — QUALIFICATION & COMPÉTENCES",  color: "oklch(0.52 0.16 150)" },
-  { key: "c4",  id: "C4",  name: "C4 — MODALITÉS & DÉROULÉ",          color: "oklch(0.76 0.17 75)"  },
-  { key: "c5",  id: "C5",  name: "C5 — CONFORMITÉ & VEILLE LÉGALE",   color: "oklch(0.6 0.17 240)"  },
-  { key: "c6",  id: "C6",  name: "C6 — MOYENS PÉDAGOGIQUES",          color: "oklch(0.52 0.22 285)" },
-  { key: "c7",  id: "C7",  name: "C7 — GESTION FINANCIÈRE",           color: "oklch(0.62 0.22 340)" },
-  { key: "c8",  id: "C8",  name: "C8 — ÉVALUATION & IMPACT",          color: "oklch(0.52 0.16 150)" },
-  { key: "c9",  id: "C9",  name: "C9 — AMÉLIORATION CONTINUE",        color: "oklch(0.76 0.17 75)"  },
-  { key: "c10", id: "C10", name: "C10 — TRANSITION ÉCOLOGIQUE",       color: "oklch(0.52 0.16 150)" },
+const QUALITE_AXES: { key: keyof RefQualite; id: string; name: string; color: string; details: string[] }[] = [
+  { key: "c1",  id: "C1",  name: "C1 — COMMUNICATION",                color: "oklch(0.52 0.22 285)", details: [
+    "L'organisme diffuse une information accessible au public, détaillée et vérifiable.",
+    "L'organisme diffuse des indicateurs de résultats adaptés à la nature des actions.",
+    "L'organisme met en avant les commanditaires et financeurs sur ses supports.",
+  ] },
+  { key: "c2",  id: "C2",  name: "C2 — OBJECTIFS",                    color: "oklch(0.62 0.22 340)", details: [
+    "Analyse du besoin du bénéficiaire en lien avec les commanditaires et financeurs.",
+    "Définition des objectifs opérationnels et évaluables.",
+    "Établissement des contenus et des modalités de mise en œuvre.",
+    "Procédures de positionnement et d'évaluation des bénéficiaires.",
+  ] },
+  { key: "c3",  id: "C3",  name: "C3 — QUALIFICATION & COMPÉTENCES",  color: "oklch(0.52 0.16 150)", details: [
+    "Qualifications indispensables à l'activité (diplôme, agrément, etc.).",
+    "Formation relative aux valeurs de la République et à la laïcité (VRL).",
+    "Compétences des intervenants internes et/ou externes évaluées.",
+    "Développement des compétences des salariés adapté aux prestations.",
+  ] },
+  { key: "c4",  id: "C4",  name: "C4 — MODALITÉS & DÉROULÉ",          color: "oklch(0.76 0.17 75)",  details: [
+    "Information des bénéficiaires des conditions de déroulement.",
+    "Information des bénéficiaires des modalités de l'action.",
+  ] },
+  { key: "c5",  id: "C5",  name: "C5 — CONFORMITÉ & VEILLE LÉGALE",   color: "oklch(0.6 0.17 240)",  details: [
+    "Agréments relatifs à la conformité de l'organisme.",
+    "Veille réglementaire active.",
+  ] },
+  { key: "c6",  id: "C6",  name: "C6 — MOYENS PÉDAGOGIQUES",          color: "oklch(0.52 0.22 285)", details: [
+    "Moyens humains et techniques adaptés, environnement approprié.",
+    "Mobilisation et coordination des intervenants.",
+    "Ressources pédagogiques mises à disposition des bénéficiaires.",
+    "Référent handicap, appui mobilité, conseil de perfectionnement.",
+    "Projet formalisé (éducatif, pédagogique, social, culturel…).",
+  ] },
+  { key: "c7",  id: "C7",  name: "C7 — GESTION FINANCIÈRE",           color: "oklch(0.62 0.22 340)", details: [
+    "Tableau de résultat analytique sur les actions subventionnées.",
+    "Tableau récapitulatif sur la répartition des moyens humains.",
+  ] },
+  { key: "c8",  id: "C8",  name: "C8 — ÉVALUATION & IMPACT",          color: "oklch(0.52 0.16 150)", details: [
+    "Outils d'évaluation sur les objectifs opérationnels.",
+    "Outils d'évaluation sur le personnel.",
+    "Outils d'évaluation et/ou label qualité.",
+  ] },
+  { key: "c9",  id: "C9",  name: "C9 — AMÉLIORATION CONTINUE",        color: "oklch(0.76 0.17 75)",  details: [
+    "Évaluation de satisfaction à destination des bénéficiaires.",
+    "Évaluation de satisfaction à destination des commanditaires.",
+    "Évaluation de satisfaction à destination des partenaires.",
+    "Évaluation sur l'utilité sociale de l'action.",
+    "Évaluation des écarts et amélioration continue.",
+  ] },
+  { key: "c10", id: "C10", name: "C10 — TRANSITION ÉCOLOGIQUE",       color: "oklch(0.52 0.16 150)", details: [
+    "Indicateur transversal : intégration de la dimension environnementale.",
+  ] },
 ];
 
 function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
@@ -405,19 +446,24 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
   };
 
   const axeRowHtml = (ax: typeof axesData[number]) => `
-    <div class="qual-axe" data-axe="${ax.id}" style="border-radius:calc(var(--radius));margin-bottom:6px">
-      <div class="qual-axe-hdr">
-        <div class="qual-axe-name" style="color:${ax.color};font-size:12px">
+    <details class="qual-axe" data-axe="${ax.id}" style="border-radius:calc(var(--radius));margin-bottom:6px;border:1px solid var(--border);padding:6px 8px">
+      <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div class="qual-axe-name" style="color:${ax.color};font-size:12px;display:flex;align-items:center;gap:6px">
           <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="${ax.color}" stroke-width="1.5" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>
-          ${escapeHtml(ax.name)}
+          <span style="font-weight:700">${escapeHtml(ax.name)}</span>
+          <span style="color:var(--muted-fore);font-size:10px">▾</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
           ${starsHtml(ax.avg, ax.color)}
           <div style="width:60px;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${ax.avg}%;height:100%;background:${ax.color};border-radius:3px;transition:width .7s"></div></div>
           <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${ax.color};min-width:34px;text-align:right">${ax.avg}%</span>
         </div>
-      </div>
-    </div>`;
+      </summary>
+      <ul style="margin:8px 0 4px 0;padding:0 0 0 18px;font-size:11px;color:var(--foreground);line-height:1.55">
+        ${ax.details.map(d => `<li style="margin-bottom:3px">${escapeHtml(d)}</li>`).join("")}
+      </ul>
+      <div style="font-size:10px;color:var(--muted-fore);margin-top:4px">${ax.n} évaluation${ax.n > 1 ? "s" : ""} dans le périmètre</div>
+    </details>`;
 
   const axesAllHtml = axesData.map(axeRowHtml).join("");
 
