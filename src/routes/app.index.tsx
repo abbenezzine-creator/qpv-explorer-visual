@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchDashboardData, buildDashboardPayload, type DashboardFilters } from "@/lib/dashboard-bridge";
+import { EvalBeneficiaireModal } from "@/components/dashboard/EvalBeneficiaireModal";
 
 export const Route = createFileRoute("/app/")({
   beforeLoad: async () => {
@@ -30,6 +31,7 @@ function AppIndexPage() {
   const [u, setUser] = useState<AbUser | null>(() => getUser());
   const [iframeReady, setIframeReady] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>({ year: new Date().getFullYear(), assocId: null, thematique: null });
+  const [evalActionId, setEvalActionId] = useState<string | null>(null);
   const qc = useQueryClient();
 
   // Auth sync
@@ -88,8 +90,9 @@ function AppIndexPage() {
         }));
       } else if (d.type === "ab-refresh-dashboard") {
         qc.invalidateQueries({ queryKey: ["dashboard-data"] });
+      } else if (d.type === "ab-open-eval-modal" && typeof d.actionId === "string") {
+        setEvalActionId(d.actionId);
       }
-      // ab-open-eval-modal / ab-open-action handled in Lot 3
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
@@ -106,11 +109,14 @@ function AppIndexPage() {
   }, [iframeReady, dashQ.data, filters, page]);
 
   return (
-    <iframe
-      ref={ref}
-      title="AssocioBoard"
-      src={`/associoboard.html#page=${encodeURIComponent(page)}`}
-      className="h-[calc(100vh-3rem)] w-full border-0"
-    />
+    <>
+      <iframe
+        ref={ref}
+        title="AssocioBoard"
+        src={`/associoboard.html#page=${encodeURIComponent(page)}`}
+        className="h-[calc(100vh-3rem)] w-full border-0"
+      />
+      <EvalBeneficiaireModal actionId={evalActionId} onClose={() => setEvalActionId(null)} />
+    </>
   );
 }
