@@ -19,8 +19,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Eye, ClipboardList, Pencil, Search, Trash2 } from "lucide-react";
+import { Plus, Eye, ClipboardList, Pencil, Search, Trash2, Upload, History } from "lucide-react";
 import { ActionFormDialog } from "@/components/actions/ActionFormDialog";
+import { ActionsImportDialog } from "@/components/actions/ActionsImportDialog";
+import { ActionsRestoreDialog } from "@/components/actions/ActionsRestoreDialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -46,6 +48,8 @@ function ActionsListPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Action | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
   const [q, setQ] = useState("");
   const [fAssoc, setFAssoc] = useState<string>(ALL);
   const [fQpv, setFQpv] = useState<string>(ALL);
@@ -99,11 +103,23 @@ function ActionsListPage() {
           <h1 className="text-2xl font-bold">Actions</h1>
           <p className="text-sm text-muted-foreground">Pilotage des actions par association</p>
         </div>
-        {canCreate && (
-          <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
-            <Plus className="mr-2 h-4 w-4" /> Nouvelle action
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {user?.role === "superadmin" && (
+            <>
+              <Button variant="outline" onClick={() => setImportOpen(true)}>
+                <Upload className="mr-2 h-4 w-4" /> Importer
+              </Button>
+              <Button variant="outline" onClick={() => setRestoreOpen(true)}>
+                <History className="mr-2 h-4 w-4" /> Restaurer
+              </Button>
+            </>
+          )}
+          {canCreate && (
+            <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
+              <Plus className="mr-2 h-4 w-4" /> Nouvelle action
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
