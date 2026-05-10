@@ -10,6 +10,7 @@ import {
   QPV_OPTIONS, STATUT_OPTIONS,
   TYPE_ACTION_OPTIONS, THEMATIQUE_OPTIONS, JOURS_OPTIONS,
   QUARTIERS_OPTIONS, TRANCHES_AGE_OPTIONS, RECURRENCE_OPTIONS,
+  defaultActionStartDate, defaultActionEndDate,
   type Action, type Association, type AxisKey, type QpvKey, type StatutKey,
   type BudgetLine, type LieuItem, type PublicQuartierItem,
 } from "@/lib/actions-data";
@@ -144,8 +145,8 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
     const yearVal = Number(initial?.annee ?? currentYear) || currentYear;
     lastYearRef.current = String(yearVal);
     setAnnee(String(yearVal));
-    setDateDebut(initial?.date_debut ?? `${yearVal}-01-01`);
-    setDateFin(initial?.date_fin ?? `${yearVal}-12-31`);
+    setDateDebut(initial?.date_debut || defaultActionStartDate(yearVal) || "");
+    setDateFin(initial?.date_fin || defaultActionEndDate(yearVal) || "");
     setHeureDebut(initial?.heure_debut ?? "");
     setHeureFin(initial?.heure_fin ?? "");
     setDuree(initial?.duree ?? "");
@@ -213,7 +214,11 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
   const handleSave = async () => {
     if (!titre.trim()) { toast.error("Le titre est obligatoire"); return; }
     if (!assocId) { toast.error("Sélectionnez une association"); return; }
-    if (!dateDebut) { toast.error("Date de début obligatoire"); return; }
+    const fallbackStart = defaultActionStartDate(annee);
+    const fallbackEnd = defaultActionEndDate(annee);
+    const savedDateDebut = dateDebut || fallbackStart;
+    const savedDateFin = dateFin || fallbackEnd;
+    if (!savedDateDebut) { toast.error("Date de début obligatoire"); return; }
     setSaving(true);
     const cleanFonctions = fonctions.map(f => f.trim()).filter(Boolean);
     const cleanLieux = lieux.filter(l => l.nom.trim()).map(l => ({ nom: l.nom.trim() }));
@@ -234,8 +239,8 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
       type_action: typeAction,
       titre: titre.trim(),
       annee: Number(annee) || null,
-      date_debut: dateDebut || null,
-      date_fin: dateFin || null,
+      date_debut: savedDateDebut,
+      date_fin: savedDateFin,
       heure_debut: heureDebut || null,
       heure_fin: heureFin || null,
       duree: duree || null,
