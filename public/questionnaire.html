@@ -3990,9 +3990,10 @@ init();
   css.textContent = 'body{background:#f9fafb;padding:0}.container{box-shadow:none;border-radius:0;max-width:none}.btn-grille-flottant{display:none}';
   document.head.appendChild(css);
 
-  const setVal = (n,v)=>{ const el=document.querySelector(`[name="${n}"]`); if(el && v) el.value=v; };
+  const setVal = (n,v)=>{ const el=document.querySelector(`[name="${n}"]`); if(el && v!=null && v!=='') { el.value=v; el.setAttribute('readonly','readonly'); el.style.background='#f3f4f6'; } };
   setVal('action', params.get('title')||'');
   setVal('asso',   params.get('asso')||'');
+  setVal('annee',  params.get('year')||'');
 
   const wantTheme = params.get('theme');
   const wantSous  = params.get('sousTheme');
