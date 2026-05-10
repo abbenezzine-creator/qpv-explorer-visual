@@ -257,6 +257,22 @@ function ActionsListPage() {
                     </span>
                   </td>
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1">
+                      <Button asChild size="sm" variant="ghost" title="Référentiel Qualité (PDF)" className="text-red-600 hover:text-red-700">
+                        <Link to="/app/actions/$id/evaluation" params={{ id: a.id }} search={{ doc: "qualite" } as any}>
+                          <FileText className="h-4 w-4" />
+                          <span className="sr-only">Référentiel Qualité</span>
+                        </Link>
+                      </Button>
+                      <Button asChild size="sm" variant="ghost" title="Évaluation bénéficiaire (PDF)" className="text-blue-600 hover:text-blue-700">
+                        <Link to="/app/actions/$id/evaluation" params={{ id: a.id }} search={{ doc: "beneficiaire" } as any}>
+                          <FileText className="h-4 w-4" />
+                          <span className="sr-only">Évaluation bénéficiaire</span>
+                        </Link>
+                      </Button>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-1">
                       <Button size="sm" variant="ghost" onClick={() => setViewing(a)} title="Voir en plein écran">
                         <Eye className="h-4 w-4" />
