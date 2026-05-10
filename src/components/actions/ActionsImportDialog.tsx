@@ -372,14 +372,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
     }
   };
 
-  const BUDGET_FIELDS: FieldDef[] = [
-    { key: "ref", label: "Réf. (lien avec action)", required: true },
-    { key: "financeur", label: "Financeur" },
-    { key: "type", label: "Type" },
-    { key: "annee", label: "Année" },
-    { key: "montant_sollicite", label: "Sollicité (€)" },
-    { key: "montant_favorable", label: "Favorable (€)" },
-  ];
+
 
   return (
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) reset(); }}>
