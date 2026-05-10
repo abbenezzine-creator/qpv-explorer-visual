@@ -6531,6 +6531,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     }).join('');
   };
 
+  window.onUdAssocsModeChange = function(){
+    var mode = document.getElementById('ud-assocs-mode')?.value;
+    var lst = document.getElementById('ud-assocs-list');
+    if(lst) lst.style.display = (mode === 'some') ? 'block' : 'none';
+  };
+
   window.openUploadDocModal = function(){
     window.editingDocId = null;
     var t = document.getElementById('docModalTitle'); if(t) t.textContent='Ajouter un document';
@@ -6538,6 +6544,26 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     ['ud-nom','ud-url','ud-desc'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
     var fn = document.getElementById('ud-filename'); if(fn) fn.textContent='';
     var fi = document.getElementById('ud-file'); if(fi) fi.value='';
+    // Associations multi-select (superadmin only)
+    var wrap = document.getElementById('ud-assocs-wrap');
+    var isAdmin = (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'superadmin');
+    if(wrap){
+      if(isAdmin){
+        wrap.style.display = '';
+        var list = document.getElementById('ud-assocs-list');
+        var assocs = (typeof ASSOCS !== 'undefined' && Array.isArray(ASSOCS)) ? ASSOCS : [];
+        if(list){
+          list.innerHTML = assocs.map(function(a){
+            return '<option value="'+String(a.id)+'">'+ String(a.nom||'').replace(/</g,'&lt;') +'</option>';
+          }).join('');
+        }
+        var modeSel = document.getElementById('ud-assocs-mode');
+        if(modeSel){ modeSel.value = 'all'; }
+        if(list){ list.style.display = 'none'; }
+      } else {
+        wrap.style.display = 'none';
+      }
+    }
     if(typeof openModal==='function') openModal('uploadDocModal');
   };
 
@@ -6550,9 +6576,24 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     var fileInput = document.getElementById('ud-file');
     var file = fileInput && fileInput.files && fileInput.files[0];
     var btn = document.getElementById('docSaveBtn');
+    // Associations targeting (superadmin only)
+    var assocIds = null; // null => current user's association
+    var assocAll = false;
+    var isAdmin = (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'superadmin');
+    if(isAdmin){
+      var mode = document.getElementById('ud-assocs-mode')?.value || 'all';
+      if(mode === 'all'){
+        assocAll = true;
+      } else {
+        var list = document.getElementById('ud-assocs-list');
+        var sel = list ? Array.from(list.selectedOptions).map(function(o){ return o.value; }) : [];
+        if(sel.length === 0){ if(typeof showToast==='function') showToast('Sélectionnez au moins une association','error'); return; }
+        assocIds = sel;
+      }
+    }
     if(btn){ btn.disabled = true; btn.textContent = 'Enregistrement…'; }
     function send(payload){
-      window.parent && window.parent.postMessage(Object.assign({type:'ab-save-document', titre:nom, docType:type, url:url||null, description:desc||null}, payload), '*');
+      window.parent && window.parent.postMessage(Object.assign({type:'ab-save-document', titre:nom, docType:type, url:url||null, description:desc||null, assocIds:assocIds, assocAll:assocAll}, payload), '*');
     }
     if(file){
       if(file.size > 15*1024*1024){
