@@ -108,7 +108,7 @@ function AppIndexPage() {
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
-  }, [qc]);
+  }, [qc, navigate]);
 
   // Push payload to iframe whenever data, filters, readiness or page change
   useEffect(() => {
