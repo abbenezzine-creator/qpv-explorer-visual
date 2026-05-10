@@ -34,7 +34,9 @@ export const Route = createFileRoute("/app/actions")({
 const ALL = "__all__";
 
 function ActionsListPage() {
-  const user = getUser();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const user = mounted ? getUser() : null;
   const [editing, setEditing] = useState<Action | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [q, setQ] = useState("");
