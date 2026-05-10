@@ -189,19 +189,18 @@ function AssocDialog({
   const save = async () => {
     if (!nom.trim()) return toast.error("Nom requis");
     setSaving(true);
-    const payload: Record<string, unknown> = {
+    const base = {
       nom: nom.trim(),
       commune: commune || null,
       qpv_key: qpv || null,
       description: desc || null,
     };
-    if (isSuper) {
-      payload.login = login.trim() || null;
-      payload.password = password || null;
-    }
+    const payload = isSuper
+      ? { ...base, login: login.trim() || null, password: password || null }
+      : base;
     const res = initial
       ? await supabase.from("associations").update(payload).eq("id", initial.id)
-      : await supabase.from("associations").insert(payload as { nom: string }); // nom required
+      : await supabase.from("associations").insert(payload);
     setSaving(false);
     if (res.error) return toast.error(res.error.message);
     toast.success(initial ? "Mise à jour" : "Créée");
