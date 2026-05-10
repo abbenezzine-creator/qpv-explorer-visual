@@ -1,7 +1,9 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchDashboardData, buildDashboardPayload, type DashboardFilters } from "@/lib/dashboard-bridge";
 
 export const Route = createFileRoute("/app/")({
   beforeLoad: async () => {
@@ -26,7 +28,11 @@ function AppIndexPage() {
   const { page } = Route.useSearch();
   const ref = useRef<HTMLIFrameElement>(null);
   const [u, setUser] = useState<AbUser | null>(() => getUser());
+  const [iframeReady, setIframeReady] = useState(false);
+  const [filters, setFilters] = useState<DashboardFilters>({ year: new Date().getFullYear(), assocId: null, thematique: null });
+  const qc = useQueryClient();
 
+  // Auth sync
   useEffect(() => {
     const sync = () => setUser(getUser());
     window.addEventListener("ab-auth-change", sync);
@@ -34,6 +40,7 @@ function AppIndexPage() {
     return () => window.removeEventListener("ab-auth-change", sync);
   }, []);
 
+  // Iframe load + autoLogin + nav forwarding
   useEffect(() => {
     const f = ref.current;
     if (!f || !u) return;
@@ -58,6 +65,45 @@ function AppIndexPage() {
       if (win?.nav) win.nav(page);
     } catch { /* noop */ }
   }, [page]);
+
+  // ===== Dashboard data bridge (React Query → iframe via postMessage) =====
+  const dashQ = useQuery({
+    queryKey: ["dashboard-data"],
+    queryFn: fetchDashboardData,
+    staleTime: 30_000,
+  });
+
+  // Listen for messages FROM the iframe
+  useEffect(() => {
+    const onMsg = (ev: MessageEvent) => {
+      const d = ev.data as { type?: string; year?: number; assocId?: string | null; thematique?: string | null; actionId?: string } | undefined;
+      if (!d || typeof d.type !== "string") return;
+      if (d.type === "ab-iframe-ready") {
+        setIframeReady(true);
+      } else if (d.type === "ab-filters-changed") {
+        setFilters(prev => ({
+          year: typeof d.year === "number" ? d.year : prev.year,
+          assocId: d.assocId !== undefined ? (d.assocId || null) : prev.assocId,
+          thematique: d.thematique !== undefined ? (d.thematique || null) : prev.thematique,
+        }));
+      } else if (d.type === "ab-refresh-dashboard") {
+        qc.invalidateQueries({ queryKey: ["dashboard-data"] });
+      }
+      // ab-open-eval-modal / ab-open-action handled in Lot 3
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [qc]);
+
+  // Push payload to iframe whenever data, filters, readiness or page change
+  useEffect(() => {
+    if (!iframeReady || !dashQ.data) return;
+    if (page !== "dashboard") return;
+    const f = ref.current;
+    if (!f?.contentWindow) return;
+    const payload = buildDashboardPayload(dashQ.data, filters);
+    try { f.contentWindow.postMessage(payload, "*"); } catch { /* noop */ }
+  }, [iframeReady, dashQ.data, filters, page]);
 
   return (
     <iframe
