@@ -45,6 +45,7 @@ export type DashboardFilters = {
   year?: number | null;
   assocId?: string | null;
   thematique?: string | null;
+  actionId?: string | null;
 };
 
 export type DashboardData = {
