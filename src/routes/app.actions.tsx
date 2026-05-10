@@ -287,7 +287,7 @@ function ActionsListPage() {
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
                       <Button asChild size="icon" variant="ghost" title="Référentiel Qualité — évaluer l'action" className="h-10 w-10 text-red-600 hover:text-red-700 hover:bg-red-50 animate-pulse">
-                        <Link to="/app/actions/$id/qualite" params={{ id: a.id }}>
+                        <Link to="/app" search={{ page: "qualite", qualiteAction: a.id }}>
                           <FileText className="!h-7 !w-7" />
                           <span className="sr-only">Référentiel Qualité</span>
                         </Link>

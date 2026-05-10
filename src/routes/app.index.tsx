@@ -20,16 +20,18 @@ export const Route = createFileRoute("/app/")({
     year: typeof s.year === "string" && /^\d{4}$/.test(s.year) ? Number(s.year) : (typeof s.year === "number" ? s.year : undefined),
     assoc: typeof s.assoc === "string" && s.assoc ? s.assoc : undefined,
     theme: typeof s.theme === "string" && s.theme ? s.theme : undefined,
+    qualiteAction: typeof s.qualiteAction === "string" && s.qualiteAction ? s.qualiteAction : undefined,
   }),
 });
 
 type IframeWin = Window & {
   nav?: (id: string) => void;
   autoLogin?: (login: string, opts?: { role?: string; nom?: string; assocId?: string | null }) => boolean;
+  openActionQualite?: (actionId: string) => void;
 };
 
 function AppIndexPage() {
-  const { page, year, assoc, theme } = Route.useSearch();
+  const { page, year, assoc, theme, qualiteAction } = Route.useSearch();
   const navigate = useNavigate({ from: "/app/" });
   const ref = useRef<HTMLIFrameElement>(null);
   const [u, setUser] = useState<AbUser | null>(() => getUser());
@@ -104,6 +106,8 @@ function AppIndexPage() {
         qc.invalidateQueries({ queryKey: ["dashboard-data"] });
       } else if (d.type === "ab-open-eval-modal" && typeof d.actionId === "string") {
         setEvalActionId(d.actionId);
+      } else if (d.type === "ab-open-qualite" && typeof d.actionId === "string") {
+        navigate({ search: (prev: { page?: string; qualiteAction?: string }) => ({ ...prev, page: "qualite", qualiteAction: d.actionId }) });
       }
     };
     window.addEventListener("message", onMsg);
@@ -135,6 +139,18 @@ function AppIndexPage() {
     const payload = buildDashboardPayload(dashQ.data, filters);
     try { f.contentWindow.postMessage(payload, "*"); } catch { /* noop */ }
   }, [iframeReady, dashQ.data, filters, page]);
+
+  // Trigger openActionQualite in iframe when ?page=qualite&qualiteAction=<id>
+  useEffect(() => {
+    if (page !== "qualite" || !qualiteAction || !iframeReady) return;
+    const f = ref.current;
+    if (!f?.contentWindow) return;
+    const win = f.contentWindow as IframeWin;
+    const t = setTimeout(() => {
+      try { win.openActionQualite?.(qualiteAction); } catch { /* noop */ }
+    }, 80);
+    return () => clearTimeout(t);
+  }, [page, qualiteAction, iframeReady]);
 
   return (
     <>
