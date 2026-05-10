@@ -302,6 +302,97 @@ function ActionsListPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
+        <DialogContent className="max-w-none w-screen h-screen sm:rounded-none p-0 gap-0 overflow-hidden">
+          {viewing && (
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
+                <Button variant="ghost" size="sm" onClick={() => setViewing(null)}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Retour à la table
+                </Button>
+                <div className="flex items-center gap-2">
+                  <span className={`rounded-full border px-2 py-0.5 text-xs ${STATUT_VARIANT[viewing.statut]}`}>
+                    {labelOf(STATUT_OPTIONS, viewing.statut)}
+                  </span>
+                  {canEditAction(user, viewing) && (
+                    <Button size="sm" variant="outline" onClick={() => { setEditing(viewing); setViewing(null); setDialogOpen(true); }}>
+                      <Pencil className="mr-2 h-4 w-4" /> Modifier
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-8">
+                <div className="mx-auto max-w-5xl space-y-6">
+                  <div>
+                    <div className="text-xs uppercase text-muted-foreground">{viewing.annee ?? ""} · {assocMap.get(viewing.assoc_id) ?? ""}</div>
+                    <h2 className="text-3xl font-bold">{viewing.titre}</h2>
+                  </div>
+                  <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-3">
+                    <div><dt className="text-xs uppercase text-muted-foreground">Réf. interne</dt><dd className="font-medium">{viewing.ref ?? "—"}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Réf. administrative</dt><dd className="font-medium">{viewing.reference_administrative ?? "—"}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Commune</dt><dd className="font-medium">{viewing.commune ?? "—"}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">QPV</dt><dd className="font-medium">{labelOf(QPV_OPTIONS, viewing.qpv_key)}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Thématique</dt><dd className="font-medium">{viewing.thematique ?? "—"}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Type</dt><dd className="font-medium">{viewing.type_action ?? "—"}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Date début</dt><dd className="font-medium">{frDate(viewing.date_debut)}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Date fin</dt><dd className="font-medium">{frDate(viewing.date_fin)}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Bénéficiaires prévus</dt><dd className="font-medium">{viewing.nb_beneficiaires_prevu ?? "—"}</dd></div>
+                  </dl>
+                  {viewing.description && (
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Description</h3>
+                      <p className="mt-1 whitespace-pre-line text-sm">{viewing.description}</p>
+                    </div>
+                  )}
+                  {viewing.objectifs && (
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Objectifs</h3>
+                      <p className="mt-1 whitespace-pre-line text-sm">{viewing.objectifs}</p>
+                    </div>
+                  )}
+                  {(viewing.public_quartiers ?? []).length > 0 && (
+                    <div>
+                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Public touché par quartier</h3>
+                      <div className="overflow-hidden rounded-lg border border-border">
+                        <table className="w-full text-sm">
+                          <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Quartier</th><th className="px-3 py-2 text-right">Nombre</th></tr></thead>
+                          <tbody>
+                            {(viewing.public_quartiers ?? []).map((p, i) => (
+                              <tr key={i} className="border-t border-border"><td className="px-3 py-2">{p.quartier}</td><td className="px-3 py-2 text-right">{p.nombre}</td></tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                  {(viewing.budget_financeurs ?? []).length > 0 && (
+                    <div>
+                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Budget — Financeurs</h3>
+                      <div className="overflow-hidden rounded-lg border border-border">
+                        <table className="w-full text-sm">
+                          <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Année</th><th className="px-3 py-2">Financeur</th><th className="px-3 py-2">Type</th><th className="px-3 py-2 text-right">Sollicité</th><th className="px-3 py-2 text-right">Favorable</th></tr></thead>
+                          <tbody>
+                            {(viewing.budget_financeurs ?? []).map((b, i) => (
+                              <tr key={i} className="border-t border-border">
+                                <td className="px-3 py-2">{b.annee}</td>
+                                <td className="px-3 py-2">{b.financeur}</td>
+                                <td className="px-3 py-2">{b.type}</td>
+                                <td className="px-3 py-2 text-right">{(Number(b.montant_sollicite ?? b.montant ?? 0) || 0).toLocaleString("fr-FR")} €</td>
+                                <td className="px-3 py-2 text-right">{(Number(b.montant_favorable ?? 0) || 0).toLocaleString("fr-FR")} €</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
