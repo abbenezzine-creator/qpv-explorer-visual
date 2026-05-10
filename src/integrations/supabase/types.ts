@@ -240,6 +240,59 @@ export type Database = {
           },
         ]
       }
+      evaluations_beneficiaires: {
+        Row: {
+          action_id: string
+          beneficiaire_age: number | null
+          beneficiaire_genre: string | null
+          beneficiaire_nom: string | null
+          commentaire: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          phase: string
+          reponses: Json
+          satisfaction: number | null
+          updated_at: string
+        }
+        Insert: {
+          action_id: string
+          beneficiaire_age?: number | null
+          beneficiaire_genre?: string | null
+          beneficiaire_nom?: string | null
+          commentaire?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          phase: string
+          reponses?: Json
+          satisfaction?: number | null
+          updated_at?: string
+        }
+        Update: {
+          action_id?: string
+          beneficiaire_age?: number | null
+          beneficiaire_genre?: string | null
+          beneficiaire_nom?: string | null
+          commentaire?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          phase?: string
+          reponses?: Json
+          satisfaction?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_beneficiaires_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           assoc_id: string | null
@@ -268,6 +321,84 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_assoc_id_fkey"
+            columns: ["assoc_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referentiel_qualite: {
+        Row: {
+          action_id: string
+          assoc_id: string
+          c1: number | null
+          c10: number | null
+          c2: number | null
+          c3: number | null
+          c4: number | null
+          c5: number | null
+          c6: number | null
+          c7: number | null
+          c8: number | null
+          c9: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          score_global: number | null
+          synthese: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_id: string
+          assoc_id: string
+          c1?: number | null
+          c10?: number | null
+          c2?: number | null
+          c3?: number | null
+          c4?: number | null
+          c5?: number | null
+          c6?: number | null
+          c7?: number | null
+          c8?: number | null
+          c9?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          score_global?: number | null
+          synthese?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_id?: string
+          assoc_id?: string
+          c1?: number | null
+          c10?: number | null
+          c2?: number | null
+          c3?: number | null
+          c4?: number | null
+          c5?: number | null
+          c6?: number | null
+          c7?: number | null
+          c8?: number | null
+          c9?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          score_global?: number | null
+          synthese?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referentiel_qualite_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referentiel_qualite_assoc_id_fkey"
             columns: ["assoc_id"]
             isOneToOne: false
             referencedRelation: "associations"
