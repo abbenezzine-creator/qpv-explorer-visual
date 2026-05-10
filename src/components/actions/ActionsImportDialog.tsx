@@ -318,10 +318,10 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
         const get = (k: string) => mapping[k] ? r[mapping[k]] : null;
         const refVal = get("ref");
         const refStr = refVal != null && refVal !== "" ? String(refVal) : null;
-        const budgetLines = refStr ? budgetByRef.get(norm(refStr)) ?? null : null;
+        const budgetLines = refStr ? linesByRef.get(norm(refStr)) ?? null : null;
 
-        const totalFavorable = budgetLines?.reduce((s, l) => s + (Number(l.montant_favorable) || 0), 0) ?? 0;
-        const totalSollicite = budgetLines?.reduce((s, l) => s + (Number(l.montant_sollicite) || 0), 0) ?? 0;
+        const totalFavorable = budgetLines?.reduce((s: number, l: any) => s + (Number(l.montant_favorable) || 0), 0) ?? 0;
+        const totalSollicite = budgetLines?.reduce((s: number, l: any) => s + (Number(l.montant_sollicite) || 0), 0) ?? 0;
 
         payload.push({
           titre: String(titre).slice(0, 500),
