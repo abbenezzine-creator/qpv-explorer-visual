@@ -146,7 +146,6 @@ export function AppSidebar() {
   );
 
   const isSuperAdmin = user?.role === "superadmin";
-  void isSuperAdmin;
 
   return (
     <Sidebar collapsible="icon">
