@@ -7,6 +7,7 @@ import { toast } from "sonner";
 type Props = {
   actionId: string | null;
   onClose: () => void;
+  prefill?: { title?: string; asso?: string; year?: string };
 };
 
 type SurveyPayload = {
