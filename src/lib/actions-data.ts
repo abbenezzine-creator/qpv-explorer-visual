@@ -40,8 +40,7 @@ export const THEMATIQUE_OPTIONS = [
 export const JOURS_OPTIONS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"] as const;
 
 export const QUARTIERS_OPTIONS = [
-  "Argonne","Blossières","Dauphine","La Source","Fleury-les-Aubrais",
-  "St-Jean-de-la-Ruelle","St-Jean-de-Braye","Tous QPV",
+  "Argonne","La Source","Blossières","Dauphine",
 ] as const;
 
 export const TRANCHES_AGE_OPTIONS = [
