@@ -433,6 +433,7 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
     html: {
       stats: statsHtml(data, filters),
       actions: actionsListHtml(data, filters),
+      allActions: allActionsByThemeHtml(data, filters),
       timeline: timelineHtml(data, filters),
       qualite: qualiteHtml(data, filters),
     },
