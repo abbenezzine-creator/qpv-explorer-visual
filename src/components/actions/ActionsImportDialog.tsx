@@ -442,6 +442,19 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
                   )}
                 </div>
 
+                <div>
+                  <Label>Année par défaut du budget</Label>
+                  <Input
+                    type="number"
+                    value={budgetDefaultYear}
+                    onChange={(e) => setBudgetDefaultYear(e.target.value)}
+                    className="max-w-[160px]"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Année en cours par défaut, modifiable. Utilisée si la colonne Année n'est pas renseignée pour une ligne.
+                  </p>
+                </div>
+
                 {budgetHeaders.length > 0 && (
                   <div className="rounded-lg border bg-card p-3">
                     <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
