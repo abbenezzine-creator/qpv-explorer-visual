@@ -175,8 +175,7 @@ function ActionsListPage() {
               <th className="px-3 py-2">Titre</th>
               <th className="px-3 py-2">Association</th>
               <th className="px-3 py-2">Dates</th>
-              <th className="px-3 py-2">Description</th>
-              <th className="px-3 py-2">Objectifs</th>
+              <th className="px-3 py-2">Description / Objectifs</th>
               <th className="px-3 py-2 text-right">Sollicité</th>
               <th className="px-3 py-2">QPV</th>
               <th className="px-3 py-2">Thématique</th>
@@ -186,10 +185,10 @@ function ActionsListPage() {
           </thead>
           <tbody>
             {actionsQ.isLoading && (
-              <tr><td colSpan={11} className="px-3 py-6 text-center text-muted-foreground">Chargement…</td></tr>
+              <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">Chargement…</td></tr>
             )}
             {!actionsQ.isLoading && filtered.length === 0 && (
-              <tr><td colSpan={11} className="px-3 py-6 text-center text-muted-foreground">Aucune action ne correspond aux filtres.</td></tr>
+              <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">Aucune action ne correspond aux filtres.</td></tr>
             )}
             {filtered.map((a) => {
               const editable = canEditAction(user, a);
@@ -202,8 +201,13 @@ function ActionsListPage() {
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
                     {frDate(a.date_debut)}{a.date_fin ? <> → {frDate(a.date_fin)}</> : null}
                   </td>
-                  <td className="px-3 py-2 max-w-[18rem] truncate" title={a.description ?? ""}>{a.description ?? "—"}</td>
-                  <td className="px-3 py-2 max-w-[18rem] truncate" title={a.objectifs ?? ""}>{a.objectifs ?? "—"}</td>
+                  <td className="px-3 py-2 max-w-[24rem] align-top">
+                    <div className="whitespace-pre-line text-sm">
+                      {a.description ? <div>{a.description}</div> : null}
+                      {a.objectifs ? <div className="mt-1 text-muted-foreground"><span className="font-medium text-foreground">Objectifs : </span>{a.objectifs}</div> : null}
+                      {!a.description && !a.objectifs ? "—" : null}
+                    </div>
+                  </td>
                   <td className="px-3 py-2 text-right whitespace-nowrap">{sollicite ? `${sollicite.toLocaleString("fr-FR")} €` : "—"}</td>
                   <td className="px-3 py-2">{labelOf(QPV_OPTIONS, a.qpv_key)}</td>
                   <td className="px-3 py-2">{a.thematique ?? "—"}</td>
