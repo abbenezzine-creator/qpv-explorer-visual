@@ -5401,6 +5401,21 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     #addActionModal .budget-tbl thead th{background:linear-gradient(135deg,oklch(0.97 0.025 285),oklch(0.96 0.03 240))}
     #addActionModal .budget-total-row td{background:linear-gradient(135deg,oklch(0.97 0.04 285),oklch(0.96 0.05 240));font-weight:800}
     #addActionModal .bg-year{font-family:'JetBrains Mono',monospace;font-weight:700;text-align:center;color:var(--primary)}
+    /* Action card buttons — Référentiel & Bénéficiaires (Supabase dashboard) */
+    @keyframes refMauveBlink{0%,100%{box-shadow:0 0 0 0 oklch(0.62 0.22 305 / .55)}50%{box-shadow:0 0 0 6px oklch(0.62 0.22 305 / 0)}}
+    @keyframes benefRedBlink2{0%,100%{box-shadow:0 0 0 0 oklch(0.62 0.24 25 / .55)}50%{box-shadow:0 0 0 6px oklch(0.62 0.24 25 / 0)}}
+    .btn-ref{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:5px 10px;border-radius:8px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .18s;font-family:inherit}
+    .btn-ref.is-pending{background:oklch(0.62 0.22 305);color:#fff;border-color:oklch(0.55 0.22 305);animation:refMauveBlink 1.4s ease-in-out infinite}
+    .btn-ref.is-pending:hover{background:oklch(0.55 0.22 305)}
+    .btn-ref.is-done{background:oklch(0.55 0.16 150);color:#fff;border-color:oklch(0.48 0.16 150)}
+    .btn-ref.is-done:hover{background:oklch(0.48 0.16 150)}
+    .btn-bf{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:5px 10px;border-radius:8px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .18s;font-family:inherit}
+    .btn-bf.is-empty{background:oklch(0.62 0.24 25);color:#fff;border-color:oklch(0.55 0.24 25);animation:benefRedBlink2 1.2s ease-in-out infinite}
+    .btn-bf.is-empty:hover{background:oklch(0.55 0.24 25)}
+    .btn-bf.is-filled{background:transparent;color:oklch(0.55 0.22 305);border:1.5px solid oklch(0.62 0.22 305)}
+    .btn-bf.is-filled:hover{background:oklch(0.62 0.22 305);color:#fff}
+    .btn-ref .cnt,.btn-bf .cnt{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:rgba(255,255,255,.25);font-size:10px;font-weight:800}
+    .btn-bf.is-filled .cnt{background:oklch(0.62 0.22 305 / .15);color:oklch(0.55 0.22 305)}
   `;
   document.head.appendChild(st);
 
