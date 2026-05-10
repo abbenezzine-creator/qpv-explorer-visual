@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  AXIS_OPTIONS, QPV_OPTIONS, STATUT_OPTIONS,
+  QPV_OPTIONS, STATUT_OPTIONS,
   TYPE_ACTION_OPTIONS, THEMATIQUE_OPTIONS, JOURS_OPTIONS,
   QUARTIERS_OPTIONS, TRANCHES_AGE_OPTIONS, RECURRENCE_OPTIONS,
   type Action, type Association, type AxisKey, type QpvKey, type StatutKey,
