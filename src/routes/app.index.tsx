@@ -20,6 +20,7 @@ export const Route = createFileRoute("/app/")({
     year: typeof s.year === "string" && /^\d{4}$/.test(s.year) ? Number(s.year) : (typeof s.year === "number" ? s.year : undefined),
     assoc: typeof s.assoc === "string" && s.assoc ? s.assoc : undefined,
     theme: typeof s.theme === "string" && s.theme ? s.theme : undefined,
+    dashAction: typeof s.dashAction === "string" && s.dashAction ? s.dashAction : undefined,
     qualiteAction: typeof s.qualiteAction === "string" && s.qualiteAction ? s.qualiteAction : undefined,
   }),
 });
