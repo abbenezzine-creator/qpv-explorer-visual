@@ -63,7 +63,7 @@ const admin: NavItem[] = [
   { title: "Questionnaire thématique", to: "/app", search: { page: "questionnaire-thematique" }, icon: ListChecks },
 ];
 
-const ALL_LABEL = "Toutes les associations";
+
 
 export function AppSidebar() {
   const { state } = useSidebar();
