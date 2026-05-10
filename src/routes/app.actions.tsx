@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Eye, ClipboardList, Pencil, Search, Trash2, Upload, History, ArrowLeft } from "lucide-react";
+import { Plus, Eye, ClipboardList, Pencil, Search, Trash2, Upload, History, ArrowLeft, FileText } from "lucide-react";
 import { ActionFormDialog } from "@/components/actions/ActionFormDialog";
 import { ActionsImportDialog } from "@/components/actions/ActionsImportDialog";
 import { ActionsRestoreDialog } from "@/components/actions/ActionsRestoreDialog";
