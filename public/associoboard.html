@@ -1218,6 +1218,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     var s = document.getElementById('dashStats');     if(s && dashCache.stats)    s.innerHTML = dashCache.stats;
     var a = document.getElementById('dashActions');   if(a && dashCache.actions)  a.innerHTML = dashCache.actions;
     var t = document.getElementById('dashTL');        if(t && dashCache.timeline) t.innerHTML = dashCache.timeline;
+    var q = document.getElementById('dashQualite');   if(q && dashCache.qualite)  q.innerHTML = dashCache.qualite;
   }
   window.__abApplyDash = applyDash;
   window.addEventListener('message', function(ev){
@@ -1229,12 +1230,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   else window.addEventListener('load', pingReady);
   // Re-apply our cached payload AFTER renderDashboard() runs (so we win the slot)
   var _origRender = null;
+  var _origQual = null;
   function patchRender(){
     if(typeof window.renderDashboard === 'function' && window.renderDashboard !== _patchedRender){
       _origRender = window.renderDashboard; window.renderDashboard = _patchedRender;
     }
+    if(typeof window.renderQualiteProgressDash === 'function' && window.renderQualiteProgressDash !== _patchedQual){
+      _origQual = window.renderQualiteProgressDash; window.renderQualiteProgressDash = _patchedQual;
+    }
   }
   function _patchedRender(){ try{ _origRender && _origRender.apply(this, arguments); }catch(e){} setTimeout(applyDash, 0); }
+  function _patchedQual(){ try{ _origQual && _origQual.apply(this, arguments); }catch(e){} setTimeout(applyDash, 0); }
   // Try patching now and after script loads
   patchRender();
   setTimeout(patchRender, 0);
