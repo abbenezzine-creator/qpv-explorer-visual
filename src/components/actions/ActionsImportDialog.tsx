@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { STATUT_OPTIONS, QPV_OPTIONS, AXIS_OPTIONS, type Association } from "@/lib/actions-data";
-import { IdCard, CalendarClock, Users, MapPin, Target, Wallet } from "lucide-react";
+import { IdCard, CalendarClock, Users, MapPin, Target, Wallet, Building2 } from "lucide-react";
 
 type Props = {
   open: boolean;
