@@ -175,8 +175,7 @@ function ActionsListPage() {
               <th className="px-3 py-2">Titre</th>
               <th className="px-3 py-2">Association</th>
               <th className="px-3 py-2">Dates</th>
-              <th className="px-3 py-2">Description</th>
-              <th className="px-3 py-2">Objectifs</th>
+              <th className="px-3 py-2">Description / Objectifs</th>
               <th className="px-3 py-2 text-right">Sollicité</th>
               <th className="px-3 py-2">QPV</th>
               <th className="px-3 py-2">Thématique</th>
