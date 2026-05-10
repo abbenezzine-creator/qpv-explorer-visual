@@ -167,7 +167,18 @@ function AppIndexPage() {
         src={`/associoboard.html#page=${encodeURIComponent(page)}`}
         className="h-[calc(100vh-3rem)] w-full border-0"
       />
-      <EvalBeneficiaireModal actionId={evalActionId} onClose={() => setEvalActionId(null)} />
+      <EvalBeneficiaireModal
+        actionId={evalActionId}
+        onClose={() => setEvalActionId(null)}
+        prefill={(() => {
+          if (!evalActionId || !dashQ.data) return undefined;
+          const a = dashQ.data.actions.find((x) => x.id === evalActionId);
+          if (!a) return undefined;
+          const assocName = dashQ.data.associations.find((s) => s.id === a.assoc_id)?.nom ?? "";
+          const yr = a.annee ?? (a.date_debut ? Number(a.date_debut.slice(0, 4)) : undefined);
+          return { title: a.titre ?? "", asso: assocName, year: yr ? String(yr) : "" };
+        })()}
+      />
     </>
   );
 }

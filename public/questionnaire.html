@@ -1273,9 +1273,10 @@
           <input type="text" name="asso" placeholder="Exemple : AJLA, UPA, CRIA45, JAM…">
         </div>
         <div class="field">
-          <label>Quand avez-vous commencé ?</label>
-          <input type="date" name="date_debut">
+          <label>Année de l'action</label>
+          <input type="number" name="annee" min="2000" max="2100" placeholder="Ex : 2026">
         </div>
+
       </div>
 
       <div class="field">
@@ -3989,9 +3990,10 @@ init();
   css.textContent = 'body{background:#f9fafb;padding:0}.container{box-shadow:none;border-radius:0;max-width:none}.btn-grille-flottant{display:none}';
   document.head.appendChild(css);
 
-  const setVal = (n,v)=>{ const el=document.querySelector(`[name="${n}"]`); if(el && v) el.value=v; };
+  const setVal = (n,v)=>{ const el=document.querySelector(`[name="${n}"]`); if(el && v!=null && v!=='') { el.value=v; el.setAttribute('readonly','readonly'); el.style.background='#f3f4f6'; } };
   setVal('action', params.get('title')||'');
   setVal('asso',   params.get('asso')||'');
+  setVal('annee',  params.get('year')||'');
 
   const wantTheme = params.get('theme');
   const wantSous  = params.get('sousTheme');
@@ -4043,7 +4045,7 @@ init();
           bailleur: (document.querySelector('[name="bailleur"]')||{}).value || '',
           asso: (document.querySelector('[name="asso"]')||{}).value || '',
           action: (document.querySelector('[name="action"]')||{}).value || '',
-          date_debut: (document.querySelector('[name="date_debut"]')||{}).value || ''
+          annee: (document.querySelector('[name="annee"]')||{}).value || ''
         },
         thematique: d.thematique,
         thematique_label: themaLabel,

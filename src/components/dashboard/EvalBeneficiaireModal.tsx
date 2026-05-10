@@ -7,6 +7,7 @@ import { toast } from "sonner";
 type Props = {
   actionId: string | null;
   onClose: () => void;
+  prefill?: { title?: string; asso?: string; year?: string };
 };
 
 type SurveyPayload = {
@@ -23,7 +24,7 @@ type SurveyPayload = {
   [k: string]: unknown;
 };
 
-export function EvalBeneficiaireModal({ actionId, onClose }: Props) {
+export function EvalBeneficiaireModal({ actionId, onClose, prefill }: Props) {
   const open = !!actionId;
   const qc = useQueryClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -71,6 +72,9 @@ export function EvalBeneficiaireModal({ actionId, onClose }: Props) {
 
   const src = actionId
     ? `/questionnaire.html?embed=1&action=${encodeURIComponent(actionId)}`
+      + `&title=${encodeURIComponent(prefill?.title ?? "")}`
+      + `&asso=${encodeURIComponent(prefill?.asso ?? "")}`
+      + `&year=${encodeURIComponent(prefill?.year ?? "")}`
     : "";
 
   return (
