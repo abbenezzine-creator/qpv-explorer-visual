@@ -27,7 +27,9 @@ export const Route = createFileRoute("/app/associations")({
 type Row = Association;
 
 function AssociationsPage() {
-  const user = getUser();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const user = mounted ? getUser() : null;
   const isSuper = user?.role === "superadmin";
   const qc = useQueryClient();
   const [showAllPwd, setShowAllPwd] = useState(false);
