@@ -201,6 +201,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
 
   const totalSollicite = budgetLines.reduce((s, l) => s + (Number(l.montant_sollicite) || 0), 0);
   const totalFavorable = budgetLines.reduce((s, l) => s + (Number(l.montant_favorable) || 0), 0);
+  const totalN1 = budgetLines.reduce((s, l) => s + (Number(l.montant_n1) || 0), 0);
 
   const handleSave = async () => {
     if (!titre.trim()) { toast.error("Le titre est obligatoire"); return; }
@@ -210,11 +211,13 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
     const cleanFonctions = fonctions.map(f => f.trim()).filter(Boolean);
     const cleanLieux = lieux.filter(l => l.nom.trim()).map(l => ({ nom: l.nom.trim() }));
     const cleanBudget = budgetLines
-      .filter(b => b.financeur.trim() || b.montant_sollicite || b.montant_favorable)
+      .filter(b => b.financeur.trim() || b.montant_sollicite || b.montant_favorable || b.montant_n1)
       .map(b => ({
         annee: b.annee,
         financeur: b.financeur,
         type: b.type,
+        annee_n1: b.annee_n1 || String((Number(b.annee) || currentYear) - 1),
+        montant_n1: Number(b.montant_n1) || 0,
         montant_sollicite: Number(b.montant_sollicite) || 0,
         montant_favorable: Number(b.montant_favorable) || 0,
         montant: Number(b.montant_favorable) || Number(b.montant_sollicite) || 0,
