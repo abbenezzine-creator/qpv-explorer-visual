@@ -1224,7 +1224,33 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   window.addEventListener('message', function(ev){
     var d = ev && ev.data; if(!d) return;
     if(d.type === 'ab-supabase-dashboard'){
-      dashCache = d.html || {}; applyDash(); return;
+      dashCache = d.html || {}; applyDash();
+      try{
+        var meta = d.meta || {};
+        var sel = function(id){ return document.getElementById(id); };
+        var esc = function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+        var yf = sel('yearFilter');
+        if(yf && Array.isArray(meta.years)){
+          var cur = (meta.selected && meta.selected.year) || parseInt(yf.value, 10) || new Date().getFullYear();
+          var ys = meta.years.length ? meta.years : [new Date().getFullYear()];
+          if(ys.indexOf(cur) === -1) ys = [cur].concat(ys);
+          yf.innerHTML = ys.map(function(y){ return '<option value="'+y+'"'+(y===cur?' selected':'')+'>'+y+'</option>'; }).join('');
+        }
+        var ts = sel('globalThemeSel');
+        if(ts && Array.isArray(meta.themes)){
+          var ct = (meta.selected && meta.selected.thematique) || ts.value || '';
+          ts.innerHTML = '<option value="">Toutes thématiques</option>' +
+            meta.themes.map(function(t){ return '<option value="'+esc(t)+'"'+(t===ct?' selected':'')+'>'+esc(t)+'</option>'; }).join('');
+        }
+        var as = sel('assocGlobalSel');
+        if(as && Array.isArray(meta.assocs)){
+          var ca = (meta.selected && meta.selected.assocId) || as.value || '';
+          as.innerHTML = '<option value="">— Toutes les associations —</option>' +
+            meta.assocs.map(function(a){ return '<option value="'+esc(a.id)+'"'+(a.id===ca?' selected':'')+'>'+esc(a.nom)+'</option>'; }).join('');
+          var aw = document.getElementById('assocSelWrap'); if(aw) aw.style.display = '';
+        }
+      }catch(e){}
+      return;
     }
     if(d.type === 'ab-load-qualite'){
       // Populate qualite dropdowns from Supabase data and select the target action
