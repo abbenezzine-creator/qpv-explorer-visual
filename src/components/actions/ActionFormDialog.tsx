@@ -26,6 +26,7 @@ type Props = {
   associations: Association[];
   initial?: Action | null;
   onSaved: () => unknown | Promise<unknown>;
+  thematiqueOptions?: string[];
 };
 
 const currentYear = new Date().getFullYear();
