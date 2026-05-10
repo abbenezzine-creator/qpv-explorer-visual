@@ -218,6 +218,43 @@ function ActionsListPage() {
         initial={editing}
         onSaved={refresh}
       />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette action ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              « {deleteTarget?.titre} » sera supprimée définitivement, ainsi que ses évaluations associées. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={async (e) => {
+                e.preventDefault();
+                if (!deleteTarget) return;
+                setDeleting(true);
+                try {
+                  await supabase.from("evaluations").delete().eq("action_id", deleteTarget.id);
+                  const { error } = await supabase.from("actions").delete().eq("id", deleteTarget.id);
+                  if (error) throw error;
+                  toast.success("Action supprimée");
+                  setDeleteTarget(null);
+                  refresh();
+                } catch (err: any) {
+                  toast.error(err?.message ?? "Échec de la suppression");
+                } finally {
+                  setDeleting(false);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Suppression…" : "Supprimer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
