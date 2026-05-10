@@ -6667,6 +6667,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       assocs: meta.assocs || [],
       actions: meta.actions || [],
     };
+    if(meta.selected){
+      window.__dashFilters = {
+        assoc: meta.selected.assocId || '',
+        action: meta.selected.actionId || '',
+        theme: meta.selected.thematique || '',
+        year: meta.selected.year ? String(meta.selected.year) : '',
+      };
+    }
     populate();
   };
   function syncTopbar(){
