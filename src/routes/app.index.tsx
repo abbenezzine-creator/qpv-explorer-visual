@@ -140,17 +140,24 @@ function AppIndexPage() {
     try { f.contentWindow.postMessage(payload, "*"); } catch { /* noop */ }
   }, [iframeReady, dashQ.data, filters, page]);
 
-  // Trigger openActionQualite in iframe when ?page=qualite&qualiteAction=<id>
+  // When ?page=qualite&qualiteAction=<id> → push Supabase assoc/action lists into the iframe selectors
   useEffect(() => {
-    if (page !== "qualite" || !qualiteAction || !iframeReady) return;
+    if (page !== "qualite" || !qualiteAction || !iframeReady || !dashQ.data) return;
     const f = ref.current;
     if (!f?.contentWindow) return;
-    const win = f.contentWindow as IframeWin;
+    const win = f.contentWindow;
     const t = setTimeout(() => {
-      try { win.openActionQualite?.(qualiteAction); } catch { /* noop */ }
-    }, 80);
+      try {
+        win.postMessage({
+          type: "ab-load-qualite",
+          actionId: qualiteAction,
+          associations: dashQ.data!.associations,
+          actions: dashQ.data!.actions.map(a => ({ id: a.id, titre: a.titre, assoc_id: a.assoc_id })),
+        }, "*");
+      } catch { /* noop */ }
+    }, 120);
     return () => clearTimeout(t);
-  }, [page, qualiteAction, iframeReady]);
+  }, [page, qualiteAction, iframeReady, dashQ.data]);
 
   return (
     <>
