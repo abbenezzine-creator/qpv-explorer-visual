@@ -110,6 +110,22 @@ function AppIndexPage() {
     return () => window.removeEventListener("message", onMsg);
   }, [qc, navigate]);
 
+  // ===== Realtime → invalidate dashboard cache on any backend change =====
+  useEffect(() => {
+    const channel = supabase
+      .channel("dashboard-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "actions" },
+        () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "evaluations_beneficiaires" },
+        () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "referentiel_qualite" },
+        () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "associations" },
+        () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [qc]);
+
   // Push payload to iframe whenever data, filters, readiness or page change
   useEffect(() => {
     if (!iframeReady || !dashQ.data) return;
