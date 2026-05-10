@@ -56,6 +56,7 @@ function EvaluationFormPage() {
   const [nom, setNom] = useState("");
   const [age, setAge] = useState("");
   const [genre, setGenre] = useState("");
+  const [quartier, setQuartier] = useState("");
   const [commentaire, setCommentaire] = useState("");
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
