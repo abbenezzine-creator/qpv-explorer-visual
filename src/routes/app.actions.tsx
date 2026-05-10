@@ -63,7 +63,8 @@ function ActionsListPage() {
   const [q, setQ] = useState("");
   const [fAssoc, setFAssoc] = useState<string>(ALL);
   const [fQpv, setFQpv] = useState<string>(ALL);
-  const [fAxis, setFAxis] = useState<string>(ALL);
+  const [fThematique, setFThematique] = useState<string>(ALL);
+  const [viewing, setViewing] = useState<Action | null>(null);
   const [fStatut, setFStatut] = useState<string>(ALL);
 
   const assocsQ = useQuery({ queryKey: ["associations"], queryFn: fetchAssociations });
@@ -92,7 +93,7 @@ function ActionsListPage() {
     return list.filter((a) => {
       if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
       if (fQpv !== ALL && a.qpv_key !== fQpv) return false;
-      if (fAxis !== ALL && a.axis_key !== fAxis) return false;
+      if (fThematique !== ALL && a.thematique !== fThematique) return false;
       if (fStatut !== ALL && a.statut !== fStatut) return false;
       if (q.trim()) {
         const needle = q.trim().toLowerCase();
@@ -101,7 +102,7 @@ function ActionsListPage() {
       }
       return true;
     });
-  }, [actionsQ.data, fAssoc, fQpv, fAxis, fStatut, q]);
+  }, [actionsQ.data, fAssoc, fQpv, fThematique, fStatut, q]);
 
   const refresh = () => actionsQ.refetch();
   const canCreate = canCreateAny(user);
@@ -151,11 +152,11 @@ function ActionsListPage() {
             {QPV_OPTIONS.map((o) => <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={fAxis} onValueChange={setFAxis}>
-          <SelectTrigger><SelectValue placeholder="Axe" /></SelectTrigger>
+        <Select value={fThematique} onValueChange={setFThematique}>
+          <SelectTrigger><SelectValue placeholder="Thématique" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>Tous axes</SelectItem>
-            {AXIS_OPTIONS.map((o) => <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>)}
+            <SelectItem value={ALL}>Toutes thématiques</SelectItem>
+            {THEMATIQUE_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={fStatut} onValueChange={setFStatut}>
@@ -171,44 +172,51 @@ function ActionsListPage() {
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
+              <th className="px-3 py-2">Année</th>
               <th className="px-3 py-2">Titre</th>
               <th className="px-3 py-2">Association</th>
-              <th className="px-3 py-2">QPV</th>
-              <th className="px-3 py-2">Axe</th>
-              <th className="px-3 py-2">Statut</th>
               <th className="px-3 py-2">Dates</th>
+              <th className="px-3 py-2">Description</th>
+              <th className="px-3 py-2">Objectifs</th>
+              <th className="px-3 py-2 text-right">Sollicité</th>
+              <th className="px-3 py-2">QPV</th>
+              <th className="px-3 py-2">Thématique</th>
+              <th className="px-3 py-2">Statut</th>
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {actionsQ.isLoading && (
-              <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">Chargement…</td></tr>
+              <tr><td colSpan={11} className="px-3 py-6 text-center text-muted-foreground">Chargement…</td></tr>
             )}
             {!actionsQ.isLoading && filtered.length === 0 && (
-              <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">Aucune action ne correspond aux filtres.</td></tr>
+              <tr><td colSpan={11} className="px-3 py-6 text-center text-muted-foreground">Aucune action ne correspond aux filtres.</td></tr>
             )}
             {filtered.map((a) => {
               const editable = canEditAction(user, a);
+              const sollicite = (a.budget_financeurs ?? []).reduce((s, l) => s + (Number(l.montant_sollicite ?? l.montant ?? 0) || 0), 0);
               return (
                 <tr key={a.id} className="border-t border-border hover:bg-muted/30">
+                  <td className="px-3 py-2 font-semibold text-primary">{a.annee ?? "—"}</td>
                   <td className="px-3 py-2 font-medium">{a.titre}</td>
                   <td className="px-3 py-2">{assocMap.get(a.assoc_id) ?? "—"}</td>
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
+                    {frDate(a.date_debut)}{a.date_fin ? <> → {frDate(a.date_fin)}</> : null}
+                  </td>
+                  <td className="px-3 py-2 max-w-[18rem] truncate" title={a.description ?? ""}>{a.description ?? "—"}</td>
+                  <td className="px-3 py-2 max-w-[18rem] truncate" title={a.objectifs ?? ""}>{a.objectifs ?? "—"}</td>
+                  <td className="px-3 py-2 text-right whitespace-nowrap">{sollicite ? `${sollicite.toLocaleString("fr-FR")} €` : "—"}</td>
                   <td className="px-3 py-2">{labelOf(QPV_OPTIONS, a.qpv_key)}</td>
-                  <td className="px-3 py-2">{labelOf(AXIS_OPTIONS, a.axis_key)}</td>
+                  <td className="px-3 py-2">{a.thematique ?? "—"}</td>
                   <td className="px-3 py-2">
                     <span className={`inline-block rounded-full border px-2 py-0.5 text-xs ${STATUT_VARIANT[a.statut]}`}>
                       {labelOf(STATUT_OPTIONS, a.statut)}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">
-                    {a.date_debut ?? "—"} → {a.date_fin ?? "—"}
-                  </td>
                   <td className="px-3 py-2">
                     <div className="flex justify-end gap-1">
-                      <Button asChild size="sm" variant="ghost">
-                        <Link to="/app/actions/$id" params={{ id: a.id }}>
-                          <Eye className="h-4 w-4" />
-                        </Link>
+                      <Button size="sm" variant="ghost" onClick={() => setViewing(a)} title="Voir en plein écran">
+                        <Eye className="h-4 w-4" />
                       </Button>
                       {editable && (
                         <Button asChild size="sm" variant="ghost">
