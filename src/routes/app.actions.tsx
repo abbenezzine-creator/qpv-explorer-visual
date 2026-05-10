@@ -54,6 +54,8 @@ function ActionsListPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const user = mounted ? getUser() : null;
+  const { state: sidebarState, isMobile } = useSidebar();
+  const sidebarOffset = isMobile ? "0px" : (sidebarState === "collapsed" ? "3rem" : "16rem");
   const [editing, setEditing] = useState<Action | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Action | null>(null);
