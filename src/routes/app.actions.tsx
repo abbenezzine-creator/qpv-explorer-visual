@@ -175,6 +175,7 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Thématique" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes thématiques</SelectItem>
+            <SelectItem value={QPV_ORLEANS}>QPV d'Orléans (Argonne, La Source, Dauphine, Les Blossières)</SelectItem>
             {THEMATIQUE_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
