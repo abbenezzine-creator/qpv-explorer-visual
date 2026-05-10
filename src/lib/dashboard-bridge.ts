@@ -369,6 +369,10 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
     .slice()
     .sort((a, b) => (a.nom ?? "").localeCompare(b.nom ?? "", "fr"))
     .map(a => ({ id: a.id, nom: a.nom }));
+  const actionsMeta = data.actions
+    .slice()
+    .sort((a, b) => (a.titre ?? "").localeCompare(b.titre ?? "", "fr"))
+    .map(a => ({ id: a.id, titre: a.titre, assoc_id: a.assoc_id, thematique: a.thematique, annee: a.annee ?? (a.date_debut ? Number(a.date_debut.slice(0, 4)) : null) }));
   return {
     type: "ab-supabase-dashboard" as const,
     html: {
@@ -377,6 +381,6 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
       timeline: timelineHtml(data, filters),
       qualite: qualiteHtml(data, filters),
     },
-    meta: { years, themes, assocs, selected: { year: filters.year ?? null, assocId: filters.assocId ?? null, thematique: filters.thematique ?? null } },
+    meta: { years, themes, assocs, actions: actionsMeta, selected: { year: filters.year ?? null, assocId: filters.assocId ?? null, thematique: filters.thematique ?? null, actionId: filters.actionId ?? null } },
   };
 }
