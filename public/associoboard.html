@@ -1189,8 +1189,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <div class="modal-hdr"><div class="modal-ttl" id="docModalTitle">Ajouter un document</div><button class="modal-close" onclick="closeModal('uploadDocModal')">✕</button></div>
     <div class="modal-body">
       <div class="form-row full"><div class="form-grp"><label class="form-lbl">Nom *</label><input class="form-inp" id="ud-nom" placeholder="ex : Bilan annuel 2024"/></div></div>
-      <div class="form-row"><div class="form-grp"><label class="form-lbl">Catégorie</label><select class="form-sel" id="ud-cat"><option>Bilan</option><option>Convention</option><option>Rapport</option><option>Formulaire</option><option>Guide</option><option>Autre</option></select></div><div class="form-grp"><label class="form-lbl">Lien URL (optionnel)</label><input class="form-inp" id="ud-url" placeholder="https://…"/></div></div>
-      <div class="form-row full">
+      <div class="form-row"><div class="form-grp"><label class="form-lbl">Type de document *</label><select class="form-sel" id="ud-cat"><option>Bilan</option><option>Convention</option><option>Rapport</option><option>Procès-verbal</option><option>Statuts</option><option>Subvention</option><option>Formulaire</option><option>Guide</option><option>Présentation</option><option>Photo / Image</option><option>Autre</option></select></div><div class="form-grp"><label class="form-lbl">Lien URL (optionnel)</label><input class="form-inp" id="ud-url" placeholder="https://…"/></div></div>
+      <div class="form-row full"><div class="form-grp"><label class="form-lbl">Description</label><textarea class="form-inp" id="ud-desc" rows="2" placeholder="Description courte du document"></textarea></div></div>
+      <div id="ud-visib-wrap" class="form-row full" style="display:none">
         <div class="form-grp">
           <label class="form-lbl">Visible par</label>
           <select class="form-sel" id="ud-visib-type" onchange="onDocVisibChange()" style="margin-bottom:8px">
