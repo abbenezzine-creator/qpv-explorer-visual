@@ -90,8 +90,9 @@ function AppIndexPage() {
         }));
       } else if (d.type === "ab-refresh-dashboard") {
         qc.invalidateQueries({ queryKey: ["dashboard-data"] });
+      } else if (d.type === "ab-open-eval-modal" && typeof d.actionId === "string") {
+        setEvalActionId(d.actionId);
       }
-      // ab-open-eval-modal / ab-open-action handled in Lot 3
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
