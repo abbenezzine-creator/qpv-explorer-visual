@@ -446,19 +446,24 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
   };
 
   const axeRowHtml = (ax: typeof axesData[number]) => `
-    <div class="qual-axe" data-axe="${ax.id}" style="border-radius:calc(var(--radius));margin-bottom:6px">
-      <div class="qual-axe-hdr">
-        <div class="qual-axe-name" style="color:${ax.color};font-size:12px">
+    <details class="qual-axe" data-axe="${ax.id}" style="border-radius:calc(var(--radius));margin-bottom:6px;border:1px solid var(--border);padding:6px 8px">
+      <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div class="qual-axe-name" style="color:${ax.color};font-size:12px;display:flex;align-items:center;gap:6px">
           <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="${ax.color}" stroke-width="1.5" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>
-          ${escapeHtml(ax.name)}
+          <span style="font-weight:700">${escapeHtml(ax.name)}</span>
+          <span style="color:var(--muted-fore);font-size:10px">▾</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
           ${starsHtml(ax.avg, ax.color)}
           <div style="width:60px;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${ax.avg}%;height:100%;background:${ax.color};border-radius:3px;transition:width .7s"></div></div>
           <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${ax.color};min-width:34px;text-align:right">${ax.avg}%</span>
         </div>
-      </div>
-    </div>`;
+      </summary>
+      <ul style="margin:8px 0 4px 0;padding:0 0 0 18px;font-size:11px;color:var(--foreground);line-height:1.55">
+        ${ax.details.map(d => `<li style="margin-bottom:3px">${escapeHtml(d)}</li>`).join("")}
+      </ul>
+      <div style="font-size:10px;color:var(--muted-fore);margin-top:4px">${ax.n} évaluation${ax.n > 1 ? "s" : ""} dans le périmètre</div>
+    </details>`;
 
   const axesAllHtml = axesData.map(axeRowHtml).join("");
 
