@@ -184,6 +184,7 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="QPV" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Tous QPV</SelectItem>
+            <SelectItem value={QPV_ORLEANS}>QPV d'Orléans (Argonne, La Source, Dauphine, Les Blossières)</SelectItem>
             {QPV_OPTIONS.map((o) => <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -191,7 +192,6 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Thématique" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes thématiques</SelectItem>
-            <SelectItem value={QPV_ORLEANS}>QPV d'Orléans (Argonne, La Source, Dauphine, Les Blossières)</SelectItem>
             {THEMATIQUE_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
