@@ -145,47 +145,8 @@ export function AppSidebar() {
     </SidebarGroup>
   );
 
-  const handleAssocChange = (value: string) => {
-    try {
-      const f = document.querySelector<HTMLIFrameElement>("iframe[title='AssocioBoard']");
-      const w = f?.contentWindow as (Window & { setAssocFilter?: (n: string) => void }) | null;
-      w?.setAssocFilter?.(value);
-    } catch {
-      /* noop */
-    }
-  };
-
-  const [assocOptions, setAssocOptions] = useState<string[]>([ALL_LABEL]);
-  useEffect(() => {
-    if (!mounted) return;
-    const refresh = () => {
-      try {
-        const f = document.querySelector<HTMLIFrameElement>("iframe[title='AssocioBoard']");
-        const w = f?.contentWindow as (Window & { getAssociationsWithActions?: () => string[] }) | null;
-        const list = w?.getAssociationsWithActions?.() ?? [];
-        setAssocOptions([ALL_LABEL, ...list]);
-      } catch { /* noop */ }
-    };
-    refresh();
-    const id = window.setInterval(refresh, 2000);
-    return () => window.clearInterval(id);
-  }, [mounted]);
-
   const isSuperAdmin = user?.role === "superadmin";
-  const associationsSelector = mounted && !collapsed && isSuperAdmin ? (
-    <div className="px-2 pb-2">
-      <Select defaultValue={ALL_LABEL} onValueChange={handleAssocChange}>
-        <SelectTrigger className="h-8 text-xs">
-          <SelectValue placeholder="Associations" />
-        </SelectTrigger>
-        <SelectContent>
-          {assocOptions.map((a) => (
-            <SelectItem key={a} value={a} className="text-xs">{a}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  ) : null;
+  void isSuperAdmin;
 
   return (
     <Sidebar collapsible="icon">
