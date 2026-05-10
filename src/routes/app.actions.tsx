@@ -24,6 +24,7 @@ import { ActionFormDialog } from "@/components/actions/ActionFormDialog";
 import { ActionsImportDialog } from "@/components/actions/ActionsImportDialog";
 import { ActionsRestoreDialog } from "@/components/actions/ActionsRestoreDialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useSidebar } from "@/components/ui/sidebar";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -53,6 +54,8 @@ function ActionsListPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const user = mounted ? getUser() : null;
+  const { state: sidebarState, isMobile } = useSidebar();
+  const sidebarOffset = isMobile ? "0px" : (sidebarState === "collapsed" ? "3rem" : "16rem");
   const [editing, setEditing] = useState<Action | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Action | null>(null);
@@ -323,7 +326,14 @@ function ActionsListPage() {
       </AlertDialog>
 
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
-        <DialogContent className="max-w-none w-screen h-screen sm:rounded-none p-0 gap-0 overflow-hidden top-0 left-0 translate-x-0 translate-y-0 grid-rows-[auto_1fr]">
+        <DialogContent
+          className="max-w-none sm:rounded-none p-0 gap-0 overflow-hidden top-0 translate-x-0 translate-y-0 grid-rows-[auto_1fr] border-l"
+          style={{
+            left: sidebarOffset,
+            width: `calc(100vw - ${sidebarOffset})`,
+            height: "100vh",
+          }}
+        >
           {viewing && (
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
