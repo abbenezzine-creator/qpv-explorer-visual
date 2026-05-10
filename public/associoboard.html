@@ -6551,7 +6551,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       if(isAdmin){
         wrap.style.display = '';
         var list = document.getElementById('ud-assocs-list');
-        var assocs = (typeof ASSOCS !== 'undefined' && Array.isArray(ASSOCS)) ? ASSOCS : [];
+        var assocs = Array.isArray(window.SB_ASSOCS) && window.SB_ASSOCS.length
+          ? window.SB_ASSOCS
+          : ((typeof ASSOCS !== 'undefined' && Array.isArray(ASSOCS)) ? ASSOCS : []);
         if(list){
           list.innerHTML = assocs.map(function(a){
             return '<option value="'+String(a.id)+'">'+ String(a.nom||'').replace(/</g,'&lt;') +'</option>';
