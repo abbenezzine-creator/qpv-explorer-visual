@@ -236,6 +236,90 @@ function fmtTimelineDate(iso: string): string {
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
 }
 
+const QUALITE_AXES: { key: keyof RefQualite; id: string; name: string; color: string }[] = [
+  { key: "c1",  id: "C1",  name: "C1 — COMMUNICATION",                color: "oklch(0.52 0.22 285)" },
+  { key: "c2",  id: "C2",  name: "C2 — OBJECTIFS",                    color: "oklch(0.62 0.22 340)" },
+  { key: "c3",  id: "C3",  name: "C3 — QUALIFICATION & COMPÉTENCES",  color: "oklch(0.52 0.16 150)" },
+  { key: "c4",  id: "C4",  name: "C4 — MODALITÉS & DÉROULÉ",          color: "oklch(0.76 0.17 75)"  },
+  { key: "c5",  id: "C5",  name: "C5 — CONFORMITÉ & VEILLE LÉGALE",   color: "oklch(0.6 0.17 240)"  },
+  { key: "c6",  id: "C6",  name: "C6 — MOYENS PÉDAGOGIQUES",          color: "oklch(0.52 0.22 285)" },
+  { key: "c7",  id: "C7",  name: "C7 — GESTION FINANCIÈRE",           color: "oklch(0.62 0.22 340)" },
+  { key: "c8",  id: "C8",  name: "C8 — ÉVALUATION & IMPACT",          color: "oklch(0.52 0.16 150)" },
+  { key: "c9",  id: "C9",  name: "C9 — AMÉLIORATION CONTINUE",        color: "oklch(0.76 0.17 75)"  },
+  { key: "c10", id: "C10", name: "C10 — TRANSITION ÉCOLOGIQUE",       color: "oklch(0.52 0.16 150)" },
+];
+
+function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
+  const acts = applyFilters(data.actions, filters);
+  const actionIds = new Set(acts.map(a => a.id));
+  const refs = data.refs.filter(r => actionIds.has(r.action_id));
+
+  const scopeName = filters.assocId
+    ? (data.associations.find(a => a.id === filters.assocId)?.nom ?? "")
+    : "Toutes les associations";
+
+  // Moyenne globale
+  const globals = refs.map(r => r.score_global).filter((v): v is number => v != null);
+  const globalAvg = globals.length ? Math.round(globals.reduce((s, v) => s + v, 0) / globals.length) : 0;
+
+  // Moyenne par association
+  const byAssoc = new Map<string, number[]>();
+  for (const r of refs) {
+    if (r.score_global == null) continue;
+    if (!byAssoc.has(r.assoc_id)) byAssoc.set(r.assoc_id, []);
+    byAssoc.get(r.assoc_id)!.push(r.score_global);
+  }
+  const assocMap = new Map(data.associations.map(a => [a.id, a.nom]));
+  const assocRows = Array.from(byAssoc.entries())
+    .map(([aid, list]) => ({
+      nom: assocMap.get(aid) ?? "—",
+      avg: Math.round(list.reduce((s, v) => s + v, 0) / list.length),
+      n: list.length,
+    }))
+    .sort((x, y) => y.avg - x.avg);
+
+  const assocHtml = assocRows.length
+    ? assocRows.map(r => `
+      <div class="qual-crit-item">
+        <span class="qual-crit-id" style="min-width:120px;color:var(--primary);font-size:11px;font-weight:700">${escapeHtml(r.nom)}</span>
+        <span class="qual-crit-txt" style="font-size:11px;color:var(--muted-fore)">${r.n} action${r.n > 1 ? "s" : ""}</span>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <div class="qual-crit-bar" style="width:60px"><div class="qual-crit-bar-fill" style="width:${r.avg}%;background:var(--primary)"></div></div>
+          <span class="qual-crit-pct" style="color:var(--primary);min-width:32px;text-align:right">${r.avg}%</span>
+        </div>
+      </div>`).join("")
+    : '<p style="color:var(--muted-fore);font-size:12px;padding:6px 0">Aucune évaluation qualité dans le périmètre</p>';
+
+  // Moyenne par axe C1-C10
+  const axesHtml = QUALITE_AXES.map(ax => {
+    const vals = refs.map(r => r[ax.key] as number | null).filter((v): v is number => v != null);
+    const avg = vals.length ? Math.round(vals.reduce((s, v) => s + v, 0) / vals.length) : 0;
+    return `
+      <div class="qual-axe" style="border-radius:calc(var(--radius));margin-bottom:6px">
+        <div class="qual-axe-hdr">
+          <div class="qual-axe-name" style="color:${ax.color};font-size:12px">
+            <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="${ax.color}" stroke-width="1.5" stroke-linecap="round"><path d="M7 1l1.6 3.6 3.8.5-2.7 2.7.6 3.6L7 9.6 3.7 11.4l.6-3.6L1.6 5.1 5.4 4.6z"/></svg>
+            ${escapeHtml(ax.name)}
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
+            <div style="width:70px;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${avg}%;height:100%;background:${ax.color};border-radius:3px;transition:width .7s"></div></div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${ax.color};min-width:34px">${avg}%</span>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px;border-bottom:1px dashed var(--border);margin-bottom:8px">
+      <div style="font-size:11px;color:var(--muted-fore)">${escapeHtml(scopeName)} · <strong>Tous critères</strong></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg || "—"}${globalAvg ? "%" : ""}</div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Moyenne par association</div>
+    ${assocHtml}
+    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;border-top:1px dashed var(--border);padding-top:8px">Critères C1 → C10</div>
+    ${axesHtml}`;
+}
+
 export function buildDashboardPayload(data: DashboardData, filters: DashboardFilters) {
   return {
     type: "ab-supabase-dashboard" as const,
@@ -243,6 +327,7 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
       stats: statsHtml(data, filters),
       actions: actionsListHtml(data, filters),
       timeline: timelineHtml(data, filters),
+      qualite: qualiteHtml(data, filters),
     },
   };
 }
