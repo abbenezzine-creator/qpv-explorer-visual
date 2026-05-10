@@ -91,8 +91,8 @@ function AppIndexPage() {
 
   // Listen for messages FROM the iframe
   useEffect(() => {
-    const onMsg = (ev: MessageEvent) => {
-      const d = ev.data as { type?: string; year?: number; assocId?: string | null; thematique?: string | null; actionId?: string } | undefined;
+    const onMsg = async (ev: MessageEvent) => {
+      const d = ev.data as { type?: string; year?: number; assocId?: string | null; thematique?: string | null; actionId?: string; scoreGlobal?: number; axisScores?: Record<string, number | null> } | undefined;
       if (!d || typeof d.type !== "string") return;
       if (d.type === "ab-iframe-ready") {
         setIframeReady(true);
@@ -112,6 +112,27 @@ function AppIndexPage() {
         setEvalActionId(d.actionId);
       } else if (d.type === "ab-open-qualite" && typeof d.actionId === "string") {
         navigate({ search: (prev: { page?: string; qualiteAction?: string }) => ({ ...prev, page: "qualite", qualiteAction: d.actionId }) });
+      } else if (d.type === "ab-save-qualite" && typeof d.actionId === "string") {
+        try {
+          const { data: actRow } = await supabase.from("actions").select("assoc_id").eq("id", d.actionId).maybeSingle();
+          const assocId = (d.assocId && d.assocId.length > 0) ? d.assocId : actRow?.assoc_id;
+          if (!assocId) { console.error("ab-save-qualite: missing assoc_id"); return; }
+          const axes = d.axisScores ?? {};
+          const { data: userData } = await supabase.auth.getUser();
+          const payload: Record<string, unknown> = {
+            action_id: d.actionId,
+            assoc_id: assocId,
+            score_global: typeof d.scoreGlobal === "number" ? d.scoreGlobal : null,
+            c1: axes.c1 ?? null, c2: axes.c2 ?? null, c3: axes.c3 ?? null, c4: axes.c4 ?? null, c5: axes.c5 ?? null,
+            c6: axes.c6 ?? null, c7: axes.c7 ?? null, c8: axes.c8 ?? null, c9: axes.c9 ?? null, c10: axes.c10 ?? null,
+            created_by: userData.user?.id ?? null,
+          };
+          const { error } = await supabase.from("referentiel_qualite").insert(payload);
+          if (error) { console.error("referentiel_qualite insert", error); return; }
+          qc.invalidateQueries({ queryKey: ["dashboard-data"] });
+        } catch (err) {
+          console.error("ab-save-qualite handler", err);
+        }
       }
     };
     window.addEventListener("message", onMsg);
