@@ -64,6 +64,10 @@ function AppIndexPage() {
         if (win?.autoLogin) win.autoLogin(u.login, { role: u.role, nom: u.nom, assocId: u.assocId });
         if (win?.nav) win.nav(page);
       } catch { /* noop */ }
+      // Ensure readiness even if the iframe's "ab-iframe-ready" message
+      // was posted before our message listener mounted (race on first load).
+      setIframeReady(true);
+      qc.invalidateQueries({ queryKey: ["dashboard-data"] });
     };
     f.addEventListener("load", onLoad);
     onLoad();
