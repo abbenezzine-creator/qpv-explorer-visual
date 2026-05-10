@@ -119,6 +119,15 @@ function ActionsListPage() {
     return m;
   }, [associations]);
 
+  const thematiqueOptions = useMemo(() => {
+    const set = new Set<string>(THEMATIQUE_OPTIONS);
+    (actionsQ.data ?? []).forEach((a) => {
+      const t = (a.thematique ?? "").trim();
+      if (t) set.add(t);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [actionsQ.data]);
+
   const filtered = useMemo(() => {
     const list = actionsQ.data ?? [];
     return list.filter((a) => {
