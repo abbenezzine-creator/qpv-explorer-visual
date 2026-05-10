@@ -24,7 +24,7 @@ type Props = {
   user: AbUser | null;
   associations: Association[];
   initial?: Action | null;
-  onSaved: () => void | Promise<void>;
+  onSaved: () => unknown | Promise<unknown>;
 };
 
 const currentYear = new Date().getFullYear();
