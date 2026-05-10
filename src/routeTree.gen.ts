@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppEvaluationsRouteImport } from './routes/app.evaluations'
 import { Route as AppAssociationsRouteImport } from './routes/app.associations'
 import { Route as AppActionsRouteImport } from './routes/app.actions'
 import { Route as AppActionsIdRouteImport } from './routes/app.actions.$id'
@@ -51,6 +52,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppEvaluationsRoute = AppEvaluationsRouteImport.update({
+  id: '/evaluations',
+  path: '/evaluations',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAssociationsRoute = AppAssociationsRouteImport.update({
   id: '/associations',
   path: '/associations',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
+  '/app/evaluations': typeof AppEvaluationsRoute
   '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
+  '/app/evaluations': typeof AppEvaluationsRoute
   '/app': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
+  '/app/evaluations': typeof AppEvaluationsRoute
   '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/actions'
     | '/app/associations'
+    | '/app/evaluations'
     | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/actions'
     | '/app/associations'
+    | '/app/evaluations'
     | '/app'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/actions'
     | '/app/associations'
+    | '/app/evaluations'
     | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
@@ -207,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/evaluations': {
+      id: '/app/evaluations'
+      path: '/evaluations'
+      fullPath: '/app/evaluations'
+      preLoaderRoute: typeof AppEvaluationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/associations': {
@@ -276,12 +295,14 @@ const AppActionsRouteWithChildren = AppActionsRoute._addFileChildren(
 interface AppRouteChildren {
   AppActionsRoute: typeof AppActionsRouteWithChildren
   AppAssociationsRoute: typeof AppAssociationsRoute
+  AppEvaluationsRoute: typeof AppEvaluationsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppActionsRoute: AppActionsRouteWithChildren,
   AppAssociationsRoute: AppAssociationsRoute,
+  AppEvaluationsRoute: AppEvaluationsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 

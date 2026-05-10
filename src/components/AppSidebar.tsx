@@ -13,6 +13,7 @@ import {
   ListChecks,
   DatabaseBackup,
   Plug,
+  ClipboardList,
 } from "lucide-react";
 
 import {
