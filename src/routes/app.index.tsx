@@ -257,6 +257,27 @@ function AppIndexPage() {
     }, 120);
     return () => clearTimeout(t);
   }, [page, iframeReady, docsQ.data]);
+
+  // Push live associations list into the iframe (used by the document modal multi-select)
+  const assocsQ = useQuery({
+    queryKey: ["associations-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("associations").select("id, nom").order("nom");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: page === "documents",
+    staleTime: 60_000,
+  });
+  useEffect(() => {
+    if (page !== "documents" || !iframeReady || !assocsQ.data) return;
+    const win = ref.current?.contentWindow;
+    if (!win) return;
+    const t = setTimeout(() => {
+      try { win.postMessage({ type: "ab-load-assocs", associations: assocsQ.data }, "*"); } catch { /* noop */ }
+    }, 120);
+    return () => clearTimeout(t);
+  }, [page, iframeReady, assocsQ.data]);
   // Realtime documents
   useEffect(() => {
     const ch = supabase
