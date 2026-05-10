@@ -402,14 +402,13 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
       </div>`;
   }).join("");
 
+  void assocHtml;
   return `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px;border-bottom:1px dashed var(--border);margin-bottom:8px">
-      <div style="font-size:11px;color:var(--muted-fore)">${escapeHtml(scopeName)} · <strong>Tous critères</strong></div>
+      <div style="font-size:11px;color:var(--muted-fore)">${escapeHtml(scopeName)} · <strong>Moyenne ${refs.length} évaluation${refs.length > 1 ? "s" : ""}</strong></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg || "—"}${globalAvg ? "%" : ""}</div>
     </div>
-    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Moyenne par association</div>
-    ${assocHtml}
-    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;border-top:1px dashed var(--border);padding-top:8px">Critères C1 → C10</div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Critères C1 → C10</div>
     ${axesHtml}`;
 }
 
