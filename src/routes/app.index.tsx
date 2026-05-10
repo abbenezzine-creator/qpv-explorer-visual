@@ -94,7 +94,7 @@ function AppIndexPage() {
   // Listen for messages FROM the iframe
   useEffect(() => {
     const onMsg = async (ev: MessageEvent) => {
-      const d = ev.data as { type?: string; year?: number | null; assocId?: string | null; thematique?: string | null; actionId?: string | null; scoreGlobal?: number; axisScores?: Record<string, number | null>; id?: string; titre?: string; docType?: string; url?: string | null; description?: string | null; fileName?: string; fileType?: string; fileSize?: number; fileBase64?: string } | undefined;
+      const d = ev.data as { type?: string; year?: number | null; assocId?: string | null; thematique?: string | null; actionId?: string | null; scoreGlobal?: number; axisScores?: Record<string, number | null>; id?: string; titre?: string; docType?: string; url?: string | null; description?: string | null; fileName?: string; fileType?: string; fileSize?: number; fileBase64?: string; assocIds?: string[] | null; assocAll?: boolean } | undefined;
       if (!d || typeof d.type !== "string") return;
       if (d.type === "ab-iframe-ready") {
         setIframeReady(true);
