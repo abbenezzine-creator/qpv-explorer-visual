@@ -419,6 +419,10 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
           {/* LOCALISATION */}
           <Section icon={MapPin} title="Localisation" tone="rose">
             <div className="col-span-2">
+              <Label>Commune concernée</Label>
+              <Input value={commune} onChange={(e) => setCommune(e.target.value)} placeholder="ex : Orléans" />
+            </div>
+            <div className="col-span-2">
               <Label>Quartiers prioritaires</Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {QUARTIERS_OPTIONS.map(q => (
@@ -455,6 +459,48 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
             </div>
           </Section>
 
+          {/* PUBLIC PAR QUARTIER */}
+          <Section icon={Building2} title="Public touché par quartier" tone="emerald">
+            <div className="col-span-2">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  Total : <strong className="text-foreground">{publicQuartiers.reduce((s, p) => s + (Number(p.nombre) || 0), 0)}</strong> bénéficiaires
+                </span>
+                <Button type="button" size="sm" variant="outline" onClick={() => setPublicQuartiers([...publicQuartiers, { quartier: "", nombre: 0 }])}>
+                  <Plus className="h-3 w-3 mr-1" />Ajouter un quartier
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <div className="grid grid-cols-12 gap-2 px-1 text-xs text-muted-foreground">
+                  <div className="col-span-8">Quartier</div>
+                  <div className="col-span-3">Nombre</div>
+                  <div className="col-span-1"></div>
+                </div>
+                {publicQuartiers.map((p, i) => (
+                  <div key={i} className="grid grid-cols-12 gap-2">
+                    <Select
+                      value={p.quartier || undefined}
+                      onValueChange={(v) => {
+                        const n = [...publicQuartiers]; n[i] = { ...p, quartier: v }; setPublicQuartiers(n);
+                      }}
+                    >
+                      <SelectTrigger className="col-span-8"><SelectValue placeholder="Choisir un quartier…" /></SelectTrigger>
+                      <SelectContent>
+                        {QUARTIERS_OPTIONS.map(q => <SelectItem key={q} value={q}>{q}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Input className="col-span-3" type="number" min={0} value={p.nombre} onChange={(e) => {
+                      const n = [...publicQuartiers]; n[i] = { ...p, nombre: Number(e.target.value) || 0 }; setPublicQuartiers(n);
+                    }} />
+                    <Button type="button" size="sm" variant="ghost" className="col-span-1" onClick={() => setPublicQuartiers(publicQuartiers.filter((_, j) => j !== i))}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Section>
+
           {/* QUALIFICATION DU PROJET */}
           <Section icon={Target} title="Qualification du projet" tone="violet">
             <div>
@@ -467,11 +513,11 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
               </Select>
             </div>
             <div>
-              <Label>Axe stratégique</Label>
-              <Select value={axis} onValueChange={(v) => setAxis(v as AxisKey)}>
-                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+              <Label>Thématique principale</Label>
+              <Select value={thematique} onValueChange={setThematique}>
+                <SelectTrigger><SelectValue placeholder="Aucune" /></SelectTrigger>
                 <SelectContent>
-                  {AXIS_OPTIONS.map(o => <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>)}
+                  {THEMATIQUE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
