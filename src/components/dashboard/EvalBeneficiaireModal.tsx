@@ -72,6 +72,9 @@ export function EvalBeneficiaireModal({ actionId, onClose, prefill }: Props) {
 
   const src = actionId
     ? `/questionnaire.html?embed=1&action=${encodeURIComponent(actionId)}`
+      + `&title=${encodeURIComponent(prefill?.title ?? "")}`
+      + `&asso=${encodeURIComponent(prefill?.asso ?? "")}`
+      + `&year=${encodeURIComponent(prefill?.year ?? "")}`
     : "";
 
   return (
