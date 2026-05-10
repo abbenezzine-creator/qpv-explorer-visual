@@ -118,7 +118,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
   const [commune, setCommune] = useState("");
   const [publicQuartiers, setPublicQuartiers] = useState<PublicQuartierItem[]>([]);
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([
-    { annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 },
+    { annee: String(currentYear), financeur: "", type: "", annee_n1: String(currentYear - 1), montant_n1: 0, montant_sollicite: 0, montant_favorable: 0 },
   ]);
   const [saving, setSaving] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -173,10 +173,12 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
           annee: b.annee,
           financeur: b.financeur,
           type: b.type,
+          annee_n1: b.annee_n1 ?? String((Number(b.annee) || currentYear) - 1),
+          montant_n1: Number(b.montant_n1 ?? 0) || 0,
           montant_sollicite: Number(b.montant_sollicite ?? b.montant ?? 0) || 0,
           montant_favorable: Number(b.montant_favorable ?? 0) || 0,
         }))
-      : [{ annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 }]);
+      : [{ annee: String(currentYear), financeur: "", type: "", annee_n1: String(currentYear - 1), montant_n1: 0, montant_sollicite: 0, montant_favorable: 0 }]);
   }, [open, initial, isSuperadmin, associations, user?.assocId]);
 
   // Defaults dates from year (only when empty)
@@ -199,6 +201,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
 
   const totalSollicite = budgetLines.reduce((s, l) => s + (Number(l.montant_sollicite) || 0), 0);
   const totalFavorable = budgetLines.reduce((s, l) => s + (Number(l.montant_favorable) || 0), 0);
+  const totalN1 = budgetLines.reduce((s, l) => s + (Number(l.montant_n1) || 0), 0);
 
   const handleSave = async () => {
     if (!titre.trim()) { toast.error("Le titre est obligatoire"); return; }
@@ -208,11 +211,13 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
     const cleanFonctions = fonctions.map(f => f.trim()).filter(Boolean);
     const cleanLieux = lieux.filter(l => l.nom.trim()).map(l => ({ nom: l.nom.trim() }));
     const cleanBudget = budgetLines
-      .filter(b => b.financeur.trim() || b.montant_sollicite || b.montant_favorable)
+      .filter(b => b.financeur.trim() || b.montant_sollicite || b.montant_favorable || b.montant_n1)
       .map(b => ({
         annee: b.annee,
         financeur: b.financeur,
         type: b.type,
+        annee_n1: b.annee_n1 || String((Number(b.annee) || currentYear) - 1),
+        montant_n1: Number(b.montant_n1) || 0,
         montant_sollicite: Number(b.montant_sollicite) || 0,
         montant_favorable: Number(b.montant_favorable) || 0,
         montant: Number(b.montant_favorable) || Number(b.montant_sollicite) || 0,
@@ -560,6 +565,9 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
           <Section icon={Wallet} title="Budget — Financeurs" tone="primary">
             <div className="col-span-2">
               <div className="mb-2 flex flex-wrap items-center justify-end gap-3 text-sm">
+                <span className="rounded-md bg-violet-500/10 px-2 py-1 font-semibold text-violet-700">
+                  Total N-1 : {totalN1.toLocaleString("fr-FR")} €
+                </span>
                 <span className="rounded-md bg-blue-500/10 px-2 py-1 font-semibold text-blue-700">
                   Total sollicité : {totalSollicite.toLocaleString("fr-FR")} €
                 </span>
@@ -568,16 +576,18 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
                 </span>
               </div>
               <div className="space-y-2">
-                <div className="grid grid-cols-12 gap-2 px-1 text-xs text-muted-foreground">
+                <div className="grid grid-cols-16 gap-2 px-1 text-xs text-muted-foreground" style={{ gridTemplateColumns: "repeat(16, minmax(0, 1fr))" }}>
                   <div className="col-span-2">Année</div>
                   <div className="col-span-3">Financeur</div>
                   <div className="col-span-2">Type</div>
+                  <div className="col-span-2">An. N-1</div>
+                  <div className="col-span-2">Subv. N-1 (€)</div>
                   <div className="col-span-2">Sollicité (€)</div>
                   <div className="col-span-2">Favorable (€)</div>
                   <div className="col-span-1"></div>
                 </div>
                 {budgetLines.map((b, i) => (
-                  <div key={i} className="grid grid-cols-12 gap-2">
+                  <div key={i} className="grid gap-2" style={{ gridTemplateColumns: "repeat(16, minmax(0, 1fr))" }}>
                     <Input className="col-span-2" type="number" value={b.annee} onChange={(e) => {
                       const n = [...budgetLines]; n[i] = { ...b, annee: e.target.value }; setBudgetLines(n);
                     }} />
@@ -586,6 +596,12 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
                     }} />
                     <Input className="col-span-2" value={b.type} placeholder="Subvention…" onChange={(e) => {
                       const n = [...budgetLines]; n[i] = { ...b, type: e.target.value }; setBudgetLines(n);
+                    }} />
+                    <Input className="col-span-2" type="number" value={b.annee_n1 ?? ""} onChange={(e) => {
+                      const n = [...budgetLines]; n[i] = { ...b, annee_n1: e.target.value }; setBudgetLines(n);
+                    }} />
+                    <Input className="col-span-2" type="number" value={b.montant_n1 ?? 0} onChange={(e) => {
+                      const n = [...budgetLines]; n[i] = { ...b, montant_n1: Number(e.target.value) || 0 }; setBudgetLines(n);
                     }} />
                     <Input className="col-span-2" type="number" value={b.montant_sollicite ?? 0} onChange={(e) => {
                       const n = [...budgetLines]; n[i] = { ...b, montant_sollicite: Number(e.target.value) || 0 }; setBudgetLines(n);
@@ -598,7 +614,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
                     </Button>
                   </div>
                 ))}
-                <Button type="button" size="sm" variant="outline" onClick={() => setBudgetLines([...budgetLines, { annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 }])}>
+                <Button type="button" size="sm" variant="outline" onClick={() => setBudgetLines([...budgetLines, { annee: String(currentYear), financeur: "", type: "", annee_n1: String(currentYear - 1), montant_n1: 0, montant_sollicite: 0, montant_favorable: 0 }])}>
                   <Plus className="h-3 w-3 mr-1" />Ajouter un financeur
                 </Button>
               </div>

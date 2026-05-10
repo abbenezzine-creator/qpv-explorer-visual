@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { STATUT_OPTIONS, QPV_OPTIONS, AXIS_OPTIONS, type Association } from "@/lib/actions-data";
-import { IdCard, CalendarClock, Users, MapPin, Target, Wallet } from "lucide-react";
+import { IdCard, CalendarClock, Users, MapPin, Target, Wallet, Building2 } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -155,6 +155,8 @@ function matchOption<T extends { key: string; label: string }>(opts: readonly T[
   return f?.key ?? null;
 }
 
+const QUARTIER_KEYS = ["Argonne", "Blossières", "Dauphine", "La Source"] as const;
+
 export function ActionsImportDialog({ open, onOpenChange, associations, onImported }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [workbook, setWorkbook] = useState<XLSX.WorkBook | null>(null);
@@ -164,6 +166,10 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<Record<string, any>[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
+
+  // Public touché par quartier (mappées sur les colonnes de l'onglet Actions)
+  const [pqPrev, setPqPrev] = useState<Record<string, string>>({}); // quartier -> header
+  const [pqReal, setPqReal] = useState<Record<string, string>>({});
 
   // Budget — Sollicité source
   const [solSheet, setSolSheet] = useState<string>("");
@@ -177,6 +183,13 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
   const [favRows, setFavRows] = useState<Record<string, any>[]>([]);
   const [favMap, setFavMap] = useState<Record<string, string>>({});
 
+  // Budget — Subvention N-1 source
+  const [n1Sheet, setN1Sheet] = useState<string>("");
+  const [n1Headers, setN1Headers] = useState<string[]>([]);
+  const [n1Rows, setN1Rows] = useState<Record<string, any>[]>([]);
+  const [n1Map, setN1Map] = useState<Record<string, string>>({});
+  const [n1DefaultYear, setN1DefaultYear] = useState<string>(String(new Date().getFullYear() - 1));
+
   const [budgetDefaultYear, setBudgetDefaultYear] = useState<string>(String(new Date().getFullYear()));
 
   const [importing, setImporting] = useState(false);
@@ -184,8 +197,10 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
   const reset = () => {
     setWorkbook(null);
     setSheetName(""); setHeaders([]); setRows([]); setMapping({});
+    setPqPrev({}); setPqReal({});
     setSolSheet(""); setSolHeaders([]); setSolRows([]); setSolMap({});
     setFavSheet(""); setFavHeaders([]); setFavRows([]); setFavMap({});
+    setN1Sheet(""); setN1Headers([]); setN1Rows([]); setN1Map({});
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -198,6 +213,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
     loadSheet(wb, first);
     setSolSheet(""); setSolHeaders([]); setSolRows([]); setSolMap({});
     setFavSheet(""); setFavHeaders([]); setFavRows([]); setFavMap({});
+    setN1Sheet(""); setN1Headers([]); setN1Rows([]); setN1Map({});
   };
 
   const loadSheet = (wb: XLSX.WorkBook, name: string) => {
@@ -207,6 +223,20 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
     setHeaders(hdrs);
     setRows(json);
     setMapping(autoMap(hdrs));
+    // auto-map quartiers (recherche "argonne previsionnel/realise" etc.)
+    const prev: Record<string, string> = {};
+    const real: Record<string, string> = {};
+    for (const q of QUARTIER_KEYS) {
+      const qn = norm(q);
+      const found = hdrs.find((h) => norm(h).includes(qn));
+      if (found) {
+        const hn = norm(found);
+        if (hn.includes("real")) real[q] = found;
+        else if (hn.includes("prev")) prev[q] = found;
+        else prev[q] = found; // par défaut prévisionnel
+      }
+    }
+    setPqPrev(prev); setPqReal(real);
   };
 
   const loadBudgetSource = (
@@ -215,7 +245,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
     setH: (v: string[]) => void,
     setR: (v: Record<string, any>[]) => void,
     setM: (v: Record<string, string>) => void,
-    amountKey: "montant_sollicite" | "montant_favorable",
+    amountKey: "montant_sollicite" | "montant_favorable" | "montant_n1",
   ) => {
     if (!name) { setH([]); setR([]); setM({}); return; }
     const ws = wb.Sheets[name];
@@ -227,8 +257,9 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
     setM({
       ref: auto.ref ?? "",
       financeur: auto.financeur ?? "",
+      type: auto.type ?? "",
       annee: auto.annee ?? "",
-      amount: auto[amountKey] ?? "",
+      amount: auto[amountKey] ?? auto.montant_sollicite ?? auto.montant_favorable ?? "",
     });
   };
 
@@ -244,7 +275,8 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
     const ingest = (
       rowsSrc: Record<string, any>[],
       mapSrc: Record<string, string>,
-      field: "montant_sollicite" | "montant_favorable",
+      field: "montant_sollicite" | "montant_favorable" | "montant_n1",
+      defYear: string,
     ) => {
       if (!mapSrc.ref || !mapSrc.amount) return;
       for (const r of rowsSrc) {
@@ -253,22 +285,30 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
         const key = norm(String(refVal));
         const fin = mapSrc.financeur ? String(r[mapSrc.financeur] ?? "").trim() : "";
         const finKey = fin || "—";
+        const typeVal = mapSrc.type ? String(r[mapSrc.type] ?? "").trim() : "";
         const annee = mapSrc.annee && r[mapSrc.annee] != null && String(r[mapSrc.annee]).trim() !== ""
           ? String(r[mapSrc.annee])
-          : budgetDefaultYear;
+          : defYear;
         if (!m.has(key)) m.set(key, new Map());
         const byFin = m.get(key)!;
         if (!byFin.has(finKey)) {
-          byFin.set(finKey, { financeur: fin, annee, montant_sollicite: 0, montant_favorable: 0 });
+          byFin.set(finKey, { financeur: fin, type: typeVal, annee, annee_n1: String(Number(defYear) - 1), montant_n1: 0, montant_sollicite: 0, montant_favorable: 0 });
         }
         const line = byFin.get(finKey)!;
-        line[field] = (Number(line[field]) || 0) + (toNumber(r[mapSrc.amount]) ?? 0);
+        if (typeVal && !line.type) line.type = typeVal;
+        if (field === "montant_n1") {
+          line.annee_n1 = annee;
+          line.montant_n1 = (Number(line.montant_n1) || 0) + (toNumber(r[mapSrc.amount]) ?? 0);
+        } else {
+          line[field] = (Number(line[field]) || 0) + (toNumber(r[mapSrc.amount]) ?? 0);
+        }
       }
     };
-    ingest(solRows, solMap, "montant_sollicite");
-    ingest(favRows, favMap, "montant_favorable");
+    ingest(solRows, solMap, "montant_sollicite", budgetDefaultYear);
+    ingest(favRows, favMap, "montant_favorable", budgetDefaultYear);
+    ingest(n1Rows, n1Map, "montant_n1", n1DefaultYear);
     return m;
-  }, [solRows, solMap, favRows, favMap, budgetDefaultYear]);
+  }, [solRows, solMap, favRows, favMap, n1Rows, n1Map, budgetDefaultYear, n1DefaultYear]);
 
   const linesByRef = useMemo(() => {
     const m = new Map<string, any[]>();
@@ -345,6 +385,23 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
           lieu_principal: get("lieu_principal") ? String(get("lieu_principal")) : null,
           recurrence: get("recurrence") ? String(get("recurrence")) : null,
           budget_financeurs: budgetLines ?? [],
+          public_quartiers: (() => {
+            const out: { quartier: string; nombre: number; type: "previsionnel" | "realise" }[] = [];
+            for (const q of QUARTIER_KEYS) {
+              const pv = pqPrev[q] ? toNumber(r[pqPrev[q]]) : null;
+              const rv = pqReal[q] ? toNumber(r[pqReal[q]]) : null;
+              if (pv != null) out.push({ quartier: q, nombre: pv, type: "previsionnel" });
+              if (rv != null) out.push({ quartier: q, nombre: rv, type: "realise" });
+            }
+            return out;
+          })(),
+          quartiers: (() => {
+            const set = new Set<string>();
+            for (const q of QUARTIER_KEYS) {
+              if ((pqPrev[q] && toNumber(r[pqPrev[q]])) || (pqReal[q] && toNumber(r[pqReal[q]]))) set.add(q);
+            }
+            return Array.from(set);
+          })(),
         });
       }
 
@@ -447,41 +504,80 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
                     </div>
                   );
                 })}
+
+                {headers.length > 0 && (
+                  <div className="rounded-lg border bg-card p-3">
+                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-600">
+                      <Building2 className="h-4 w-4" />
+                      Public touché par quartier
+                    </div>
+                    <p className="mb-3 text-xs text-muted-foreground">
+                      Mappez les colonnes contenant les <strong>nombres</strong> de bénéficiaires par quartier (prévisionnel et/ou réalisé).
+                    </p>
+                    <div className="overflow-x-auto rounded-md border">
+                      <table className="w-full text-xs">
+                        <thead className="bg-emerald-500/10 text-emerald-800">
+                          <tr>
+                            <th className="px-2 py-2 text-left">Quartier</th>
+                            <th className="px-2 py-2 text-left">Colonne — Prévisionnel</th>
+                            <th className="px-2 py-2 text-left">Colonne — Réalisé</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {QUARTIER_KEYS.map((q) => (
+                            <tr key={q} className="border-t">
+                              <td className="px-2 py-1 font-medium">{q}</td>
+                              <td className="px-1 py-1">
+                                <Select value={pqPrev[q] ?? NONE} onValueChange={(v) => setPqPrev((m) => ({ ...m, [q]: v === NONE ? "" : v }))}>
+                                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="—" /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value={NONE}>—</SelectItem>
+                                    {headers.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                              <td className="px-1 py-1">
+                                <Select value={pqReal[q] ?? NONE} onValueChange={(v) => setPqReal((m) => ({ ...m, [q]: v === NONE ? "" : v }))}>
+                                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="—" /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value={NONE}>—</SelectItem>
+                                    {headers.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="budget" className="space-y-4 pt-4">
                 <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-                  Choisissez deux sources distinctes — une pour <strong>Sollicité (€)</strong> et une pour <strong>Favorable (€)</strong>. Les lignes sont fusionnées par <strong>Réf.</strong> + Financeur pour reconstituer une seule ligne budgétaire complète.
+                  Choisissez jusqu'à trois sources distinctes — <strong>Subvention N-1</strong>, <strong>Sollicité (€)</strong> et <strong>Favorable (€)</strong>. Les lignes sont fusionnées par <strong>Réf.</strong> + Financeur pour reconstituer une seule ligne budgétaire complète. Pour chaque source, mappez aussi le <strong>Type de financeur</strong> (subvention, prestation, mécénat…).
                 </div>
 
-                <div>
-                  <Label>Année par défaut du budget</Label>
-                  <Input
-                    type="number"
-                    value={budgetDefaultYear}
-                    onChange={(e) => setBudgetDefaultYear(e.target.value)}
-                    className="max-w-[160px]"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Année en cours par défaut. Utilisée si la colonne Année n'est pas renseignée.
-                  </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Année par défaut (Sollicité / Favorable)</Label>
+                    <Input type="number" value={budgetDefaultYear} onChange={(e) => setBudgetDefaultYear(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label>Année par défaut (Subvention N-1)</Label>
+                    <Input type="number" value={n1DefaultYear} onChange={(e) => setN1DefaultYear(e.target.value)} />
+                  </div>
                 </div>
 
-                {(["sollicite", "favorable"] as const).map((kind) => {
-                  const isSol = kind === "sollicite";
-                  const sheet = isSol ? solSheet : favSheet;
-                  const setSheet = isSol ? setSolSheet : setFavSheet;
-                  const setH = isSol ? setSolHeaders : setFavHeaders;
-                  const setR = isSol ? setSolRows : setFavRows;
-                  const setM = isSol ? setSolMap : setFavMap;
-                  const hdrs = isSol ? solHeaders : favHeaders;
-                  const rws = isSol ? solRows : favRows;
-                  const map = isSol ? solMap : favMap;
-                  const setMap = isSol ? setSolMap : setFavMap;
-                  const amountKey = (isSol ? "montant_sollicite" : "montant_favorable") as
-                    "montant_sollicite" | "montant_favorable";
-                  const color = isSol ? "text-amber-600" : "text-emerald-600";
-                  const label = isSol ? "Sollicité (€)" : "Favorable (€)";
+                {(["n1", "sollicite", "favorable"] as const).map((kind) => {
+                  const cfg = {
+                    n1:        { sheet: n1Sheet,  setSheet: setN1Sheet,  setH: setN1Headers,  setR: setN1Rows,  setM: setN1Map,  hdrs: n1Headers,  rws: n1Rows,  map: n1Map,  amountKey: "montant_n1" as const,         color: "text-violet-600", label: "Subvention N-1 (€)" },
+                    sollicite: { sheet: solSheet, setSheet: setSolSheet, setH: setSolHeaders, setR: setSolRows, setM: setSolMap, hdrs: solHeaders, rws: solRows, map: solMap, amountKey: "montant_sollicite" as const,  color: "text-amber-600",  label: "Sollicité (€)" },
+                    favorable: { sheet: favSheet, setSheet: setFavSheet, setH: setFavHeaders, setR: setFavRows, setM: setFavMap, hdrs: favHeaders, rws: favRows, map: favMap, amountKey: "montant_favorable" as const,  color: "text-emerald-600", label: "Favorable (€)" },
+                  }[kind];
+                  const { sheet, setSheet, setH, setR, setM, hdrs, rws, map, amountKey, color, label } = cfg;
+                  const setMap = setM;
 
                   return (
                     <div key={kind} className="rounded-lg border bg-card p-3">
@@ -516,6 +612,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
                           {[
                             { key: "ref", label: "Réf. (lien action)", required: true },
                             { key: "financeur", label: "Financeur" },
+                            { key: "type", label: "Type de financeur" },
                             { key: "annee", label: "Année" },
                             { key: "amount", label: `Colonne ${label}`, required: true },
                           ].map((f) => (
