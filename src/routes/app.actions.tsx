@@ -358,7 +358,7 @@ function ActionsListPage() {
                   )}
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-8">
+              <div className="flex-1 overflow-y-scroll p-8" style={{ scrollbarGutter: "stable" }}>
                 <div className="mx-auto max-w-5xl space-y-6">
                   <div>
                     <div className="text-xs uppercase text-muted-foreground">{viewing.annee ?? ""} · {assocMap.get(viewing.assoc_id) ?? ""}</div>
