@@ -458,27 +458,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
 
               <TabsContent value="budget" className="space-y-4 pt-4">
                 <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-                  Liez les lignes de budget aux actions via la <strong>Réf.</strong> Chaque ligne du tableau budget doit comporter une réf. correspondant à la réf. d'une action ci-dessus.
-                </div>
-                <div>
-                  <Label>Onglet du budget (optionnel)</Label>
-                  <Select
-                    value={budgetSheet || NONE}
-                    onValueChange={(v) => {
-                      const next = v === NONE ? "" : v;
-                      setBudgetSheet(next);
-                      loadBudgetSheet(workbook, next);
-                    }}
-                  >
-                    <SelectTrigger><SelectValue placeholder="— Aucun —" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={NONE}>— Aucun —</SelectItem>
-                      {workbook.SheetNames.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {budgetSheet && (
-                    <p className="mt-1 text-xs text-muted-foreground">{budgetRows.length} ligne(s) de budget</p>
-                  )}
+                  Choisissez deux sources distinctes — une pour <strong>Sollicité (€)</strong> et une pour <strong>Favorable (€)</strong>. Les lignes sont fusionnées par <strong>Réf.</strong> + Financeur pour reconstituer une seule ligne budgétaire complète.
                 </div>
 
                 <div>
@@ -490,40 +470,87 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
                     className="max-w-[160px]"
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Année en cours par défaut, modifiable. Utilisée si la colonne Année n'est pas renseignée pour une ligne.
+                    Année en cours par défaut. Utilisée si la colonne Année n'est pas renseignée.
                   </p>
                 </div>
 
-                {budgetHeaders.length > 0 && (
-                  <div className="rounded-lg border bg-card p-3">
-                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
-                      <Wallet className="h-4 w-4" />
-                      Mapping des colonnes budget
-                    </div>
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      {BUDGET_FIELDS.map((f) => (
-                        <div key={f.key} className="flex flex-col gap-1">
-                          <Label className="text-xs">
-                            {f.label}{f.required && <span className="text-destructive"> *</span>}
-                          </Label>
-                          <Select
-                            value={budgetMap[f.key] ?? NONE}
-                            onValueChange={(v) => setBudgetMap((m) => ({ ...m, [f.key]: v === NONE ? "" : v }))}
-                          >
-                            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="—" /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value={NONE}>—</SelectItem>
-                              {budgetHeaders.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
+                {(["sollicite", "favorable"] as const).map((kind) => {
+                  const isSol = kind === "sollicite";
+                  const sheet = isSol ? solSheet : favSheet;
+                  const setSheet = isSol ? setSolSheet : setFavSheet;
+                  const setH = isSol ? setSolHeaders : setFavHeaders;
+                  const setR = isSol ? setSolRows : setFavRows;
+                  const setM = isSol ? setSolMap : setFavMap;
+                  const hdrs = isSol ? solHeaders : favHeaders;
+                  const rws = isSol ? solRows : favRows;
+                  const map = isSol ? solMap : favMap;
+                  const setMap = isSol ? setSolMap : setFavMap;
+                  const amountKey = (isSol ? "montant_sollicite" : "montant_favorable") as
+                    "montant_sollicite" | "montant_favorable";
+                  const color = isSol ? "text-amber-600" : "text-emerald-600";
+                  const label = isSol ? "Sollicité (€)" : "Favorable (€)";
+
+                  return (
+                    <div key={kind} className="rounded-lg border bg-card p-3">
+                      <div className={`mb-2 flex items-center gap-2 text-sm font-semibold ${color}`}>
+                        <Wallet className="h-4 w-4" />
+                        Source — {label}
+                      </div>
+
+                      <div className="mb-3">
+                        <Label className="text-xs">Onglet contenant « {label} »</Label>
+                        <Select
+                          value={sheet || NONE}
+                          onValueChange={(v) => {
+                            const next = v === NONE ? "" : v;
+                            setSheet(next);
+                            loadBudgetSource(workbook, next, setH, setR, setM, amountKey);
+                          }}
+                        >
+                          <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="— Aucun —" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={NONE}>— Aucun —</SelectItem>
+                            {workbook.SheetNames.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        {sheet && (
+                          <p className="mt-1 text-xs text-muted-foreground">{rws.length} ligne(s)</p>
+                        )}
+                      </div>
+
+                      {hdrs.length > 0 && (
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          {[
+                            { key: "ref", label: "Réf. (lien action)", required: true },
+                            { key: "financeur", label: "Financeur" },
+                            { key: "annee", label: "Année" },
+                            { key: "amount", label: `Colonne ${label}`, required: true },
+                          ].map((f) => (
+                            <div key={f.key} className="flex flex-col gap-1">
+                              <Label className="text-xs">
+                                {f.label}{f.required && <span className="text-destructive"> *</span>}
+                              </Label>
+                              <Select
+                                value={map[f.key] ?? NONE}
+                                onValueChange={(v) => setMap({ ...map, [f.key]: v === NONE ? "" : v })}
+                              >
+                                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="—" /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value={NONE}>—</SelectItem>
+                                  {hdrs.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {budgetByRef.size} réf(s) de budget agrégée(s)
-                    </p>
-                  </div>
-                )}
+                  );
+                })}
+
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+                  ✓ <strong>{budgetByRef.size}</strong> réf(s) de budget agrégée(s)
+                </div>
               </TabsContent>
             </Tabs>
           )}
