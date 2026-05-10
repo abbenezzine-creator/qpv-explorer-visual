@@ -420,9 +420,6 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
     </div>`;
 
   const axesAllHtml = axesData.map(axeRowHtml).join("");
-  const axesByIdJson = JSON.stringify(
-    Object.fromEntries(axesData.map(ax => [ax.id, axeRowHtml(ax)]))
-  ).replace(/</g, "\\u003c");
 
   const optionsHtml = QUALITE_AXES.map(ax =>
     `<option value="${ax.id}">${escapeHtml(ax.id)} — ${escapeHtml(ax.name.replace(/^C\d+\s*—\s*/, ""))}</option>`
