@@ -250,7 +250,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
       ref: refCode.trim() || null,
       reference_administrative: referenceAdmin.trim() || null,
       commune: commune.trim() || null,
-      public_quartiers: publicQuartiers.filter(p => p.quartier.trim() || p.nombre).map(p => ({ quartier: p.quartier.trim(), nombre: Number(p.nombre) || 0 })),
+      public_quartiers: publicQuartiers.filter(p => p.quartier.trim() && (Number(p.nombre) || 0) >= 0).map(p => ({ quartier: p.quartier.trim(), nombre: Number(p.nombre) || 0, type: p.type })),
     };
     const res = initial
       ? await supabase.from("actions").update(payload).eq("id", initial.id)
