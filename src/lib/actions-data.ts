@@ -129,6 +129,24 @@ export type Association = {
   ville?: string | null;
 };
 
+export function defaultActionStartDate(annee: number | string | null | undefined): string | null {
+  const year = Number(annee);
+  return year ? `${year}-01-01` : null;
+}
+
+export function defaultActionEndDate(annee: number | string | null | undefined): string | null {
+  const year = Number(annee);
+  return year ? `${year}-12-31` : null;
+}
+
+export function actionStartDate(action: Pick<Action, "date_debut" | "annee">): string | null {
+  return action.date_debut || defaultActionStartDate(action.annee);
+}
+
+export function actionEndDate(action: Pick<Action, "date_fin" | "annee">): string | null {
+  return action.date_fin || defaultActionEndDate(action.annee);
+}
+
 export type Evaluation = {
   id: string;
   action_id: string;
