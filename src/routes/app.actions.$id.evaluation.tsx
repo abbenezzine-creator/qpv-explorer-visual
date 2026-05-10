@@ -39,10 +39,12 @@ function EvaluationFormPage() {
   const themes = themesQ.data ?? [];
 
   const matchedTheme = useMemo(() => {
-    if (!action?.axis_key) return null;
-    const axisLabel = labelOf(AXIS_OPTIONS, action.axis_key).toLowerCase();
-    return themes.find((t) => t.name.toLowerCase().includes(axisLabel)) ?? null;
-  }, [action?.axis_key, themes]);
+    if (!action?.thematique) return null;
+    const t = action.thematique.toLowerCase();
+    return themes.find((th) => th.name.toLowerCase() === t)
+      ?? themes.find((th) => th.name.toLowerCase().includes(t) || t.includes(th.name.toLowerCase()))
+      ?? null;
+  }, [action?.thematique, themes]);
 
   const [themeId, setThemeId] = useState<string>("");
   useEffect(() => {
