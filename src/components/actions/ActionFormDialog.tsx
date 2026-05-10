@@ -11,12 +11,12 @@ import {
   TYPE_ACTION_OPTIONS, THEMATIQUE_OPTIONS, JOURS_OPTIONS,
   QUARTIERS_OPTIONS, TRANCHES_AGE_OPTIONS, RECURRENCE_OPTIONS,
   type Action, type Association, type AxisKey, type QpvKey, type StatutKey,
-  type BudgetLine, type LieuItem,
+  type BudgetLine, type LieuItem, type PublicQuartierItem,
 } from "@/lib/actions-data";
 import { supabase } from "@/integrations/supabase/client";
 import type { AbUser } from "@/lib/auth";
 import { toast } from "sonner";
-import { Plus, X, IdCard, CalendarClock, Users, MapPin, Target, Wallet } from "lucide-react";
+import { Plus, X, IdCard, CalendarClock, Users, MapPin, Target, Wallet, Building2 } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -113,6 +113,10 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
   const [axis, setAxis] = useState<AxisKey | "">("");
   const [description, setDescription] = useState("");
   const [objectifs, setObjectifs] = useState("");
+  const [refCode, setRefCode] = useState("");
+  const [referenceAdmin, setReferenceAdmin] = useState("");
+  const [commune, setCommune] = useState("");
+  const [publicQuartiers, setPublicQuartiers] = useState<PublicQuartierItem[]>([{ quartier: "", nombre: 0 }]);
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([
     { annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 },
   ]);
@@ -147,6 +151,11 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
     setAxis((initial?.axis_key as AxisKey) ?? "");
     setDescription(initial?.description ?? "");
     setObjectifs((initial as unknown as { objectifs?: string | null })?.objectifs ?? "");
+    setRefCode((initial as unknown as { ref?: string | null })?.ref ?? "");
+    setReferenceAdmin((initial as unknown as { reference_administrative?: string | null })?.reference_administrative ?? "");
+    setCommune((initial as unknown as { commune?: string | null })?.commune ?? "");
+    const pq = (initial as unknown as { public_quartiers?: PublicQuartierItem[] | null })?.public_quartiers;
+    setPublicQuartiers(pq && pq.length ? pq : [{ quartier: "", nombre: 0 }]);
     setBudgetLines(initial?.budget_financeurs?.length
       ? initial.budget_financeurs.map(b => ({
           annee: b.annee,
@@ -157,6 +166,15 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
         }))
       : [{ annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 }]);
   }, [open, initial, isSuperadmin, associations, user?.assocId]);
+
+  // Defaults dates from year (only when empty)
+  useEffect(() => {
+    const y = Number(annee);
+    if (!y) return;
+    if (!dateDebut) setDateDebut(`${y}-01-01`);
+    if (!dateFin) setDateFin(`${y}-12-31`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [annee]);
 
   // auto duree
   useEffect(() => {
