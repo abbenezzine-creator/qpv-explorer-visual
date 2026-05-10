@@ -44,6 +44,8 @@ function ActionsListPage() {
   const user = mounted ? getUser() : null;
   const [editing, setEditing] = useState<Action | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Action | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [q, setQ] = useState("");
   const [fAssoc, setFAssoc] = useState<string>(ALL);
   const [fQpv, setFQpv] = useState<string>(ALL);
