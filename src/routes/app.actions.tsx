@@ -203,7 +203,8 @@ function ActionsListPage() {
                   <td className="px-3 py-2 font-medium">{a.titre}</td>
                   <td className="px-3 py-2">{assocMap.get(a.assoc_id) ?? "—"}</td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
-                    {frDate(a.date_debut)} → {frDate(a.date_fin)}
+                    <div><span className="text-foreground/70">Début :</span> {frDate(a.date_debut)}</div>
+                    <div><span className="text-foreground/70">Fin :</span> {frDate(a.date_fin)}</div>
                   </td>
                   <td className="px-3 py-2 max-w-[24rem] align-top">
                     {(a.description || a.objectifs) ? (
