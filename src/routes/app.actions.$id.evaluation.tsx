@@ -4,11 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getUser } from "@/lib/auth";
 import {
-  AXIS_OPTIONS,
+  QUARTIERS_OPTIONS,
   canEditAction,
   fetchActionById,
   fetchThemes,
-  labelOf,
   type ThemeQuestion,
 } from "@/lib/actions-data";
 import { Button } from "@/components/ui/button";
