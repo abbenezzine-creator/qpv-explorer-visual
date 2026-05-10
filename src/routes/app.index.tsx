@@ -106,6 +106,8 @@ function AppIndexPage() {
         qc.invalidateQueries({ queryKey: ["dashboard-data"] });
       } else if (d.type === "ab-open-eval-modal" && typeof d.actionId === "string") {
         setEvalActionId(d.actionId);
+      } else if (d.type === "ab-open-qualite" && typeof d.actionId === "string") {
+        navigate({ search: (prev: { page?: string; qualiteAction?: string }) => ({ ...prev, page: "qualite", qualiteAction: d.actionId }) });
       }
     };
     window.addEventListener("message", onMsg);
