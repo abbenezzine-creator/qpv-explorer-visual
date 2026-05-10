@@ -1274,8 +1274,7 @@
         </div>
         <div class="field">
           <label>Quand avez-vous commencé ?</label>
-          <input type="text" name="date_debut" placeholder="Année" id="ab_year_debut" inputmode="numeric" pattern="[0-9]{4}" maxlength="4">
-          <script>(function(){var y=new Date().getFullYear();var el=document.getElementById('ab_year_debut');if(el&&!el.value)el.value=y;})();</script>
+          <input type="date" name="date_debut">
         </div>
       </div>
 
@@ -3986,17 +3985,14 @@ init();
   const isEmbed = params.get('embed') === '1';
   if(!isEmbed) return;
 
-  // Style allégé pour iframe : pas de fond, padding réduit
   const css = document.createElement('style');
   css.textContent = 'body{background:#f9fafb;padding:0}.container{box-shadow:none;border-radius:0;max-width:none}.btn-grille-flottant{display:none}';
   document.head.appendChild(css);
 
-  // Pré-remplissage depuis l'URL
   const setVal = (n,v)=>{ const el=document.querySelector(`[name="${n}"]`); if(el && v) el.value=v; };
   setVal('action', params.get('title')||'');
   setVal('asso',   params.get('asso')||'');
 
-  // Pré-sélection thématique
   const wantTheme = params.get('theme');
   const wantSous  = params.get('sousTheme');
   if(wantTheme && typeof THEMATIQUES!=='undefined' && THEMATIQUES[wantTheme]){
@@ -4011,12 +4007,14 @@ init();
     }, 50);
   }
 
-  // Hook sur renderParcours : envoie le payload au parent à l'arrivée à l'étape finale
+  let _sent = false;
   const _origRender = window.renderParcours;
   window.renderParcours = function(){
     _origRender.apply(this, arguments);
+    if(_sent) return;
     try{
       const d = state.data;
+      if(!d || !d.resultats) return;
       const impact = calculerImpact(d.resultats);
       const util   = calculerUtiliteSociale(d);
       const analyse= genererAnalyseQualitative(d, util, impact);
@@ -4024,7 +4022,6 @@ init();
       const sousLabel  = (THEMATIQUES[d.thematique]||{}).sous?.[d.sous_thematique] || '';
       const payload = {
         actionId: params.get('action') || null,
-        // champs attendus par AssocioBoard
         freins: d.freins,
         actions: d.actions,
         competences: d.competences,
@@ -4033,16 +4030,12 @@ init();
         pct_avant: d.pct_avant,
         pct_apres: d.pct_apres,
         impact_estime: impact.total,
-        // valorisation détaillée
         cout_evite: impact.coutEvite,
         richesse: impact.richesse,
         valeur_totale: impact.total,
         valeur_detail: impact.detail,
-        // utilité sociale 6 dimensions
         utilite: util ? { scores: util.scores, deltas: util.deltas, etoiles: util.etoiles, intensite: util.intensite } : null,
-        // analyse auto
         analyse: analyse,
-        // bénéficiaire
         beneficiaire: {
           age: (document.querySelector('[name="age"]')||{}).value || '',
           genre: (document.querySelector('[name="genre"]')||{}).value || '',
@@ -4058,6 +4051,7 @@ init();
         sous_thematique_label: sousLabel,
         date_eval: new Date().toISOString()
       };
+      _sent = true;
       window.parent && window.parent.postMessage({ type:'survey-complete', payload }, '*');
     }catch(e){ console.error('embed payload error', e); }
   };
