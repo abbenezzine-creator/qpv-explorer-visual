@@ -72,14 +72,26 @@ function ActionDetailPage() {
             {labelOf(STATUT_OPTIONS, action.statut)}
           </span>
         </div>
-        {action.description && <p className="mb-4 text-sm text-muted-foreground">{action.description}</p>}
+        {action.description && (
+          <div className="mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Description</h2>
+            <p className="mt-1 whitespace-pre-line text-sm">{action.description}</p>
+          </div>
+        )}
+        {(action as unknown as { objectifs?: string | null }).objectifs && (
+          <div className="mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Objectifs</h2>
+            <p className="mt-1 whitespace-pre-line text-sm">{(action as unknown as { objectifs?: string | null }).objectifs}</p>
+          </div>
+        )}
         <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-3">
           <div><dt className="text-xs uppercase text-muted-foreground">Association</dt><dd className="font-medium">{assoc?.nom ?? "—"}</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">QPV</dt><dd className="font-medium">{labelOf(QPV_OPTIONS, action.qpv_key)}</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">Axe</dt><dd className="font-medium">{labelOf(AXIS_OPTIONS, action.axis_key)}</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">Date début</dt><dd className="font-medium">{action.date_debut ?? "—"}</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">Date fin</dt><dd className="font-medium">{action.date_fin ?? "—"}</dd></div>
-          <div><dt className="text-xs uppercase text-muted-foreground">Budget</dt><dd className="font-medium">{action.budget ? `${action.budget} €` : "—"}</dd></div>
+          <div><dt className="text-xs uppercase text-muted-foreground">Montant sollicité</dt><dd className="font-medium">{(action.budget_financeurs ?? []).reduce((s, l) => s + (Number(l.montant_sollicite ?? l.montant ?? 0) || 0), 0).toLocaleString("fr-FR")} €</dd></div>
+          <div><dt className="text-xs uppercase text-muted-foreground">Montant favorable</dt><dd className="font-medium">{(action.budget_financeurs ?? []).reduce((s, l) => s + (Number(l.montant_favorable ?? 0) || 0), 0).toLocaleString("fr-FR")} €</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">Bénéficiaires prévus</dt><dd className="font-medium">{action.nb_beneficiaires_prevu ?? "—"}</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">Bénéficiaires réels</dt><dd className="font-medium">{action.nb_beneficiaires_reel ?? "—"}</dd></div>
         </dl>
