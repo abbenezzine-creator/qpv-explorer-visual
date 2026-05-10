@@ -21,6 +21,7 @@ export type Database = {
           axis_key: string | null
           budget: number | null
           budget_financeurs: Json | null
+          commune: string | null
           created_at: string
           created_by: string | null
           date_debut: string | null
@@ -37,12 +38,15 @@ export type Database = {
           nb_beneficiaires_prevu: number | null
           nb_beneficiaires_reel: number | null
           objectifs: string | null
+          public_quartiers: Json
           qpv_key: string | null
           quartiers: string[] | null
           recurrence: string | null
           recurrence_detail: string | null
           recurrence_fin: string | null
           recurrence_nb: number | null
+          ref: string | null
+          reference_administrative: string | null
           statut: string
           thematique: string | null
           titre: string
@@ -56,6 +60,7 @@ export type Database = {
           axis_key?: string | null
           budget?: number | null
           budget_financeurs?: Json | null
+          commune?: string | null
           created_at?: string
           created_by?: string | null
           date_debut?: string | null
@@ -72,12 +77,15 @@ export type Database = {
           nb_beneficiaires_prevu?: number | null
           nb_beneficiaires_reel?: number | null
           objectifs?: string | null
+          public_quartiers?: Json
           qpv_key?: string | null
           quartiers?: string[] | null
           recurrence?: string | null
           recurrence_detail?: string | null
           recurrence_fin?: string | null
           recurrence_nb?: number | null
+          ref?: string | null
+          reference_administrative?: string | null
           statut?: string
           thematique?: string | null
           titre: string
@@ -91,6 +99,7 @@ export type Database = {
           axis_key?: string | null
           budget?: number | null
           budget_financeurs?: Json | null
+          commune?: string | null
           created_at?: string
           created_by?: string | null
           date_debut?: string | null
@@ -107,12 +116,15 @@ export type Database = {
           nb_beneficiaires_prevu?: number | null
           nb_beneficiaires_reel?: number | null
           objectifs?: string | null
+          public_quartiers?: Json
           qpv_key?: string | null
           quartiers?: string[] | null
           recurrence?: string | null
           recurrence_detail?: string | null
           recurrence_fin?: string | null
           recurrence_nb?: number | null
+          ref?: string | null
+          reference_administrative?: string | null
           statut?: string
           thematique?: string | null
           titre?: string

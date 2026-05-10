@@ -66,6 +66,7 @@ export type BudgetLine = {
   montant_favorable?: number;
 };
 export type LieuItem = { nom: string };
+export type PublicQuartierItem = { quartier: string; nombre: number };
 
 export type QpvKey = (typeof QPV_OPTIONS)[number]["key"];
 export type AxisKey = (typeof AXIS_OPTIONS)[number]["key"];
@@ -105,6 +106,10 @@ export type Action = {
   lieux: LieuItem[] | null;
   lieu_principal: string | null;
   budget_financeurs: BudgetLine[] | null;
+  ref?: string | null;
+  reference_administrative?: string | null;
+  commune?: string | null;
+  public_quartiers?: PublicQuartierItem[] | null;
 };
 
 export type Association = {

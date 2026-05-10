@@ -7,16 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  AXIS_OPTIONS, QPV_OPTIONS, STATUT_OPTIONS,
+  QPV_OPTIONS, STATUT_OPTIONS,
   TYPE_ACTION_OPTIONS, THEMATIQUE_OPTIONS, JOURS_OPTIONS,
   QUARTIERS_OPTIONS, TRANCHES_AGE_OPTIONS, RECURRENCE_OPTIONS,
   type Action, type Association, type AxisKey, type QpvKey, type StatutKey,
-  type BudgetLine, type LieuItem,
+  type BudgetLine, type LieuItem, type PublicQuartierItem,
 } from "@/lib/actions-data";
 import { supabase } from "@/integrations/supabase/client";
 import type { AbUser } from "@/lib/auth";
 import { toast } from "sonner";
-import { Plus, X, IdCard, CalendarClock, Users, MapPin, Target, Wallet } from "lucide-react";
+import { Plus, X, IdCard, CalendarClock, Users, MapPin, Target, Wallet, Building2 } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -113,6 +113,10 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
   const [axis, setAxis] = useState<AxisKey | "">("");
   const [description, setDescription] = useState("");
   const [objectifs, setObjectifs] = useState("");
+  const [refCode, setRefCode] = useState("");
+  const [referenceAdmin, setReferenceAdmin] = useState("");
+  const [commune, setCommune] = useState("");
+  const [publicQuartiers, setPublicQuartiers] = useState<PublicQuartierItem[]>([{ quartier: "", nombre: 0 }]);
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([
     { annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 },
   ]);
@@ -147,6 +151,11 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
     setAxis((initial?.axis_key as AxisKey) ?? "");
     setDescription(initial?.description ?? "");
     setObjectifs((initial as unknown as { objectifs?: string | null })?.objectifs ?? "");
+    setRefCode((initial as unknown as { ref?: string | null })?.ref ?? "");
+    setReferenceAdmin((initial as unknown as { reference_administrative?: string | null })?.reference_administrative ?? "");
+    setCommune((initial as unknown as { commune?: string | null })?.commune ?? "");
+    const pq = (initial as unknown as { public_quartiers?: PublicQuartierItem[] | null })?.public_quartiers;
+    setPublicQuartiers(pq && pq.length ? pq : [{ quartier: "", nombre: 0 }]);
     setBudgetLines(initial?.budget_financeurs?.length
       ? initial.budget_financeurs.map(b => ({
           annee: b.annee,
@@ -157,6 +166,15 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
         }))
       : [{ annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 }]);
   }, [open, initial, isSuperadmin, associations, user?.assocId]);
+
+  // Defaults dates from year (only when empty)
+  useEffect(() => {
+    const y = Number(annee);
+    if (!y) return;
+    if (!dateDebut) setDateDebut(`${y}-01-01`);
+    if (!dateFin) setDateFin(`${y}-12-31`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [annee]);
 
   // auto duree
   useEffect(() => {
@@ -217,6 +235,10 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
       objectifs: objectifs.trim() || null,
       budget: totalFavorable || totalSollicite || null,
       budget_financeurs: cleanBudget,
+      ref: refCode.trim() || null,
+      reference_administrative: referenceAdmin.trim() || null,
+      commune: commune.trim() || null,
+      public_quartiers: publicQuartiers.filter(p => p.quartier.trim() || p.nombre).map(p => ({ quartier: p.quartier.trim(), nombre: Number(p.nombre) || 0 })),
     };
     const res = initial
       ? await supabase.from("actions").update(payload).eq("id", initial.id)
@@ -256,6 +278,14 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
                   {TYPE_ACTION_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Réf. interne</Label>
+              <Input value={refCode} onChange={(e) => setRefCode(e.target.value)} placeholder="ex : ACT-2026-001" />
+            </div>
+            <div>
+              <Label>Référence administrative</Label>
+              <Input value={referenceAdmin} onChange={(e) => setReferenceAdmin(e.target.value)} placeholder="ex : DDCS-2026-…" />
             </div>
             <div className="col-span-2">
               <Label>Titre *</Label>
@@ -337,15 +367,6 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
           {/* PUBLIC */}
           <Section icon={Users} title="Public" tone="emerald">
             <div>
-              <Label>Thématique</Label>
-              <Select value={thematique} onValueChange={setThematique}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {THEMATIQUE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
               <Label>Nb. participants prévus</Label>
               <Input type="number" min={1} value={nbPrevu} onChange={(e) => setNbPrevu(e.target.value)} placeholder="20" />
             </div>
@@ -389,6 +410,10 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
           {/* LOCALISATION */}
           <Section icon={MapPin} title="Localisation" tone="rose">
             <div className="col-span-2">
+              <Label>Commune concernée</Label>
+              <Input value={commune} onChange={(e) => setCommune(e.target.value)} placeholder="ex : Orléans" />
+            </div>
+            <div className="col-span-2">
               <Label>Quartiers prioritaires</Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {QUARTIERS_OPTIONS.map(q => (
@@ -425,6 +450,48 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
             </div>
           </Section>
 
+          {/* PUBLIC PAR QUARTIER */}
+          <Section icon={Building2} title="Public touché par quartier" tone="emerald">
+            <div className="col-span-2">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  Total : <strong className="text-foreground">{publicQuartiers.reduce((s, p) => s + (Number(p.nombre) || 0), 0)}</strong> bénéficiaires
+                </span>
+                <Button type="button" size="sm" variant="outline" onClick={() => setPublicQuartiers([...publicQuartiers, { quartier: "", nombre: 0 }])}>
+                  <Plus className="h-3 w-3 mr-1" />Ajouter un quartier
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <div className="grid grid-cols-12 gap-2 px-1 text-xs text-muted-foreground">
+                  <div className="col-span-8">Quartier</div>
+                  <div className="col-span-3">Nombre</div>
+                  <div className="col-span-1"></div>
+                </div>
+                {publicQuartiers.map((p, i) => (
+                  <div key={i} className="grid grid-cols-12 gap-2">
+                    <Select
+                      value={p.quartier || undefined}
+                      onValueChange={(v) => {
+                        const n = [...publicQuartiers]; n[i] = { ...p, quartier: v }; setPublicQuartiers(n);
+                      }}
+                    >
+                      <SelectTrigger className="col-span-8"><SelectValue placeholder="Choisir un quartier…" /></SelectTrigger>
+                      <SelectContent>
+                        {QUARTIERS_OPTIONS.map(q => <SelectItem key={q} value={q}>{q}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Input className="col-span-3" type="number" min={0} value={p.nombre} onChange={(e) => {
+                      const n = [...publicQuartiers]; n[i] = { ...p, nombre: Number(e.target.value) || 0 }; setPublicQuartiers(n);
+                    }} />
+                    <Button type="button" size="sm" variant="ghost" className="col-span-1" onClick={() => setPublicQuartiers(publicQuartiers.filter((_, j) => j !== i))}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Section>
+
           {/* QUALIFICATION DU PROJET */}
           <Section icon={Target} title="Qualification du projet" tone="violet">
             <div>
@@ -437,11 +504,11 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
               </Select>
             </div>
             <div>
-              <Label>Axe stratégique</Label>
-              <Select value={axis} onValueChange={(v) => setAxis(v as AxisKey)}>
-                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+              <Label>Thématique principale</Label>
+              <Select value={thematique} onValueChange={setThematique}>
+                <SelectTrigger><SelectValue placeholder="Aucune" /></SelectTrigger>
                 <SelectContent>
-                  {AXIS_OPTIONS.map(o => <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>)}
+                  {THEMATIQUE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
