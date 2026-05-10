@@ -562,7 +562,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         </span>
         <select class="year-sel" id="yearFilter" onchange="onYearChange()"></select>
         <select class="year-sel" id="globalThemeSel" onchange="onGlobalThemeChange()"><option value="">Toutes thématiques</option></select>
-        <select class="year-sel" id="globalSousThemeSel" onchange="onGlobalSousThemeChange()"><option value="">Toutes sous-thématiques</option></select>
+        <select class="year-sel" id="globalSousThemeSel" onchange="onGlobalSousThemeChange()" style="display:none"><option value="">Toutes sous-thématiques</option></select>
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted-fore)"><div class="live-dot"></div>En direct</div>
         <button class="btn btn-primary" id="topNewActionBtn" onclick="openAddActionModal()">
           <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg>
@@ -1224,7 +1224,33 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   window.addEventListener('message', function(ev){
     var d = ev && ev.data; if(!d) return;
     if(d.type === 'ab-supabase-dashboard'){
-      dashCache = d.html || {}; applyDash(); return;
+      dashCache = d.html || {}; applyDash();
+      try{
+        var meta = d.meta || {};
+        var sel = function(id){ return document.getElementById(id); };
+        var esc = function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+        var yf = sel('yearFilter');
+        if(yf && Array.isArray(meta.years)){
+          var cur = (meta.selected && meta.selected.year) || parseInt(yf.value, 10) || new Date().getFullYear();
+          var ys = meta.years.length ? meta.years : [new Date().getFullYear()];
+          if(ys.indexOf(cur) === -1) ys = [cur].concat(ys);
+          yf.innerHTML = ys.map(function(y){ return '<option value="'+y+'"'+(y===cur?' selected':'')+'>'+y+'</option>'; }).join('');
+        }
+        var ts = sel('globalThemeSel');
+        if(ts && Array.isArray(meta.themes)){
+          var ct = (meta.selected && meta.selected.thematique) || ts.value || '';
+          ts.innerHTML = '<option value="">Toutes thématiques</option>' +
+            meta.themes.map(function(t){ return '<option value="'+esc(t)+'"'+(t===ct?' selected':'')+'>'+esc(t)+'</option>'; }).join('');
+        }
+        var as = sel('assocGlobalSel');
+        if(as && Array.isArray(meta.assocs)){
+          var ca = (meta.selected && meta.selected.assocId) || as.value || '';
+          as.innerHTML = '<option value="">— Toutes les associations —</option>' +
+            meta.assocs.map(function(a){ return '<option value="'+esc(a.id)+'"'+(a.id===ca?' selected':'')+'>'+esc(a.nom)+'</option>'; }).join('');
+          var aw = document.getElementById('assocSelWrap'); if(aw) aw.style.display = '';
+        }
+      }catch(e){}
+      return;
     }
     if(d.type === 'ab-load-qualite'){
       // Populate qualite dropdowns from Supabase data and select the target action
@@ -5401,6 +5427,21 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     #addActionModal .budget-tbl thead th{background:linear-gradient(135deg,oklch(0.97 0.025 285),oklch(0.96 0.03 240))}
     #addActionModal .budget-total-row td{background:linear-gradient(135deg,oklch(0.97 0.04 285),oklch(0.96 0.05 240));font-weight:800}
     #addActionModal .bg-year{font-family:'JetBrains Mono',monospace;font-weight:700;text-align:center;color:var(--primary)}
+    /* Action card buttons — Référentiel & Bénéficiaires (Supabase dashboard) */
+    @keyframes refMauveBlink{0%,100%{box-shadow:0 0 0 0 oklch(0.62 0.22 305 / .55)}50%{box-shadow:0 0 0 6px oklch(0.62 0.22 305 / 0)}}
+    @keyframes benefRedBlink2{0%,100%{box-shadow:0 0 0 0 oklch(0.62 0.24 25 / .55)}50%{box-shadow:0 0 0 6px oklch(0.62 0.24 25 / 0)}}
+    .btn-ref{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:5px 10px;border-radius:8px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .18s;font-family:inherit}
+    .btn-ref.is-pending{background:oklch(0.62 0.22 305);color:#fff;border-color:oklch(0.55 0.22 305);animation:refMauveBlink 1.4s ease-in-out infinite}
+    .btn-ref.is-pending:hover{background:oklch(0.55 0.22 305)}
+    .btn-ref.is-done{background:oklch(0.55 0.16 150);color:#fff;border-color:oklch(0.48 0.16 150)}
+    .btn-ref.is-done:hover{background:oklch(0.48 0.16 150)}
+    .btn-bf{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:5px 10px;border-radius:8px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .18s;font-family:inherit}
+    .btn-bf.is-empty{background:oklch(0.62 0.24 25);color:#fff;border-color:oklch(0.55 0.24 25);animation:benefRedBlink2 1.2s ease-in-out infinite}
+    .btn-bf.is-empty:hover{background:oklch(0.55 0.24 25)}
+    .btn-bf.is-filled{background:transparent;color:oklch(0.55 0.22 305);border:1.5px solid oklch(0.62 0.22 305)}
+    .btn-bf.is-filled:hover{background:oklch(0.62 0.22 305);color:#fff}
+    .btn-ref .cnt,.btn-bf .cnt{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:rgba(255,255,255,.25);font-size:10px;font-weight:800}
+    .btn-bf.is-filled .cnt{background:oklch(0.62 0.22 305 / .15);color:oklch(0.55 0.22 305)}
   `;
   document.head.appendChild(st);
 
