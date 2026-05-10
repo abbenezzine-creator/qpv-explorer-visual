@@ -201,6 +201,7 @@ function ActionsListPage() {
               <th className="px-3 py-2">QPV</th>
               <th className="px-3 py-2">Thématique</th>
               <th className="px-3 py-2">Statut</th>
+              <th className="px-3 py-2">Documents</th>
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
