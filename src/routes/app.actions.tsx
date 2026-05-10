@@ -61,6 +61,17 @@ function ActionsListPage() {
     associations.forEach((a) => m.set(a.id, a.nom));
     return m;
   }, [associations]);
+  const assocOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const out: Association[] = [];
+    for (const a of associations) {
+      const key = (a.nom ?? "").trim().toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(a);
+    }
+    return out;
+  }, [associations]);
 
   const filtered = useMemo(() => {
     const list = actionsQ.data ?? [];
