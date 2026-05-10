@@ -121,7 +121,7 @@ function AppIndexPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "actions" },
         () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
       .on("postgres_changes", { event: "*", schema: "public", table: "evaluations_beneficiaires" },
-        () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
+        () => { qc.invalidateQueries({ queryKey: ["dashboard-data"] }); qc.invalidateQueries({ queryKey: ["impacts-evaluations"] }); qc.invalidateQueries({ queryKey: ["evaluations-list"] }); })
       .on("postgres_changes", { event: "*", schema: "public", table: "referentiel_qualite" },
         () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
       .on("postgres_changes", { event: "*", schema: "public", table: "associations" },
