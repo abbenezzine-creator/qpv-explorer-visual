@@ -264,10 +264,17 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className={fullscreen ? "max-w-[100vw] w-screen h-screen sm:rounded-none p-6 overflow-y-auto" : "max-w-4xl max-h-[90vh] overflow-y-auto"}>
         <DialogHeader>
-          <DialogTitle>{initial ? "Modifier l'action" : "Ajouter / Modifier une action"}</DialogTitle>
-          <DialogDescription>Renseignez les blocs ci-dessous</DialogDescription>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <DialogTitle>{initial ? "Modifier l'action" : "Ajouter / Modifier une action"}</DialogTitle>
+              <DialogDescription>Renseignez les blocs ci-dessous</DialogDescription>
+            </div>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setFullscreen(f => !f)} className="mr-8">
+              {fullscreen ? <><Minimize2 className="h-4 w-4 mr-1" />Réduire</> : <><Maximize2 className="h-4 w-4 mr-1" />Plein écran</>}
+            </Button>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4">
