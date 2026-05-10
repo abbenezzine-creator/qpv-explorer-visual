@@ -211,7 +211,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         {renderGroup("Territoire", territoire)}
-        {renderGroup("Principal", principal, associationsSelector)}
+        {renderGroup("Principal", principal)}
         {renderGroup("Évaluation", evaluation)}
         {renderGroup("Ressource Documentaire", ressources)}
         {isSuperAdmin && renderGroup("Administration", admin)}
