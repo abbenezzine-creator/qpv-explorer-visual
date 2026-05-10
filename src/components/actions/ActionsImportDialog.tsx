@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -169,6 +170,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
   const [budgetHeaders, setBudgetHeaders] = useState<string[]>([]);
   const [budgetRows, setBudgetRows] = useState<Record<string, any>[]>([]);
   const [budgetMap, setBudgetMap] = useState<Record<string, string>>({});
+  const [budgetDefaultYear, setBudgetDefaultYear] = useState<string>(String(new Date().getFullYear()));
 
   const [importing, setImporting] = useState(false);
 
@@ -226,7 +228,9 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
       if (refVal == null || refVal === "") continue;
       const key = norm(String(refVal));
       const line = {
-        annee: budgetMap.annee ? String(r[budgetMap.annee] ?? "") : "",
+        annee: budgetMap.annee && r[budgetMap.annee] != null && String(r[budgetMap.annee]).trim() !== ""
+          ? String(r[budgetMap.annee])
+          : budgetDefaultYear,
         financeur: budgetMap.financeur ? String(r[budgetMap.financeur] ?? "") : "",
         type: budgetMap.type ? String(r[budgetMap.type] ?? "") : "",
         montant_sollicite: budgetMap.montant_sollicite ? (toNumber(r[budgetMap.montant_sollicite]) ?? 0) : 0,
@@ -238,7 +242,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
       m.get(key)!.push(line);
     }
     return m;
-  }, [budgetRows, budgetMap]);
+  }, [budgetRows, budgetMap, budgetDefaultYear]);
 
   const previewCount = useMemo(() => {
     if (!mapping.titre || !mapping.association_nom) return { valid: 0, missing: 0, withBudget: 0 };
@@ -436,6 +440,19 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
                   {budgetSheet && (
                     <p className="mt-1 text-xs text-muted-foreground">{budgetRows.length} ligne(s) de budget</p>
                   )}
+                </div>
+
+                <div>
+                  <Label>Année par défaut du budget</Label>
+                  <Input
+                    type="number"
+                    value={budgetDefaultYear}
+                    onChange={(e) => setBudgetDefaultYear(e.target.value)}
+                    className="max-w-[160px]"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Année en cours par défaut, modifiable. Utilisée si la colonne Année n'est pas renseignée pour une ligne.
+                  </p>
                 </div>
 
                 {budgetHeaders.length > 0 && (

@@ -16,7 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import type { AbUser } from "@/lib/auth";
 import { toast } from "sonner";
-import { Plus, X, IdCard, CalendarClock, Users, MapPin, Target, Wallet, Building2 } from "lucide-react";
+import { Plus, X, IdCard, CalendarClock, Users, MapPin, Target, Wallet, Building2, Maximize2, Minimize2 } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -116,11 +116,23 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
   const [refCode, setRefCode] = useState("");
   const [referenceAdmin, setReferenceAdmin] = useState("");
   const [commune, setCommune] = useState("");
-  const [publicQuartiers, setPublicQuartiers] = useState<PublicQuartierItem[]>([{ quartier: "", nombre: 0 }]);
+  const [publicQuartiers, setPublicQuartiers] = useState<PublicQuartierItem[]>([]);
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([
     { annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 },
   ]);
   const [saving, setSaving] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  // Fixed quartier matrix (Prévisionnel / Réalisé)
+  const QUARTIER_COLS = ["Argonne", "Blossières", "Dauphine", "La Source"] as const;
+  const getPq = (quartier: string, type: "previsionnel" | "realise") =>
+    publicQuartiers.find(p => p.quartier === quartier && p.type === type)?.nombre ?? 0;
+  const setPq = (quartier: string, type: "previsionnel" | "realise", nombre: number) => {
+    setPublicQuartiers(prev => {
+      const others = prev.filter(p => !(p.quartier === quartier && p.type === type));
+      return [...others, { quartier, type, nombre }];
+    });
+  };
 
   // sync from initial when opening
   useEffect(() => {
@@ -155,7 +167,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
     setReferenceAdmin((initial as unknown as { reference_administrative?: string | null })?.reference_administrative ?? "");
     setCommune((initial as unknown as { commune?: string | null })?.commune ?? "");
     const pq = (initial as unknown as { public_quartiers?: PublicQuartierItem[] | null })?.public_quartiers;
-    setPublicQuartiers(pq && pq.length ? pq : [{ quartier: "", nombre: 0 }]);
+    setPublicQuartiers(pq && pq.length ? pq : []);
     setBudgetLines(initial?.budget_financeurs?.length
       ? initial.budget_financeurs.map(b => ({
           annee: b.annee,
@@ -238,7 +250,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
       ref: refCode.trim() || null,
       reference_administrative: referenceAdmin.trim() || null,
       commune: commune.trim() || null,
-      public_quartiers: publicQuartiers.filter(p => p.quartier.trim() || p.nombre).map(p => ({ quartier: p.quartier.trim(), nombre: Number(p.nombre) || 0 })),
+      public_quartiers: publicQuartiers.filter(p => p.quartier.trim() && (Number(p.nombre) || 0) >= 0).map(p => ({ quartier: p.quartier.trim(), nombre: Number(p.nombre) || 0, type: p.type })),
     };
     const res = initial
       ? await supabase.from("actions").update(payload).eq("id", initial.id)
@@ -252,10 +264,17 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className={fullscreen ? "max-w-[100vw] w-screen h-screen sm:rounded-none p-6 overflow-y-auto" : "max-w-4xl max-h-[90vh] overflow-y-auto"}>
         <DialogHeader>
-          <DialogTitle>{initial ? "Modifier l'action" : "Ajouter / Modifier une action"}</DialogTitle>
-          <DialogDescription>Renseignez les blocs ci-dessous</DialogDescription>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <DialogTitle>{initial ? "Modifier l'action" : "Ajouter / Modifier une action"}</DialogTitle>
+              <DialogDescription>Renseignez les blocs ci-dessous</DialogDescription>
+            </div>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setFullscreen(f => !f)} className="mr-8">
+              {fullscreen ? <><Minimize2 className="h-4 w-4 mr-1" />Réduire</> : <><Maximize2 className="h-4 w-4 mr-1" />Plein écran</>}
+            </Button>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -453,41 +472,47 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
           {/* PUBLIC PAR QUARTIER */}
           <Section icon={Building2} title="Public touché par quartier" tone="emerald">
             <div className="col-span-2">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  Total : <strong className="text-foreground">{publicQuartiers.reduce((s, p) => s + (Number(p.nombre) || 0), 0)}</strong> bénéficiaires
+              <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+                <span>Saisir les nombres prévisionnels et réalisés par quartier</span>
+                <span>
+                  Total prévisionnel : <strong className="text-foreground">{QUARTIER_COLS.reduce((s, q) => s + getPq(q, "previsionnel"), 0)}</strong>
+                  {" · "}
+                  Total réalisé : <strong className="text-foreground">{QUARTIER_COLS.reduce((s, q) => s + getPq(q, "realise"), 0)}</strong>
                 </span>
-                <Button type="button" size="sm" variant="outline" onClick={() => setPublicQuartiers([...publicQuartiers, { quartier: "", nombre: 0 }])}>
-                  <Plus className="h-3 w-3 mr-1" />Ajouter un quartier
-                </Button>
               </div>
-              <div className="space-y-2">
-                <div className="grid grid-cols-12 gap-2 px-1 text-xs text-muted-foreground">
-                  <div className="col-span-8">Quartier</div>
-                  <div className="col-span-3">Nombre</div>
-                  <div className="col-span-1"></div>
-                </div>
-                {publicQuartiers.map((p, i) => (
-                  <div key={i} className="grid grid-cols-12 gap-2">
-                    <Select
-                      value={p.quartier || undefined}
-                      onValueChange={(v) => {
-                        const n = [...publicQuartiers]; n[i] = { ...p, quartier: v }; setPublicQuartiers(n);
-                      }}
-                    >
-                      <SelectTrigger className="col-span-8"><SelectValue placeholder="Choisir un quartier…" /></SelectTrigger>
-                      <SelectContent>
-                        {QUARTIERS_OPTIONS.map(q => <SelectItem key={q} value={q}>{q}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Input className="col-span-3" type="number" min={0} value={p.nombre} onChange={(e) => {
-                      const n = [...publicQuartiers]; n[i] = { ...p, nombre: Number(e.target.value) || 0 }; setPublicQuartiers(n);
-                    }} />
-                    <Button type="button" size="sm" variant="ghost" className="col-span-1" onClick={() => setPublicQuartiers(publicQuartiers.filter((_, j) => j !== i))}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+              <div className="overflow-x-auto rounded-md border bg-background">
+                <table className="w-full text-sm">
+                  <thead className="bg-emerald-500/10 text-emerald-800">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Type</th>
+                      {QUARTIER_COLS.map(q => (
+                        <th key={q} className="px-3 py-2 text-center font-medium">{q}</th>
+                      ))}
+                      <th className="px-3 py-2 text-center font-medium">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(["previsionnel", "realise"] as const).map(type => (
+                      <tr key={type} className="border-t">
+                        <td className="px-3 py-2 font-medium capitalize">{type === "previsionnel" ? "Prévisionnel" : "Réalisé"}</td>
+                        {QUARTIER_COLS.map(q => (
+                          <td key={q} className="px-2 py-1">
+                            <Input
+                              type="number"
+                              min={0}
+                              className="h-9 text-center"
+                              value={getPq(q, type)}
+                              onChange={(e) => setPq(q, type, Number(e.target.value) || 0)}
+                            />
+                          </td>
+                        ))}
+                        <td className="px-3 py-2 text-center font-semibold">
+                          {QUARTIER_COLS.reduce((s, q) => s + getPq(q, type), 0)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </Section>

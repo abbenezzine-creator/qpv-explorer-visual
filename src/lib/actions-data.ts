@@ -40,8 +40,7 @@ export const THEMATIQUE_OPTIONS = [
 export const JOURS_OPTIONS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"] as const;
 
 export const QUARTIERS_OPTIONS = [
-  "Argonne","Blossières","Dauphine","La Source","Fleury-les-Aubrais",
-  "St-Jean-de-la-Ruelle","St-Jean-de-Braye","Tous QPV",
+  "Argonne","La Source","Blossières","Dauphine",
 ] as const;
 
 export const TRANCHES_AGE_OPTIONS = [
@@ -66,7 +65,7 @@ export type BudgetLine = {
   montant_favorable?: number;
 };
 export type LieuItem = { nom: string };
-export type PublicQuartierItem = { quartier: string; nombre: number };
+export type PublicQuartierItem = { quartier: string; nombre: number; type?: "previsionnel" | "realise" };
 
 export type QpvKey = (typeof QPV_OPTIONS)[number]["key"];
 export type AxisKey = (typeof AXIS_OPTIONS)[number]["key"];
