@@ -16,54 +16,105 @@ export type Database = {
     Tables: {
       actions: {
         Row: {
+          annee: number | null
           assoc_id: string
           axis_key: string | null
           budget: number | null
+          budget_financeurs: Json | null
           created_at: string
           created_by: string | null
           date_debut: string | null
           date_fin: string | null
           description: string | null
+          duree: string | null
+          fonctions: string[] | null
+          heure_debut: string | null
+          heure_fin: string | null
           id: string
+          jours: string[] | null
+          lieu_principal: string | null
+          lieux: Json | null
           nb_beneficiaires_prevu: number | null
           nb_beneficiaires_reel: number | null
           qpv_key: string | null
+          quartiers: string[] | null
+          recurrence: string | null
+          recurrence_detail: string | null
+          recurrence_fin: string | null
+          recurrence_nb: number | null
           statut: string
+          thematique: string | null
           titre: string
+          tranches_age: string[] | null
+          type_action: string | null
           updated_at: string
         }
         Insert: {
+          annee?: number | null
           assoc_id: string
           axis_key?: string | null
           budget?: number | null
+          budget_financeurs?: Json | null
           created_at?: string
           created_by?: string | null
           date_debut?: string | null
           date_fin?: string | null
           description?: string | null
+          duree?: string | null
+          fonctions?: string[] | null
+          heure_debut?: string | null
+          heure_fin?: string | null
           id?: string
+          jours?: string[] | null
+          lieu_principal?: string | null
+          lieux?: Json | null
           nb_beneficiaires_prevu?: number | null
           nb_beneficiaires_reel?: number | null
           qpv_key?: string | null
+          quartiers?: string[] | null
+          recurrence?: string | null
+          recurrence_detail?: string | null
+          recurrence_fin?: string | null
+          recurrence_nb?: number | null
           statut?: string
+          thematique?: string | null
           titre: string
+          tranches_age?: string[] | null
+          type_action?: string | null
           updated_at?: string
         }
         Update: {
+          annee?: number | null
           assoc_id?: string
           axis_key?: string | null
           budget?: number | null
+          budget_financeurs?: Json | null
           created_at?: string
           created_by?: string | null
           date_debut?: string | null
           date_fin?: string | null
           description?: string | null
+          duree?: string | null
+          fonctions?: string[] | null
+          heure_debut?: string | null
+          heure_fin?: string | null
           id?: string
+          jours?: string[] | null
+          lieu_principal?: string | null
+          lieux?: Json | null
           nb_beneficiaires_prevu?: number | null
           nb_beneficiaires_reel?: number | null
           qpv_key?: string | null
+          quartiers?: string[] | null
+          recurrence?: string | null
+          recurrence_detail?: string | null
+          recurrence_fin?: string | null
+          recurrence_nb?: number | null
           statut?: string
+          thematique?: string | null
           titre?: string
+          tranches_age?: string[] | null
+          type_action?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -82,7 +133,9 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          login: string | null
           nom: string
+          password: string | null
           qpv_key: string | null
           updated_at: string
         }
@@ -91,7 +144,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          login?: string | null
           nom: string
+          password?: string | null
           qpv_key?: string | null
           updated_at?: string
         }
@@ -100,7 +155,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          login?: string | null
           nom?: string
+          password?: string | null
           qpv_key?: string | null
           updated_at?: string
         }

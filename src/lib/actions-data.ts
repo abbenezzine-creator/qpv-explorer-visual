@@ -19,9 +19,45 @@ export const AXIS_OPTIONS = [
 export const STATUT_OPTIONS = [
   { key: "planifiee", label: "Planifiée" },
   { key: "en_cours", label: "En cours" },
+  { key: "recurrent", label: "Récurrent" },
   { key: "terminee", label: "Terminée" },
+  { key: "favorable", label: "Favorable" },
+  { key: "non_retenu", label: "Non retenu" },
+  { key: "ajournee", label: "Ajournée" },
+  { key: "oriente", label: "Orienté vers un autre dispositif" },
   { key: "annulee", label: "Annulée" },
 ] as const;
+
+export const TYPE_ACTION_OPTIONS = [
+  "Formation","Accompagnement","Animation","Permanence","Atelier","Sensibilisation",
+] as const;
+
+export const THEMATIQUE_OPTIONS = [
+  "Education / Parentalité","Emploi & Développement","Santé","Cohésion sociale","Citoyenneté",
+  "Transition écologique","Accès aux droits","Prévention","Culture",
+] as const;
+
+export const JOURS_OPTIONS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"] as const;
+
+export const QUARTIERS_OPTIONS = [
+  "Argonne","Blossières","Dauphine","La Source","Fleury-les-Aubrais",
+  "St-Jean-de-la-Ruelle","St-Jean-de-Braye","Tous QPV",
+] as const;
+
+export const TRANCHES_AGE_OPTIONS = [
+  "0–5 ans","6–11 ans","12–17 ans","18–25 ans","26–45 ans","46–65 ans","65+ ans","Tout public","Familles",
+] as const;
+
+export const RECURRENCE_OPTIONS = [
+  { key: "none", label: "Aucune — action ponctuelle" },
+  { key: "weekly", label: "Hebdomadaire" },
+  { key: "biweekly", label: "Bi-mensuelle (toutes les 2 semaines)" },
+  { key: "monthly", label: "Mensuelle" },
+  { key: "custom", label: "Personnalisée" },
+] as const;
+
+export type BudgetLine = { annee: string; financeur: string; type: string; montant: number };
+export type LieuItem = { nom: string };
 
 export type QpvKey = (typeof QPV_OPTIONS)[number]["key"];
 export type AxisKey = (typeof AXIS_OPTIONS)[number]["key"];
@@ -43,9 +79,34 @@ export type Action = {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  type_action: string | null;
+  annee: number | null;
+  heure_debut: string | null;
+  heure_fin: string | null;
+  duree: string | null;
+  jours: string[] | null;
+  recurrence: string | null;
+  recurrence_detail: string | null;
+  recurrence_fin: string | null;
+  recurrence_nb: number | null;
+  thematique: string | null;
+  quartiers: string[] | null;
+  tranches_age: string[] | null;
+  fonctions: string[] | null;
+  lieux: LieuItem[] | null;
+  lieu_principal: string | null;
+  budget_financeurs: BudgetLine[] | null;
 };
 
-export type Association = { id: string; nom: string };
+export type Association = {
+  id: string;
+  nom: string;
+  description?: string | null;
+  commune?: string | null;
+  qpv_key?: string | null;
+  login?: string | null;
+  password?: string | null;
+};
 
 export type Evaluation = {
   id: string;
@@ -119,7 +180,12 @@ export function labelOf<T extends { key: string; label: string }>(opts: readonly
 export const STATUT_VARIANT: Record<StatutKey, string> = {
   planifiee: "bg-blue-500/10 text-blue-700 border-blue-500/30",
   en_cours: "bg-amber-500/10 text-amber-700 border-amber-500/30",
+  recurrent: "bg-violet-500/10 text-violet-700 border-violet-500/30",
   terminee: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30",
+  favorable: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30",
+  non_retenu: "bg-rose-500/10 text-rose-700 border-rose-500/30",
+  ajournee: "bg-amber-500/10 text-amber-700 border-amber-500/30",
+  oriente: "bg-cyan-500/10 text-cyan-700 border-cyan-500/30",
   annulee: "bg-muted text-muted-foreground border-border",
 };
 
