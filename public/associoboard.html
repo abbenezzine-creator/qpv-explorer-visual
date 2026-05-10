@@ -584,7 +584,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       </div>
       <div class="two-col">
         <div class="card">
-          <div class="card-hdr"><div class="card-title">Actions récentes</div><button class="btn btn-outline btn-sm" onclick="nav('agenda')">Voir agenda →</button></div>
+          <div class="card-hdr"><div class="card-title">Actions récentes</div><button class="btn btn-outline btn-sm" onclick="openDashAllActions()">Voir détail →</button></div>
           <div class="card-body" style="padding:8px 14px" id="dashActions"></div>
         </div>
          <div class="card">
@@ -1223,8 +1223,78 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   </div>
 </div>
 
+<!-- DASHBOARD: All actions by thematique -->
+<div class="overlay" id="dashAllActionsModal" onclick="closeModal('dashAllActionsModal',event)">
+  <div class="modal" style="max-width:1100px" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div class="modal-ttl">Toutes les actions par thématique</div>
+      <button class="modal-close" onclick="closeModal('dashAllActionsModal')">✕</button>
+    </div>
+    <div style="padding:10px 22px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);position:sticky;top:54px;z-index:1">
+      <select class="form-sel" style="width:auto;padding:6px 10px;font-size:12px" id="dashAllThemeSel" onchange="filterDashAllActions()"><option value="">Toutes thématiques</option></select>
+      <select class="form-sel" style="width:auto;padding:6px 10px;font-size:12px" id="dashAllAssocSel" onchange="onDashAllAssocChange()"><option value="">Toutes associations</option></select>
+      <select class="form-sel" style="width:auto;padding:6px 10px;font-size:12px" id="dashAllYearSel" onchange="onDashAllYearChange()"></select>
+      <span style="margin-left:auto;font-size:11px;color:var(--muted-fore)" id="dashAllCount"></span>
+    </div>
+    <div class="modal-body" id="dashAllActions"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <script>
+// ========== Dashboard "Voir détail" modal ==========
+function openDashAllActions(){
+  try{
+    var modal = document.getElementById('dashAllActionsModal'); if(!modal) return;
+    var c = window.__abDashCache || {};
+    var meta = window.__dashMeta || {};
+    var sel = window.__dashFilters || {};
+    var assocSel = document.getElementById('dashAllAssocSel');
+    var themeSel = document.getElementById('dashAllThemeSel');
+    var yearSel = document.getElementById('dashAllYearSel');
+    if(meta.assocs && assocSel){
+      assocSel.innerHTML = '<option value="">Toutes associations</option>' +
+        meta.assocs.map(function(a){ return '<option value="'+a.id+'">'+(a.nom||'').replace(/</g,'&lt;')+'</option>'; }).join('');
+      assocSel.value = sel.assoc || '';
+    }
+    if(meta.themes && themeSel){
+      themeSel.innerHTML = '<option value="">Toutes thématiques</option>' +
+        meta.themes.map(function(t){ return '<option value="'+(t||'').replace(/</g,'&lt;')+'">'+(t||'').replace(/</g,'&lt;')+'</option>'; }).join('');
+      themeSel.value = sel.theme || '';
+    }
+    if(meta.years && yearSel){
+      var ys = meta.years.length ? meta.years : [new Date().getFullYear()];
+      yearSel.innerHTML = ys.map(function(y){ return '<option value="'+y+'">'+y+'</option>'; }).join('');
+      yearSel.value = sel.year || String(ys[0]);
+    }
+    var box = document.getElementById('dashAllActions');
+    if(box) box.innerHTML = c.allActions || '<p style="color:var(--muted-fore);font-size:12px;padding:18px;text-align:center">Chargement…</p>';
+    filterDashAllActions();
+    openModal('dashAllActionsModal');
+  }catch(e){ console.error('openDashAllActions', e); }
+}
+function filterDashAllActions(){
+  var t = (document.getElementById('dashAllThemeSel') || {}).value || '';
+  var blocks = document.querySelectorAll('#dashAllActions .theme-block');
+  var visibleCount = 0;
+  blocks.forEach(function(b){
+    var th = b.getAttribute('data-theme') || '';
+    var show = !t || th === t;
+    b.style.display = show ? '' : 'none';
+    if(show) visibleCount += b.querySelectorAll('.action-card').length;
+  });
+  var cnt = document.getElementById('dashAllCount');
+  if(cnt) cnt.textContent = visibleCount + ' action' + (visibleCount > 1 ? 's' : '');
+}
+function onDashAllAssocChange(){
+  var v = (document.getElementById('dashAllAssocSel') || {}).value || '';
+  try{ window.parent && window.parent.postMessage({type:'ab-dash-filters', assocId: v || null}, '*'); }catch(e){}
+}
+function onDashAllYearChange(){
+  var v = parseInt((document.getElementById('dashAllYearSel') || {}).value, 10);
+  try{ window.parent && window.parent.postMessage({type:'ab-dash-filters', year: isNaN(v) ? null : v}, '*'); }catch(e){}
+}
+
 // ========== PARENT BRIDGE (Supabase data injection) ==========
 (function(){
   let dashCache = null;
@@ -1234,6 +1304,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     var a = document.getElementById('dashActions');   if(a && dashCache.actions)  a.innerHTML = dashCache.actions;
     var t = document.getElementById('dashTL');        if(t && dashCache.timeline) t.innerHTML = dashCache.timeline;
     var q = document.getElementById('dashQualite');   if(q && dashCache.qualite)  q.innerHTML = dashCache.qualite;
+    var aa = document.getElementById('dashAllActions');
+    if(aa && dashCache.allActions){ aa.innerHTML = dashCache.allActions; try{ filterDashAllActions(); }catch(_){ } }
+    window.__abDashCache = dashCache;
   }
   window.__abApplyDash = applyDash;
   window.addEventListener('message', function(ev){

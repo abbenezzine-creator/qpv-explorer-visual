@@ -29,13 +29,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { getUser, logout as authLogout, type AbUser } from "@/lib/auth";
 
@@ -70,7 +63,7 @@ const admin: NavItem[] = [
   { title: "Questionnaire thématique", to: "/app", search: { page: "questionnaire-thematique" }, icon: ListChecks },
 ];
 
-const ALL_LABEL = "Toutes les associations";
+
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -152,47 +145,7 @@ export function AppSidebar() {
     </SidebarGroup>
   );
 
-  const handleAssocChange = (value: string) => {
-    try {
-      const f = document.querySelector<HTMLIFrameElement>("iframe[title='AssocioBoard']");
-      const w = f?.contentWindow as (Window & { setAssocFilter?: (n: string) => void }) | null;
-      w?.setAssocFilter?.(value);
-    } catch {
-      /* noop */
-    }
-  };
-
-  const [assocOptions, setAssocOptions] = useState<string[]>([ALL_LABEL]);
-  useEffect(() => {
-    if (!mounted) return;
-    const refresh = () => {
-      try {
-        const f = document.querySelector<HTMLIFrameElement>("iframe[title='AssocioBoard']");
-        const w = f?.contentWindow as (Window & { getAssociationsWithActions?: () => string[] }) | null;
-        const list = w?.getAssociationsWithActions?.() ?? [];
-        setAssocOptions([ALL_LABEL, ...list]);
-      } catch { /* noop */ }
-    };
-    refresh();
-    const id = window.setInterval(refresh, 2000);
-    return () => window.clearInterval(id);
-  }, [mounted]);
-
   const isSuperAdmin = user?.role === "superadmin";
-  const associationsSelector = mounted && !collapsed && isSuperAdmin ? (
-    <div className="px-2 pb-2">
-      <Select defaultValue={ALL_LABEL} onValueChange={handleAssocChange}>
-        <SelectTrigger className="h-8 text-xs">
-          <SelectValue placeholder="Associations" />
-        </SelectTrigger>
-        <SelectContent>
-          {assocOptions.map((a) => (
-            <SelectItem key={a} value={a} className="text-xs">{a}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  ) : null;
 
   return (
     <Sidebar collapsible="icon">
@@ -211,7 +164,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         {renderGroup("Territoire", territoire)}
-        {renderGroup("Principal", principal, associationsSelector)}
+        {renderGroup("Principal", principal)}
         {renderGroup("Évaluation", evaluation)}
         {renderGroup("Ressource Documentaire", ressources)}
         {isSuperAdmin && renderGroup("Administration", admin)}

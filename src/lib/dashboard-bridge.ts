@@ -168,7 +168,18 @@ function fmtDate(s: string | null): string {
   return d && m && y ? `${d}/${m}/${y}` : s;
 }
 
-function actionCardHtml(a: Action, assocName: string, refsCount: number, evalsCount: number): string {
+function actionScoreFromRefs(refs: RefQualite[]): number | null {
+  const vals: number[] = [];
+  for (const r of refs) {
+    if (r.score_global != null) { vals.push(r.score_global); continue; }
+    const cs = [r.c1, r.c2, r.c3, r.c4, r.c5, r.c6, r.c7, r.c8, r.c9, r.c10].filter((v): v is number => v != null);
+    if (cs.length) vals.push((cs.reduce((s, v) => s + v, 0) / cs.length) * 20);
+  }
+  if (!vals.length) return null;
+  return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
+}
+
+function actionCardHtml(a: Action, assocName: string, refsCount: number, evalsCount: number, scoreAvg: number | null): string {
   const badge = STATUT_BADGE[a.statut] ?? "gray";
   const statutLbl = STATUT_LABEL[a.statut] ?? a.statut;
   const quartiers = (a.quartiers ?? []).map(q => `<span class="badge badge-gray">${escapeHtml(q)}</span>`).join("");
@@ -181,11 +192,14 @@ function actionCardHtml(a: Action, assocName: string, refsCount: number, evalsCo
   const bfLbl = evalsCount > 0
     ? `Évaluer bénéficiaires <span class="cnt">${evalsCount}</span>`
     : `Évaluer bénéficiaires`;
+  const scoreBadge = scoreAvg != null
+    ? `<span class="badge" style="background:color-mix(in oklab, var(--accent-rose) 15%, transparent);color:var(--accent-rose);font-weight:700">★ ${scoreAvg}%</span>`
+    : `<span class="badge badge-gray" style="opacity:.7">★ —</span>`;
   return `<div class="action-card" style="position:relative" onclick="window.parent && window.parent.postMessage({type:'ab-open-action',actionId:'${a.id}'},'*')">
     <div class="ac-bar" style="background:linear-gradient(135deg,var(--primary),var(--accent-rose))"></div>
     <div class="ac-ref"><span>${escapeHtml(assocName.toUpperCase())}</span><span class="badge badge-${badge}">${escapeHtml(statutLbl)}</span></div>
     <div class="ac-title">${escapeHtml(a.titre)}</div>
-    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">${quartiers}${ages}</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;align-items:center">${scoreBadge}${quartiers}${ages}</div>
     <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap">
       <button type="button" class="btn-bf ${bfState}" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-open-eval-modal',actionId:'${a.id}'},'*')">${bfLbl}</button>
       <button type="button" class="btn-ref ${refState}" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-open-qualite',actionId:'${a.id}'},'*')">${refLbl}</button>
@@ -197,23 +211,65 @@ function actionCardHtml(a: Action, assocName: string, refsCount: number, evalsCo
   </div>`;
 }
 
+function buildActionMaps(data: DashboardData) {
+  const assocMap = new Map(data.associations.map(a => [a.id, a.nom]));
+  const refsByAction = new Map<string, number>();
+  const refsListByAction = new Map<string, RefQualite[]>();
+  for (const r of data.refs) {
+    refsByAction.set(r.action_id, (refsByAction.get(r.action_id) ?? 0) + 1);
+    if (!refsListByAction.has(r.action_id)) refsListByAction.set(r.action_id, []);
+    refsListByAction.get(r.action_id)!.push(r);
+  }
+  const evalsByAction = new Map<string, number>();
+  for (const e of data.evals) evalsByAction.set(e.action_id, (evalsByAction.get(e.action_id) ?? 0) + 1);
+  return { assocMap, refsByAction, refsListByAction, evalsByAction };
+}
+
 function actionsListHtml(data: DashboardData, filters: DashboardFilters, limit = 4): string {
   const acts = applyFilters(data.actions, filters)
     .slice()
     .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
     .slice(0, limit);
   if (!acts.length) return `<p style="color:var(--muted-fore);font-size:12px;padding:9px 0">Aucune action</p>`;
-  const assocMap = new Map(data.associations.map(a => [a.id, a.nom]));
-  const refsByAction = new Map<string, number>();
-  for (const r of data.refs) refsByAction.set(r.action_id, (refsByAction.get(r.action_id) ?? 0) + 1);
-  const evalsByAction = new Map<string, number>();
-  for (const e of data.evals) evalsByAction.set(e.action_id, (evalsByAction.get(e.action_id) ?? 0) + 1);
+  const { assocMap, refsByAction, refsListByAction, evalsByAction } = buildActionMaps(data);
   return acts.map(a => actionCardHtml(
     a,
     assocMap.get(a.assoc_id) ?? "—",
     refsByAction.get(a.id) ?? 0,
     evalsByAction.get(a.id) ?? 0,
+    actionScoreFromRefs(refsListByAction.get(a.id) ?? []),
   )).join("");
+}
+
+function allActionsByThemeHtml(data: DashboardData, filters: DashboardFilters): string {
+  const acts = applyFilters(data.actions, filters)
+    .slice()
+    .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""));
+  if (!acts.length) return `<p style="color:var(--muted-fore);font-size:13px;padding:18px;text-align:center">Aucune action</p>`;
+  const { assocMap, refsByAction, refsListByAction, evalsByAction } = buildActionMaps(data);
+  const groups = new Map<string, Action[]>();
+  for (const a of acts) {
+    const k = a.thematique ?? "Sans thématique";
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k)!.push(a);
+  }
+  const ordered = Array.from(groups.entries()).sort((a, b) => a[0].localeCompare(b[0], "fr"));
+  return ordered.map(([theme, list]) => `
+    <div class="theme-block" data-theme="${escapeHtml(theme)}" style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:8px;margin:6px 0 10px;padding-bottom:6px;border-bottom:1px dashed var(--border)">
+        <span style="font-family:'Lexend',sans-serif;font-weight:700;font-size:13px;color:var(--primary);text-transform:uppercase;letter-spacing:.5px">${escapeHtml(theme)}</span>
+        <span style="font-size:11px;color:var(--muted-fore)">${list.length} action${list.length > 1 ? "s" : ""}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+        ${list.map(a => actionCardHtml(
+          a,
+          assocMap.get(a.assoc_id) ?? "—",
+          refsByAction.get(a.id) ?? 0,
+          evalsByAction.get(a.id) ?? 0,
+          actionScoreFromRefs(refsListByAction.get(a.id) ?? []),
+        )).join("")}
+      </div>
+    </div>`).join("");
 }
 
 function timelineHtml(data: DashboardData, filters: DashboardFilters): string {
@@ -346,14 +402,13 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
       </div>`;
   }).join("");
 
+  void assocHtml;
   return `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px;border-bottom:1px dashed var(--border);margin-bottom:8px">
-      <div style="font-size:11px;color:var(--muted-fore)">${escapeHtml(scopeName)} · <strong>Tous critères</strong></div>
+      <div style="font-size:11px;color:var(--muted-fore)">${escapeHtml(scopeName)} · <strong>Moyenne ${refs.length} évaluation${refs.length > 1 ? "s" : ""}</strong></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--primary)">${globalAvg || "—"}${globalAvg ? "%" : ""}</div>
     </div>
-    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Moyenne par association</div>
-    ${assocHtml}
-    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;border-top:1px dashed var(--border);padding-top:8px">Critères C1 → C10</div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted-fore);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px">Critères C1 → C10</div>
     ${axesHtml}`;
 }
 
@@ -378,6 +433,7 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
     html: {
       stats: statsHtml(data, filters),
       actions: actionsListHtml(data, filters),
+      allActions: allActionsByThemeHtml(data, filters),
       timeline: timelineHtml(data, filters),
       qualite: qualiteHtml(data, filters),
     },
