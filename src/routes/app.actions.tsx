@@ -196,6 +196,11 @@ function ActionsListPage() {
                           <Pencil className="h-4 w-4" />
                         </Button>
                       )}
+                      {user?.role === "superadmin" && (
+                        <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(a)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
