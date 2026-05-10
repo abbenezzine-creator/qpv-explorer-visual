@@ -75,6 +75,7 @@ function applyFilters(actions: Action[], f: DashboardFilters): Action[] {
     if (f.year && a.annee && a.annee !== f.year) return false;
     if (f.assocId && a.assoc_id !== f.assocId) return false;
     if (f.thematique && a.thematique !== f.thematique) return false;
+    if (f.actionId && a.id !== f.actionId) return false;
     return true;
   });
 }
