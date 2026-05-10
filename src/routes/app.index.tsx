@@ -140,6 +140,18 @@ function AppIndexPage() {
     try { f.contentWindow.postMessage(payload, "*"); } catch { /* noop */ }
   }, [iframeReady, dashQ.data, filters, page]);
 
+  // Trigger openActionQualite in iframe when ?page=qualite&qualiteAction=<id>
+  useEffect(() => {
+    if (page !== "qualite" || !qualiteAction || !iframeReady) return;
+    const f = ref.current;
+    if (!f?.contentWindow) return;
+    const win = f.contentWindow as IframeWin;
+    const t = setTimeout(() => {
+      try { win.openActionQualite?.(qualiteAction); } catch { /* noop */ }
+    }, 80);
+    return () => clearTimeout(t);
+  }, [page, qualiteAction, iframeReady]);
+
   return (
     <>
       <iframe
