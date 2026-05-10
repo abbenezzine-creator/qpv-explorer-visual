@@ -65,7 +65,7 @@ export type BudgetLine = {
   montant_favorable?: number;
 };
 export type LieuItem = { nom: string };
-export type PublicQuartierItem = { quartier: string; nombre: number };
+export type PublicQuartierItem = { quartier: string; nombre: number; type?: "previsionnel" | "realise" };
 
 export type QpvKey = (typeof QPV_OPTIONS)[number]["key"];
 export type AxisKey = (typeof AXIS_OPTIONS)[number]["key"];
