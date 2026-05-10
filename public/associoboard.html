@@ -1303,7 +1303,19 @@ function onDashAllYearChange(){
     var s = document.getElementById('dashStats');     if(s && dashCache.stats)    s.innerHTML = dashCache.stats;
     var a = document.getElementById('dashActions');   if(a && dashCache.actions)  a.innerHTML = dashCache.actions;
     var t = document.getElementById('dashTL');        if(t && dashCache.timeline) t.innerHTML = dashCache.timeline;
-    var q = document.getElementById('dashQualite');   if(q && dashCache.qualite)  q.innerHTML = dashCache.qualite;
+    var q = document.getElementById('dashQualite');   if(q && dashCache.qualite){ q.innerHTML = dashCache.qualite; try{
+      var sel = q.querySelector('#qualAxeSelect');
+      var box = q.querySelector('#qualAxesContainer');
+      if(sel && box){
+        var allHtml = box.innerHTML;
+        var byId = {};
+        box.querySelectorAll('[data-axe]').forEach(function(n){ byId[n.getAttribute('data-axe')] = n.outerHTML; });
+        sel.addEventListener('change', function(){
+          var v = sel.value;
+          box.innerHTML = (v === '__all__') ? allHtml : (byId[v] || allHtml);
+        });
+      }
+    }catch(_){} }
     var aa = document.getElementById('dashAllActions');
     if(aa && dashCache.allActions){ aa.innerHTML = dashCache.allActions; try{ filterDashAllActions(); }catch(_){ } }
     window.__abDashCache = dashCache;
