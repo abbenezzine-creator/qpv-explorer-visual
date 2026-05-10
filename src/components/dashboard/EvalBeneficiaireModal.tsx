@@ -1,11 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -14,35 +9,43 @@ type Props = {
   onClose: () => void;
 };
 
+type SurveyPayload = {
+  actionId?: string | null;
+  beneficiaire?: {
+    age?: string;
+    genre?: string;
+    quartier?: string;
+    asso?: string;
+    action?: string;
+  };
+  pct_avant?: number;
+  pct_apres?: number;
+  [k: string]: unknown;
+};
+
 export function EvalBeneficiaireModal({ actionId, onClose }: Props) {
   const open = !!actionId;
   const qc = useQueryClient();
-  const [phase, setPhase] = useState("apres");
-  const [nom, setNom] = useState("");
-  const [age, setAge] = useState<string>("");
-  const [genre, setGenre] = useState("");
-  const [satisfaction, setSatisfaction] = useState<string>("4");
-  const [commentaire, setCommentaire] = useState("");
-
-  useEffect(() => {
-    if (open) {
-      setPhase("apres"); setNom(""); setAge(""); setGenre("");
-      setSatisfaction("4"); setCommentaire("");
-    }
-  }, [open]);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const mut = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (payload: SurveyPayload) => {
       if (!actionId) throw new Error("actionId manquant");
+      const b = payload.beneficiaire || {};
+      const ageNum = b.age ? Number(String(b.age).replace(/\D/g, "")) : null;
+      const sat =
+        typeof payload.pct_apres === "number"
+          ? Math.round((payload.pct_apres / 100) * 5 * 10) / 10
+          : null;
       const { error } = await supabase.from("evaluations_beneficiaires").insert({
         action_id: actionId,
-        phase,
-        beneficiaire_nom: nom || null,
-        beneficiaire_age: age ? Number(age) : null,
-        beneficiaire_genre: genre || null,
-        satisfaction: satisfaction ? Number(satisfaction) : null,
-        commentaire: commentaire || null,
-        reponses: {},
+        phase: "apres",
+        beneficiaire_nom: null,
+        beneficiaire_age: ageNum && !Number.isNaN(ageNum) ? ageNum : null,
+        beneficiaire_genre: b.genre || null,
+        satisfaction: sat,
+        commentaire: null,
+        reponses: payload as unknown as Record<string, unknown>,
       });
       if (error) throw error;
     },
@@ -54,61 +57,38 @@ export function EvalBeneficiaireModal({ actionId, onClose }: Props) {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  useEffect(() => {
+    if (!open) return;
+    const handler = (ev: MessageEvent) => {
+      const data = ev.data as { type?: string; payload?: SurveyPayload } | undefined;
+      if (!data || data.type !== "survey-complete" || !data.payload) return;
+      if (iframeRef.current && ev.source !== iframeRef.current.contentWindow) return;
+      mut.mutate(data.payload);
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [open, mut]);
+
+  const src = actionId
+    ? `/questionnaire.html?embed=1&action=${encodeURIComponent(actionId)}`
+    : "";
+
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="px-4 py-3 border-b shrink-0">
           <DialogTitle>Évaluer un bénéficiaire</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-3 py-2">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Phase</Label>
-              <Select value={phase} onValueChange={setPhase}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="avant">Avant</SelectItem>
-                  <SelectItem value="apres">Après</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Satisfaction (/5)</Label>
-              <Input type="number" min={0} max={5} step={0.5} value={satisfaction} onChange={(e) => setSatisfaction(e.target.value)} />
-            </div>
-          </div>
-          <div>
-            <Label>Nom du bénéficiaire</Label>
-            <Input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Optionnel" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Âge</Label>
-              <Input type="number" value={age} onChange={(e) => setAge(e.target.value)} />
-            </div>
-            <div>
-              <Label>Genre</Label>
-              <Select value={genre} onValueChange={setGenre}>
-                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="F">F</SelectItem>
-                  <SelectItem value="M">M</SelectItem>
-                  <SelectItem value="autre">Autre</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div>
-            <Label>Commentaire</Label>
-            <Textarea value={commentaire} onChange={(e) => setCommentaire(e.target.value)} rows={3} />
-          </div>
+        <div className="flex-1 min-h-0 bg-muted">
+          {open && (
+            <iframe
+              ref={iframeRef}
+              src={src}
+              title="Questionnaire bénéficiaire"
+              className="w-full h-full border-0"
+            />
+          )}
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={mut.isPending}>Annuler</Button>
-          <Button onClick={() => mut.mutate()} disabled={mut.isPending}>
-            {mut.isPending ? "Enregistrement…" : "Enregistrer"}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
