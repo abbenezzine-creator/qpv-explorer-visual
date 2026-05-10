@@ -504,6 +504,54 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
                     </div>
                   );
                 })}
+
+                {headers.length > 0 && (
+                  <div className="rounded-lg border bg-card p-3">
+                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-600">
+                      <Building2 className="h-4 w-4" />
+                      Public touché par quartier
+                    </div>
+                    <p className="mb-3 text-xs text-muted-foreground">
+                      Mappez les colonnes contenant les <strong>nombres</strong> de bénéficiaires par quartier (prévisionnel et/ou réalisé).
+                    </p>
+                    <div className="overflow-x-auto rounded-md border">
+                      <table className="w-full text-xs">
+                        <thead className="bg-emerald-500/10 text-emerald-800">
+                          <tr>
+                            <th className="px-2 py-2 text-left">Quartier</th>
+                            <th className="px-2 py-2 text-left">Colonne — Prévisionnel</th>
+                            <th className="px-2 py-2 text-left">Colonne — Réalisé</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {QUARTIER_KEYS.map((q) => (
+                            <tr key={q} className="border-t">
+                              <td className="px-2 py-1 font-medium">{q}</td>
+                              <td className="px-1 py-1">
+                                <Select value={pqPrev[q] ?? NONE} onValueChange={(v) => setPqPrev((m) => ({ ...m, [q]: v === NONE ? "" : v }))}>
+                                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="—" /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value={NONE}>—</SelectItem>
+                                    {headers.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                              <td className="px-1 py-1">
+                                <Select value={pqReal[q] ?? NONE} onValueChange={(v) => setPqReal((m) => ({ ...m, [q]: v === NONE ? "" : v }))}>
+                                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="—" /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value={NONE}>—</SelectItem>
+                                    {headers.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="budget" className="space-y-4 pt-4">
