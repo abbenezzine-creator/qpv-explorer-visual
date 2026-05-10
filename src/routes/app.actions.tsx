@@ -19,8 +19,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Eye, ClipboardList, Pencil, Search } from "lucide-react";
+import { Plus, Eye, ClipboardList, Pencil, Search, Trash2 } from "lucide-react";
 import { ActionFormDialog } from "@/components/actions/ActionFormDialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/actions")({
   beforeLoad: async () => {
