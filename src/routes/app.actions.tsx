@@ -106,13 +106,13 @@ function ActionsListPage() {
   const filtered = useMemo(() => {
     const list = actionsQ.data ?? [];
     return list.filter((a) => {
-      if (fAssoc === QPV_ORLEANS) {
+      if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
+      if (fQpv !== ALL && a.qpv_key !== fQpv) return false;
+      if (fThematique === QPV_ORLEANS) {
         const assoc = assocById.get(a.assoc_id);
         const key = assoc?.qpv_key ?? a.qpv_key;
         if (!key || !ORLEANS_QPV_KEYS.includes(key)) return false;
-      } else if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
-      if (fQpv !== ALL && a.qpv_key !== fQpv) return false;
-      if (fThematique !== ALL && a.thematique !== fThematique) return false;
+      } else if (fThematique !== ALL && a.thematique !== fThematique) return false;
       if (fStatut !== ALL && a.statut !== fStatut) return false;
       if (q.trim()) {
         const needle = q.trim().toLowerCase();
