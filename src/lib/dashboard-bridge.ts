@@ -160,7 +160,7 @@ function actionCardHtml(a: Action, assocName: string): string {
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">${quartiers}${ages}</div>
     <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">
       <button type="button" class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 10px" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-open-eval-modal',actionId:'${a.id}'},'*')">Évaluer bénéficiaires</button>
-      <button type="button" class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 10px" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-navigate',to:'/app/actions/${a.id}/qualite'},'*')">Référentiel Qualité</button>
+      <button type="button" class="btn btn-outline btn-sm" style="font-size:11px;padding:4px 10px" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-open-qualite',actionId:'${a.id}'},'*')">Référentiel Qualité</button>
     </div>
     <div class="ac-footer" style="margin-top:8px">
       <span>${fmtDate(a.date_debut)} · ${escapeHtml(a.heure_debut ?? "")}</span>
