@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,9 @@ export const Route = createFileRoute("/app/")({
   component: AppIndexPage,
   validateSearch: (s: Record<string, unknown>) => ({
     page: typeof s.page === "string" ? s.page : "dashboard",
+    year: typeof s.year === "string" && /^\d{4}$/.test(s.year) ? Number(s.year) : (typeof s.year === "number" ? s.year : undefined),
+    assoc: typeof s.assoc === "string" && s.assoc ? s.assoc : undefined,
+    theme: typeof s.theme === "string" && s.theme ? s.theme : undefined,
   }),
 });
 
