@@ -107,7 +107,7 @@ function DashboardPage() {
 function Header() {
   return (
     <header className="border-b border-border bg-card">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-3 py-4 sm:gap-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <span className="text-[10px] font-bold leading-tight text-center">RÉP<br/>FR</span>
