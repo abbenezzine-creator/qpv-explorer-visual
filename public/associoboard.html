@@ -6678,6 +6678,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     var d = ev && ev.data; if(!d) return;
     if(d.type === 'ab-load-assocs'){
       window.SB_ASSOCS = Array.isArray(d.associations) ? d.associations : [];
+      try{ window.__populateDocsBar && window.__populateDocsBar(); window.renderDocuments && window.renderDocuments(); }catch(e){}
       return;
     }
     if(d.type === 'ab-load-documents'){
