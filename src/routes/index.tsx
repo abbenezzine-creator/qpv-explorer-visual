@@ -66,9 +66,9 @@ function DashboardPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="mx-auto max-w-7xl px-6 py-8">
+      <main className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-8">
         {/* Bandeau quartier + année + QPV picker */}
-        <section className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <section className="mb-6 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
