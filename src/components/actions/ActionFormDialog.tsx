@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +24,7 @@ type Props = {
   user: AbUser | null;
   associations: Association[];
   initial?: Action | null;
-  onSaved: () => void;
+  onSaved: () => unknown | Promise<unknown>;
 };
 
 const currentYear = new Date().getFullYear();
@@ -86,6 +86,7 @@ function Section({ icon: Icon, title, tone, children }: SectionProps) {
 
 export function ActionFormDialog({ open, onOpenChange, user, associations, initial, onSaved }: Props) {
   const isSuperadmin = user?.role === "superadmin";
+  const lastYearRef = useRef(String(currentYear));
 
   const [assocId, setAssocId] = useState("");
   const [typeAction, setTypeAction] = useState<string>("Formation");
@@ -141,6 +142,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
     setTypeAction(initial?.type_action ?? "Formation");
     setTitre(initial?.titre ?? "");
     const yearVal = Number(initial?.annee ?? currentYear) || currentYear;
+    lastYearRef.current = String(yearVal);
     setAnnee(String(yearVal));
     setDateDebut(initial?.date_debut ?? `${yearVal}-01-01`);
     setDateFin(initial?.date_fin ?? `${yearVal}-12-31`);
@@ -182,15 +184,18 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
       : [{ annee: String(currentYear), financeur: "", type: "", annee_n1: String(currentYear - 1), montant_n1: 0, montant_sollicite: 0, montant_favorable: 0 }]);
   }, [open, initial, isSuperadmin, associations, user?.assocId]);
 
-  // Defaults dates from year — auto-align with selected année (overwrite if outside year)
+  // Default dates from the selected year only when the date fields are empty
+  // or still equal to the previous automatic 1 Jan / 31 Dec defaults.
   useEffect(() => {
     const y = Number(annee);
     if (!y) return;
-    const inYear = (s: string) => s && s.startsWith(`${y}-`);
-    if (!dateDebut || !inYear(dateDebut)) setDateDebut(`${y}-01-01`);
-    if (!dateFin || !inYear(dateFin)) setDateFin(`${y}-12-31`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [annee]);
+    const previousYear = lastYearRef.current;
+    const nextStart = `${y}-01-01`;
+    const nextEnd = `${y}-12-31`;
+    if (!dateDebut || dateDebut === `${previousYear}-01-01`) setDateDebut(nextStart);
+    if (!dateFin || dateFin === `${previousYear}-12-31`) setDateFin(nextEnd);
+    lastYearRef.current = String(y);
+  }, [annee, dateDebut, dateFin]);
 
   // auto duree
   useEffect(() => {
@@ -264,9 +269,9 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
       : await supabase.from("actions").insert({ ...payload, created_by: user?.id ?? null });
     setSaving(false);
     if (res.error) { toast.error(res.error.message); return; }
+    await onSaved();
     toast.success(initial ? "Action mise à jour" : "Action créée");
     onOpenChange(false);
-    onSaved();
   };
 
   return (
