@@ -351,6 +351,7 @@ function ActionsListPage() {
         associations={associations}
         initial={editing}
         onSaved={refresh}
+        thematiqueOptions={thematiqueOptions}
       />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>

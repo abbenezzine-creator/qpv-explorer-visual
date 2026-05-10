@@ -26,6 +26,7 @@ type Props = {
   associations: Association[];
   initial?: Action | null;
   onSaved: () => unknown | Promise<unknown>;
+  thematiqueOptions?: string[];
 };
 
 const currentYear = new Date().getFullYear();
@@ -85,7 +86,7 @@ function Section({ icon: Icon, title, tone, children }: SectionProps) {
   );
 }
 
-export function ActionFormDialog({ open, onOpenChange, user, associations, initial, onSaved }: Props) {
+export function ActionFormDialog({ open, onOpenChange, user, associations, initial, onSaved, thematiqueOptions }: Props) {
   const isSuperadmin = user?.role === "superadmin";
   const lastYearRef = useRef(String(currentYear));
 
@@ -541,7 +542,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
               <Select value={thematique} onValueChange={setThematique}>
                 <SelectTrigger><SelectValue placeholder="Aucune" /></SelectTrigger>
                 <SelectContent>
-                  {THEMATIQUE_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {(thematiqueOptions && thematiqueOptions.length > 0 ? thematiqueOptions : THEMATIQUE_OPTIONS).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
