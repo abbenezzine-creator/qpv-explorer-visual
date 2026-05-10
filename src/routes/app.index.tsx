@@ -182,12 +182,15 @@ function AppIndexPage() {
     const evaluations = impactsQ.data.map(e => {
       const a = actMap.get(e.action_id);
       const payload = (e.reponses ?? {}) as Record<string, unknown>;
+      const yr = a?.annee ?? (a?.date_debut ? Number(a.date_debut.slice(0, 4)) : null);
       return {
         actionId: e.action_id,
+        assocId: a?.assoc_id ?? null,
         titre: a?.titre ?? "",
         assocName: a ? (assocMap.get(a.assoc_id) ?? "") : "",
         theme: a?.thematique ?? "",
         sousTheme: "",
+        annee: yr,
         payload,
       };
     });
