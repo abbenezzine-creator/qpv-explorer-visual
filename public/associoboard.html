@@ -1255,6 +1255,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
             meta.assocs.map(function(a){ return '<option value="'+esc(a.id)+'"'+(a.id===ca?' selected':'')+'>'+esc(a.nom)+'</option>'; }).join('');
           var aw = document.getElementById('assocSelWrap'); if(aw) aw.style.display = '';
         }
+        try { if(typeof window.__updateDashMeta === 'function') window.__updateDashMeta(meta); } catch(_){}
       }catch(e){}
       return;
     }
