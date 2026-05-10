@@ -8,6 +8,7 @@ import {
   QPV_OPTIONS,
   STATUT_OPTIONS,
   STATUT_VARIANT,
+  THEMATIQUE_OPTIONS,
   fetchActions,
   fetchAssociations,
   labelOf,
@@ -19,15 +20,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Eye, ClipboardList, Pencil, Search, Trash2, Upload, History } from "lucide-react";
+import { Plus, Eye, ClipboardList, Pencil, Search, Trash2, Upload, History, ArrowLeft } from "lucide-react";
 import { ActionFormDialog } from "@/components/actions/ActionFormDialog";
 import { ActionsImportDialog } from "@/components/actions/ActionsImportDialog";
 import { ActionsRestoreDialog } from "@/components/actions/ActionsRestoreDialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
+const FR_DATE = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+function frDate(s: string | null | undefined): string {
+  if (!s) return "—";
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  return FR_DATE.format(d);
+}
 
 export const Route = createFileRoute("/app/actions")({
   beforeLoad: async () => {
