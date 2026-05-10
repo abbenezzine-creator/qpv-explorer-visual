@@ -115,7 +115,7 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Association" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes associations</SelectItem>
-            {associations.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom}</SelectItem>)}
+            {assocOptions.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={fQpv} onValueChange={setFQpv}>
