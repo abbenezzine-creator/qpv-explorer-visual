@@ -371,10 +371,6 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
               <Input type="number" min={1} value={nbPrevu} onChange={(e) => setNbPrevu(e.target.value)} placeholder="20" />
             </div>
             <div>
-              <Label>Nb. participants prévus</Label>
-              <Input type="number" min={1} value={nbPrevu} onChange={(e) => setNbPrevu(e.target.value)} placeholder="20" />
-            </div>
-            <div>
               <Label>Bénéficiaires réels</Label>
               <Input type="number" value={nbReel} onChange={(e) => setNbReel(e.target.value)} />
             </div>
