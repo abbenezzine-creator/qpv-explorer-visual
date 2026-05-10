@@ -385,6 +385,23 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
           lieu_principal: get("lieu_principal") ? String(get("lieu_principal")) : null,
           recurrence: get("recurrence") ? String(get("recurrence")) : null,
           budget_financeurs: budgetLines ?? [],
+          public_quartiers: (() => {
+            const out: { quartier: string; nombre: number; type: "previsionnel" | "realise" }[] = [];
+            for (const q of QUARTIER_KEYS) {
+              const pv = pqPrev[q] ? toNumber(r[pqPrev[q]]) : null;
+              const rv = pqReal[q] ? toNumber(r[pqReal[q]]) : null;
+              if (pv != null) out.push({ quartier: q, nombre: pv, type: "previsionnel" });
+              if (rv != null) out.push({ quartier: q, nombre: rv, type: "realise" });
+            }
+            return out;
+          })(),
+          quartiers: (() => {
+            const set = new Set<string>();
+            for (const q of QUARTIER_KEYS) {
+              if ((pqPrev[q] && toNumber(r[pqPrev[q]])) || (pqReal[q] && toNumber(r[pqReal[q]]))) set.add(q);
+            }
+            return Array.from(set);
+          })(),
         });
       }
 
