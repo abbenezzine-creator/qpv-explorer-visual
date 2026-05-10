@@ -201,7 +201,7 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Thématique" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes thématiques</SelectItem>
-            {THEMATIQUE_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+            {thematiqueOptions.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={fStatut} onValueChange={setFStatut}>
