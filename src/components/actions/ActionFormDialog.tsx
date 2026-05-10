@@ -116,11 +116,23 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
   const [refCode, setRefCode] = useState("");
   const [referenceAdmin, setReferenceAdmin] = useState("");
   const [commune, setCommune] = useState("");
-  const [publicQuartiers, setPublicQuartiers] = useState<PublicQuartierItem[]>([{ quartier: "", nombre: 0 }]);
+  const [publicQuartiers, setPublicQuartiers] = useState<PublicQuartierItem[]>([]);
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([
     { annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 },
   ]);
   const [saving, setSaving] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  // Fixed quartier matrix (Prévisionnel / Réalisé)
+  const QUARTIER_COLS = ["Argonne", "Blossières", "Dauphine", "La Source"] as const;
+  const getPq = (quartier: string, type: "previsionnel" | "realise") =>
+    publicQuartiers.find(p => p.quartier === quartier && p.type === type)?.nombre ?? 0;
+  const setPq = (quartier: string, type: "previsionnel" | "realise", nombre: number) => {
+    setPublicQuartiers(prev => {
+      const others = prev.filter(p => !(p.quartier === quartier && p.type === type));
+      return [...others, { quartier, type, nombre }];
+    });
+  };
 
   // sync from initial when opening
   useEffect(() => {
