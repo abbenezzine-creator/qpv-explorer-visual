@@ -120,7 +120,7 @@ function ActionsListPage() {
   }, [associations]);
 
   const thematiqueOptions = useMemo(() => {
-    const set = new Set<string>(THEMATIQUE_OPTIONS);
+    const set = new Set<string>();
     (actionsQ.data ?? []).forEach((a) => {
       const t = (a.thematique ?? "").trim();
       if (t) set.add(t);
