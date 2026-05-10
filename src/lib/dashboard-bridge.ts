@@ -117,21 +117,35 @@ function statsHtml(data: DashboardData, filters: DashboardFilters): string {
     ? beneficsArr.reduce((s, n) => s + n, 0)
     : (beneficsArr.length ? Math.round(beneficsArr.reduce((s, n) => s + n, 0) / beneficsArr.length) : 0);
 
-  // Score qualité = moyenne par action (score_global si dispo, sinon moyenne(c1..c10)*20)
+  // Score qualité — accepte les évaluations partielles (score_global ou n'importe quels c1..c10).
   const actionIds = new Set(acts.map(a => a.id));
   const scopedRefs = data.refs.filter(r => actionIds.has(r.action_id));
-  const refScore = (r: RefQualite): number | null => {
-    if (r.score_global != null) return r.score_global;
+  const refScore = (r: RefQualite): { val: number; partial: boolean } | null => {
+    if (r.score_global != null) return { val: r.score_global, partial: false };
     const cs = [r.c1, r.c2, r.c3, r.c4, r.c5, r.c6, r.c7, r.c8, r.c9, r.c10].filter((v): v is number => v != null);
-    return cs.length ? (cs.reduce((s, v) => s + v, 0) / cs.length) * 20 : null;
+    if (!cs.length) return null;
+    return { val: (cs.reduce((s, v) => s + v, 0) / cs.length) * 20, partial: cs.length < 10 };
   };
-  const refScores = scopedRefs.map(refScore).filter((v): v is number => v != null);
-  const qualScorePct = refScores.length
-    ? Math.round(refScores.reduce((s, v) => s + v, 0) / refScores.length)
+  const refScoresDetailed = scopedRefs.map(refScore).filter((v): v is { val: number; partial: boolean } => v != null);
+  const hasAnyRef = scopedRefs.length > 0;
+  const hasScore = refScoresDetailed.length > 0;
+  const qualScorePct = hasScore
+    ? Math.round(refScoresDetailed.reduce((s, v) => s + v.val, 0) / refScoresDetailed.length)
     : 0;
-  const qualLbl = filters.assocId
+  const partialCount = refScoresDetailed.filter(s => s.partial).length;
+  const baseLbl = filters.assocId
     ? (data.associations.find(a => a.id === filters.assocId)?.nom ?? "")
     : "Moy. toutes associations";
+  const qualLbl = !hasAnyRef
+    ? "Aucune évaluation qualité"
+    : !hasScore
+      ? "Évaluations sans données chiffrées"
+      : partialCount > 0
+        ? `${baseLbl} · ${partialCount} partielle${partialCount > 1 ? "s" : ""}`
+        : baseLbl;
+  const qualValHtml = hasScore
+    ? `${qualScorePct}%`
+    : `<span style="font-size:18px;color:var(--muted-fore);font-weight:600">Aucune donnée</span>`;
 
   // Satisfaction = moyenne satisfaction sur evals liées
   const scopedEvals = data.evals.filter(e => actionIds.has(e.action_id) && e.satisfaction != null);
