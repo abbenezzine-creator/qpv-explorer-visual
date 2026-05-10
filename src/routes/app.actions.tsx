@@ -239,7 +239,10 @@ function ActionsListPage() {
                   className="border-t border-border hover:bg-muted/30 cursor-pointer"
                   onClick={() => setViewing(a)}
                 >
-                  <td className="px-3 py-2 font-semibold text-primary">{a.annee ?? "—"}</td>
+                  <td
+                    className="px-3 py-2 font-semibold text-primary"
+                    style={{ boxShadow: `inset 4px 0 0 0 ${thematiqueColor(a.thematique)}` }}
+                  >{a.annee ?? "—"}</td>
                   <td className="px-3 py-2 font-medium">{a.titre}</td>
                   <td className="px-3 py-2">{assocMap.get(a.assoc_id) ?? "—"}</td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
