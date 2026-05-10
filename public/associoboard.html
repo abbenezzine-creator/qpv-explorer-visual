@@ -1210,6 +1210,57 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 
 <div id="toast"></div>
 <script>
+// ========== PARENT BRIDGE (Supabase data injection) ==========
+(function(){
+  let dashCache = null;
+  function applyDash(){
+    if(!dashCache) return;
+    var s = document.getElementById('dashStats');     if(s && dashCache.stats)    s.innerHTML = dashCache.stats;
+    var a = document.getElementById('dashActions');   if(a && dashCache.actions)  a.innerHTML = dashCache.actions;
+    var t = document.getElementById('dashTL');        if(t && dashCache.timeline) t.innerHTML = dashCache.timeline;
+  }
+  window.__abApplyDash = applyDash;
+  window.addEventListener('message', function(ev){
+    var d = ev && ev.data; if(!d || d.type !== 'ab-supabase-dashboard') return;
+    dashCache = d.html || {}; applyDash();
+  });
+  function pingReady(){ try{ window.parent && window.parent.postMessage({type:'ab-iframe-ready'}, '*'); }catch(e){} }
+  if(document.readyState === 'complete') pingReady();
+  else window.addEventListener('load', pingReady);
+  // Re-apply our cached payload AFTER renderDashboard() runs (so we win the slot)
+  var _origRender = null;
+  function patchRender(){
+    if(typeof window.renderDashboard === 'function' && window.renderDashboard !== _patchedRender){
+      _origRender = window.renderDashboard; window.renderDashboard = _patchedRender;
+    }
+  }
+  function _patchedRender(){ try{ _origRender && _origRender.apply(this, arguments); }catch(e){} setTimeout(applyDash, 0); }
+  // Try patching now and after script loads
+  patchRender();
+  setTimeout(patchRender, 0);
+  setTimeout(patchRender, 200);
+  setTimeout(patchRender, 1000);
+  // Notify parent when global filters change
+  function notifyFilters(){
+    try{
+      var year = parseInt((document.getElementById('yearFilter')||{}).value, 10) || null;
+      var assocSel = document.getElementById('assocGlobalSel');
+      var assocId = assocSel ? (assocSel.value || null) : null;
+      var thSel = document.getElementById('globalThemeSel');
+      var thematique = thSel ? (thSel.value || null) : null;
+      window.parent && window.parent.postMessage({type:'ab-filters-changed', year:year, assocId:assocId, thematique:thematique}, '*');
+    }catch(e){}
+  }
+  window.__abNotifyFilters = notifyFilters;
+  function wireFilters(){
+    ['yearFilter','assocGlobalSel','globalThemeSel'].forEach(function(id){
+      var el = document.getElementById(id); if(!el || el.__abWired) return;
+      el.__abWired = true; el.addEventListener('change', notifyFilters);
+    });
+  }
+  setTimeout(wireFilters, 100); setTimeout(wireFilters, 800); setTimeout(notifyFilters, 1200);
+})();
+
 // ========== DATA ==========
 let ACCOUNTS = {
   admin:      {role:'superadmin',assocId:null,pwd:'admin2025',nom:'Super Administrateur',color:'oklch(0.52 0.22 285)'},
