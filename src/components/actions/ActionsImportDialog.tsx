@@ -169,6 +169,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
   const [budgetHeaders, setBudgetHeaders] = useState<string[]>([]);
   const [budgetRows, setBudgetRows] = useState<Record<string, any>[]>([]);
   const [budgetMap, setBudgetMap] = useState<Record<string, string>>({});
+  const [budgetDefaultYear, setBudgetDefaultYear] = useState<string>(String(new Date().getFullYear()));
 
   const [importing, setImporting] = useState(false);
 
