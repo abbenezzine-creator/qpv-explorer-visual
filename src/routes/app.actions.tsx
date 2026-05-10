@@ -161,7 +161,6 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Association" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes associations</SelectItem>
-            <SelectItem value={QPV_ORLEANS}>QPV d'Orléans (Argonne, La Source, Dauphine, Les Blossières)</SelectItem>
             {assocOptions.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom}</SelectItem>)}
           </SelectContent>
         </Select>
