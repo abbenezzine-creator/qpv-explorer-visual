@@ -257,16 +257,16 @@ function ActionsListPage() {
                     </span>
                   </td>
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-1">
-                      <Button asChild size="sm" variant="ghost" title="Référentiel Qualité (PDF)" className="text-red-600 hover:text-red-700">
-                        <Link to="/app/actions/$id/evaluation" params={{ id: a.id }} search={{ doc: "qualite" } as any}>
-                          <FileText className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                      <Button asChild size="icon" variant="ghost" title="Référentiel Qualité — évaluer l'action" className="h-10 w-10 text-red-600 hover:text-red-700 hover:bg-red-50 animate-pulse">
+                        <Link to="/app/actions/$id/qualite" params={{ id: a.id }}>
+                          <FileText className="!h-7 !w-7" />
                           <span className="sr-only">Référentiel Qualité</span>
                         </Link>
                       </Button>
-                      <Button asChild size="sm" variant="ghost" title="Évaluation bénéficiaire (PDF)" className="text-blue-600 hover:text-blue-700">
-                        <Link to="/app/actions/$id/evaluation" params={{ id: a.id }} search={{ doc: "beneficiaire" } as any}>
-                          <FileText className="h-4 w-4" />
+                      <Button asChild size="icon" variant="ghost" title="Évaluation bénéficiaire" className="h-10 w-10 text-blue-600 hover:text-blue-700 hover:bg-blue-50 animate-pulse">
+                        <Link to="/app/actions/$id/evaluation" params={{ id: a.id }}>
+                          <FileText className="!h-7 !w-7" />
                           <span className="sr-only">Évaluation bénéficiaire</span>
                         </Link>
                       </Button>

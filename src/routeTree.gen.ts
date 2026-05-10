@@ -18,6 +18,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppAssociationsRouteImport } from './routes/app.associations'
 import { Route as AppActionsRouteImport } from './routes/app.actions'
 import { Route as AppActionsIdRouteImport } from './routes/app.actions.$id'
+import { Route as AppActionsIdQualiteRouteImport } from './routes/app.actions.$id.qualite'
 import { Route as AppActionsIdEvaluationRouteImport } from './routes/app.actions.$id.evaluation'
 
 const SignupRoute = SignupRouteImport.update({
@@ -65,6 +66,11 @@ const AppActionsIdRoute = AppActionsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppActionsRoute,
 } as any)
+const AppActionsIdQualiteRoute = AppActionsIdQualiteRouteImport.update({
+  id: '/qualite',
+  path: '/qualite',
+  getParentRoute: () => AppActionsIdRoute,
+} as any)
 const AppActionsIdEvaluationRoute = AppActionsIdEvaluationRouteImport.update({
   id: '/evaluation',
   path: '/evaluation',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
+  '/app/actions/$id/qualite': typeof AppActionsIdQualiteRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
+  '/app/actions/$id/qualite': typeof AppActionsIdQualiteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
+  '/app/actions/$id/qualite': typeof AppActionsIdQualiteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
+    | '/app/actions/$id/qualite'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
+    | '/app/actions/$id/qualite'
   id:
     | '__root__'
     | '/'
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
+    | '/app/actions/$id/qualite'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -218,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActionsIdRouteImport
       parentRoute: typeof AppActionsRoute
     }
+    '/app/actions/$id/qualite': {
+      id: '/app/actions/$id/qualite'
+      path: '/qualite'
+      fullPath: '/app/actions/$id/qualite'
+      preLoaderRoute: typeof AppActionsIdQualiteRouteImport
+      parentRoute: typeof AppActionsIdRoute
+    }
     '/app/actions/$id/evaluation': {
       id: '/app/actions/$id/evaluation'
       path: '/evaluation'
@@ -230,10 +249,12 @@ declare module '@tanstack/react-router' {
 
 interface AppActionsIdRouteChildren {
   AppActionsIdEvaluationRoute: typeof AppActionsIdEvaluationRoute
+  AppActionsIdQualiteRoute: typeof AppActionsIdQualiteRoute
 }
 
 const AppActionsIdRouteChildren: AppActionsIdRouteChildren = {
   AppActionsIdEvaluationRoute: AppActionsIdEvaluationRoute,
+  AppActionsIdQualiteRoute: AppActionsIdQualiteRoute,
 }
 
 const AppActionsIdRouteWithChildren = AppActionsIdRoute._addFileChildren(
