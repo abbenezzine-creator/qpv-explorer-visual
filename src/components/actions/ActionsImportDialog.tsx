@@ -241,7 +241,7 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
       m.get(key)!.push(line);
     }
     return m;
-  }, [budgetRows, budgetMap]);
+  }, [budgetRows, budgetMap, budgetDefaultYear]);
 
   const previewCount = useMemo(() => {
     if (!mapping.titre || !mapping.association_nom) return { valid: 0, missing: 0, withBudget: 0 };
