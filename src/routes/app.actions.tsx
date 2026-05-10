@@ -97,10 +97,20 @@ function ActionsListPage() {
     return out;
   }, [associations]);
 
+  const assocById = useMemo(() => {
+    const m = new Map<string, Association>();
+    associations.forEach((a) => m.set(a.id, a));
+    return m;
+  }, [associations]);
+
   const filtered = useMemo(() => {
     const list = actionsQ.data ?? [];
     return list.filter((a) => {
-      if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
+      if (fAssoc === QPV_ORLEANS) {
+        const assoc = assocById.get(a.assoc_id);
+        const key = assoc?.qpv_key ?? a.qpv_key;
+        if (!key || !ORLEANS_QPV_KEYS.includes(key)) return false;
+      } else if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
       if (fQpv !== ALL && a.qpv_key !== fQpv) return false;
       if (fThematique !== ALL && a.thematique !== fThematique) return false;
       if (fStatut !== ALL && a.statut !== fStatut) return false;
@@ -111,7 +121,7 @@ function ActionsListPage() {
       }
       return true;
     });
-  }, [actionsQ.data, fAssoc, fQpv, fThematique, fStatut, q]);
+  }, [actionsQ.data, fAssoc, fQpv, fThematique, fStatut, q, assocById]);
 
   const refresh = () => actionsQ.refetch();
   const canCreate = canCreateAny(user);
