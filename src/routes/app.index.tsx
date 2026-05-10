@@ -121,7 +121,7 @@ function AppIndexPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "actions" },
         () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
       .on("postgres_changes", { event: "*", schema: "public", table: "evaluations_beneficiaires" },
-        () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
+        () => { qc.invalidateQueries({ queryKey: ["dashboard-data"] }); qc.invalidateQueries({ queryKey: ["impacts-evaluations"] }); qc.invalidateQueries({ queryKey: ["evaluations-list"] }); })
       .on("postgres_changes", { event: "*", schema: "public", table: "referentiel_qualite" },
         () => qc.invalidateQueries({ queryKey: ["dashboard-data"] }))
       .on("postgres_changes", { event: "*", schema: "public", table: "associations" },
@@ -158,6 +158,45 @@ function AppIndexPage() {
     }, 120);
     return () => clearTimeout(t);
   }, [page, qualiteAction, iframeReady, dashQ.data]);
+
+  // Push Supabase evaluations to iframe Impacts page
+  const impactsQ = useQuery({
+    queryKey: ["impacts-evaluations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("evaluations_beneficiaires")
+        .select("id, action_id, reponses, created_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: page === "impacts-beneficiaires",
+    staleTime: 30_000,
+  });
+
+  useEffect(() => {
+    if (page !== "impacts-beneficiaires" || !iframeReady || !dashQ.data || !impactsQ.data) return;
+    const f = ref.current;
+    if (!f?.contentWindow) return;
+    const assocMap = new Map(dashQ.data.associations.map(a => [a.id, a.nom]));
+    const actMap = new Map(dashQ.data.actions.map(a => [a.id, a]));
+    const evaluations = impactsQ.data.map(e => {
+      const a = actMap.get(e.action_id);
+      const payload = (e.reponses ?? {}) as Record<string, unknown>;
+      return {
+        actionId: e.action_id,
+        titre: a?.titre ?? "",
+        assocName: a ? (assocMap.get(a.assoc_id) ?? "") : "",
+        theme: a?.thematique ?? "",
+        sousTheme: "",
+        payload,
+      };
+    });
+    const win = f.contentWindow;
+    const t = setTimeout(() => {
+      try { win.postMessage({ type: "ab-load-impacts", evaluations }, "*"); } catch { /* noop */ }
+    }, 120);
+    return () => clearTimeout(t);
+  }, [page, iframeReady, dashQ.data, impactsQ.data]);
 
   return (
     <>
