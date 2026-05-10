@@ -86,7 +86,7 @@ function Section({ icon: Icon, title, tone, children }: SectionProps) {
   );
 }
 
-export function ActionFormDialog({ open, onOpenChange, user, associations, initial, onSaved }: Props) {
+export function ActionFormDialog({ open, onOpenChange, user, associations, initial, onSaved, thematiqueOptions }: Props) {
   const isSuperadmin = user?.role === "superadmin";
   const lastYearRef = useRef(String(currentYear));
 
