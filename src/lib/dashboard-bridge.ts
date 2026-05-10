@@ -342,6 +342,17 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
 }
 
 export function buildDashboardPayload(data: DashboardData, filters: DashboardFilters) {
+  const years = Array.from(new Set(
+    data.actions.map(a => a.annee ?? (a.date_debut ? Number(a.date_debut.slice(0, 4)) : null))
+      .filter((y): y is number => typeof y === "number" && !Number.isNaN(y))
+  )).sort((a, b) => b - a);
+  const themes = Array.from(new Set(
+    data.actions.map(a => a.thematique).filter((t): t is string => !!t)
+  )).sort((a, b) => a.localeCompare(b, "fr"));
+  const assocs = data.associations
+    .slice()
+    .sort((a, b) => (a.nom ?? "").localeCompare(b.nom ?? "", "fr"))
+    .map(a => ({ id: a.id, nom: a.nom }));
   return {
     type: "ab-supabase-dashboard" as const,
     html: {
@@ -350,5 +361,6 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
       timeline: timelineHtml(data, filters),
       qualite: qualiteHtml(data, filters),
     },
+    meta: { years, themes, assocs, selected: { year: filters.year ?? null, assocId: filters.assocId ?? null, thematique: filters.thematique ?? null } },
   };
 }
