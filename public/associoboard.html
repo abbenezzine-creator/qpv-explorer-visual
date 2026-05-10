@@ -2771,14 +2771,34 @@ async function saveQualite(){
     };
     hist.push(entry);
     _saveQualHistory(hist);
-    // 3) Refresh des cards liées
+    // 3bis) Persistance Supabase via le parent React
+    try{
+      var actionUuid = document.getElementById('qualActionSel')?.value || null;
+      var assocUuid = document.getElementById('qualAssocSel')?.value || null;
+      if(actionUuid){
+        var axisScores = {};
+        QUALITE_AXES.forEach(function(ax, idx){
+          var vals = ax.criteria.map(function(c){ return scores[c.id]; }).filter(function(v){ return typeof v === 'number'; });
+          var key = 'c' + (idx + 1);
+          axisScores[key] = vals.length ? Math.round(vals.reduce(function(s,v){return s+v;},0) / vals.length / 5 * 100) : null;
+        });
+        window.parent && window.parent.postMessage({
+          type: 'ab-save-qualite',
+          actionId: actionUuid,
+          assocId: assocUuid,
+          scoreGlobal: entry.globalPct,
+          axisScores: axisScores
+        }, '*');
+      }
+    }catch(e){ console.error('ab-save-qualite post', e); }
+    // 4) Refresh des cards liées
     updateEvalTabs();
     try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
     try{ if(typeof renderCalendar==='function') renderCalendar(); }catch(e){}
     try{ if(typeof renderAllActions==='function') renderAllActions(); }catch(e){}
     try{ if(typeof renderActionsList==='function') renderActionsList('dashActions', (typeof filteredActions==='function'?filteredActions():ACTIONS), 4); }catch(e){}
     try{ if(typeof updateBadge==='function') updateBadge(); }catch(e){}
-    showToast(`Évaluation enregistrée · v${hist.length} (${entry.globalPct}%) — cards actualisées`,'success');
+    showToast(`Évaluation enregistrée · v${hist.length} (${entry.globalPct}%) — synchronisée`,'success');
     setTimeout(()=>{ try{ nav('dashboard'); }catch(e){} }, 700);
   }catch(err){
     console.error('saveQualite error', err);
