@@ -195,7 +195,7 @@ export type Database = {
       }
       documents: {
         Row: {
-          assoc_id: string
+          assoc_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -207,9 +207,11 @@ export type Database = {
           type: string | null
           updated_at: string
           url: string | null
+          visible_all: boolean
+          visible_assoc_ids: string[]
         }
         Insert: {
-          assoc_id: string
+          assoc_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -221,9 +223,11 @@ export type Database = {
           type?: string | null
           updated_at?: string
           url?: string | null
+          visible_all?: boolean
+          visible_assoc_ids?: string[]
         }
         Update: {
-          assoc_id?: string
+          assoc_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -235,6 +239,8 @@ export type Database = {
           type?: string | null
           updated_at?: string
           url?: string | null
+          visible_all?: boolean
+          visible_assoc_ids?: string[]
         }
         Relationships: []
       }

@@ -1192,13 +1192,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       <div class="form-row"><div class="form-grp"><label class="form-lbl">Type de document *</label><select class="form-sel" id="ud-cat"><option>Bilan</option><option>Convention</option><option>Rapport</option><option>Procès-verbal</option><option>Statuts</option><option>Subvention</option><option>Formulaire</option><option>Guide</option><option>Présentation</option><option>Photo / Image</option><option>Autre</option></select></div><div class="form-grp"><label class="form-lbl">Lien URL (optionnel)</label><input class="form-inp" id="ud-url" placeholder="https://…"/></div></div>
       <div class="form-row full"><div class="form-grp"><label class="form-lbl">Description</label><textarea class="form-inp" id="ud-desc" rows="2" placeholder="Description courte du document"></textarea></div></div>
       <div class="form-row full" id="ud-assocs-wrap" style="display:none"><div class="form-grp">
-        <label class="form-lbl">Associations concernées *</label>
+        <label class="form-lbl">Visibilité — Associations *</label>
         <select class="form-sel" id="ud-assocs-mode" onchange="onUdAssocsModeChange()" style="margin-bottom:6px">
           <option value="all">Toutes les associations</option>
           <option value="some">Sélectionner une ou plusieurs</option>
         </select>
         <select class="form-sel" id="ud-assocs-list" multiple size="5" style="display:none;height:auto;min-height:110px"></select>
-        <div style="font-size:11px;color:var(--muted-fore);margin-top:4px">Maintenez Ctrl (⌘ sur Mac) pour sélectionner plusieurs associations.</div>
+        <div style="font-size:11px;color:var(--muted-fore);margin-top:4px">Le document est enregistré une seule fois ; les associations sélectionnées y auront accès. Maintenez Ctrl (⌘ sur Mac) pour la sélection multiple.</div>
       </div></div>
       <div id="ud-visib-wrap" class="form-row full" style="display:none">
         <div class="form-grp">
@@ -6508,20 +6508,70 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   function fmtDate(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleDateString('fr-FR'); }catch(e){ return ''; } }
   function fmtSize(n){ if(!n) return ''; if(n<1024) return n+' o'; if(n<1048576) return (n/1024).toFixed(1)+' Ko'; return (n/1048576).toFixed(1)+' Mo'; }
 
+  window.__docsAssocFilter = '';
+
+  function ensureDocsBar(){
+    var page = document.getElementById('page-documents'); if(!page) return null;
+    var bar = document.getElementById('docsFilterBar');
+    if(bar) return bar;
+    var isAdmin = (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'superadmin');
+    if(!isAdmin) return null; // only superadmin needs the filter
+    bar = document.createElement('div');
+    bar.id = 'docsFilterBar';
+    bar.className = 'card';
+    bar.style.cssText = 'margin-bottom:14px;padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr);gap:10px;align-items:end';
+    bar.innerHTML = '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Association</label><select id="docsFAssoc" class="form-sel" style="width:100%"></select></div>';
+    var hdr = page.querySelector('.page-hdr');
+    if(hdr && hdr.nextSibling) page.insertBefore(bar, hdr.nextSibling);
+    else page.insertBefore(bar, page.firstChild);
+    bar.querySelector('#docsFAssoc').addEventListener('change', function(e){
+      window.__docsAssocFilter = e.target.value || '';
+      window.renderDocuments();
+    });
+    return bar;
+  }
+  function populateDocsBar(){
+    var bar = ensureDocsBar(); if(!bar) return;
+    var sel = bar.querySelector('#docsFAssoc');
+    var assocs = Array.isArray(window.SB_ASSOCS) ? window.SB_ASSOCS : [];
+    var cur = window.__docsAssocFilter || '';
+    sel.innerHTML = '<option value="">— Toutes les associations —</option>' + assocs.map(function(a){
+      return '<option value="'+String(a.id)+'"'+(String(a.id)===cur?' selected':'')+'>'+String(a.nom||'').replace(/</g,'&lt;')+'</option>';
+    }).join('');
+  }
+  window.__populateDocsBar = populateDocsBar;
+
   window.renderDocuments = function(){
     var sub = document.getElementById('docsSubtitle'); if(sub) sub.textContent = 'Documents de votre association';
+    populateDocsBar();
     var grid = document.getElementById('docsGrid'); if(!grid) return;
     var docs = window.SB_DOCUMENTS || [];
-    if(!docs.length){ grid.innerHTML = '<p style="color:var(--muted-fore);font-size:13px;padding:20px">Aucun document disponible. Cliquez sur « Ajouter » pour téléverser un fichier.</p>'; return; }
+    var f = window.__docsAssocFilter || '';
+    if(f){
+      docs = docs.filter(function(d){
+        if(d.visible_all) return true;
+        if(d.assoc_id === f) return true;
+        if(Array.isArray(d.visible_assoc_ids) && d.visible_assoc_ids.indexOf(f) !== -1) return true;
+        return false;
+      });
+    }
+    if(!docs.length){ grid.innerHTML = '<p style="color:var(--muted-fore);font-size:13px;padding:20px">Aucun document disponible.</p>'; return; }
     var cc = {Convention:'oklch(0.52 0.22 285)',Bilan:'oklch(0.76 0.17 75)',Rapport:'oklch(0.62 0.22 340)',Formulaire:'oklch(0.6 0.17 240)',Guide:'oklch(0.52 0.16 150)','Procès-verbal':'oklch(0.52 0.18 200)',Statuts:'oklch(0.5 0.18 30)',Subvention:'oklch(0.6 0.2 100)',Présentation:'oklch(0.55 0.2 320)','Photo / Image':'oklch(0.6 0.18 60)',Autre:'var(--muted-fore)'};
+    var assocsMap = {};
+    (window.SB_ASSOCS||[]).forEach(function(a){ assocsMap[a.id] = a.nom; });
     grid.innerHTML = docs.map(function(d){
       var color = cc[d.type] || 'var(--primary)';
       var hasFile = !!(d.file_path || d.url);
       var openBtn = hasFile ? '<button class="btn btn-outline btn-sm" style="margin-bottom:8px;display:inline-flex" onclick="openSbDoc(\''+d.id+'\')">Ouvrir ↗</button>' : '';
+      var visTxt = d.visible_all ? 'Toutes les associations'
+        : (Array.isArray(d.visible_assoc_ids) && d.visible_assoc_ids.length
+            ? d.visible_assoc_ids.map(function(id){ return assocsMap[id]||'?'; }).join(', ')
+            : (d.assoc_id ? (assocsMap[d.assoc_id]||'') : '—'));
       return '<div class="doc-card">'
         + '<div class="doc-icon" style="background:'+color+'1a;cursor:'+(hasFile?'pointer':'default')+'" '+(hasFile?'onclick="openSbDoc(\''+d.id+'\')"':'')+'><svg viewBox="0 0 18 18" width="20" height="20" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round"><path d="M10 1.5H4a1.5 1.5 0 0 0-1.5 1.5v12a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V7l-5-5.5z"/><path d="M10 1.5V7h5"/></svg></div>'
         + '<div class="doc-name" style="cursor:'+(hasFile?'pointer':'default')+'" '+(hasFile?'onclick="openSbDoc(\''+d.id+'\')"':'')+'>'+escHtml(d.titre)+'</div>'
         + '<div class="doc-meta">'+escHtml(d.type||'—')+' · '+fmtDate(d.created_at)+(d.file_size?' · '+fmtSize(d.file_size):'')+'</div>'
+        + '<div style="font-size:11px;color:var(--muted-fore);margin:2px 0 4px"><b>Visibilité :</b> '+escHtml(visTxt)+'</div>'
         + (d.description?'<div style="font-size:11px;color:var(--muted-fore);margin:4px 0 6px">'+escHtml(d.description)+'</div>':'')
         + openBtn
         + '<div class="doc-card-footer">'
@@ -6628,6 +6678,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     var d = ev && ev.data; if(!d) return;
     if(d.type === 'ab-load-assocs'){
       window.SB_ASSOCS = Array.isArray(d.associations) ? d.associations : [];
+      try{ window.__populateDocsBar && window.__populateDocsBar(); window.renderDocuments && window.renderDocuments(); }catch(e){}
       return;
     }
     if(d.type === 'ab-load-documents'){
@@ -6736,7 +6787,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   function syncTopbar(){
     var hash = (location.hash||'').replace('#page=','');
     var page = hash || 'dashboard';
-    var hide = (page === 'dashboard' || page === 'impacts-beneficiaires');
+    var hide = (page === 'dashboard' || page === 'impacts-beneficiaires' || page === 'documents');
     ['assocSelWrap','yearFilter','globalThemeSel','globalSousThemeSel'].forEach(function(id){
       var el = document.getElementById(id); if(!el) return;
       el.style.display = hide ? 'none' : (id==='globalSousThemeSel' ? 'none' : '');
