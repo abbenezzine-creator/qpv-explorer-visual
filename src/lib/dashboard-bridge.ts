@@ -459,8 +459,15 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
           <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${ax.color};min-width:34px;text-align:right">${ax.avg}%</span>
         </div>
       </summary>
-      <ul style="margin:8px 0 4px 0;padding:0 0 0 18px;font-size:11px;color:var(--foreground);line-height:1.55">
-        ${ax.details.map(d => `<li style="margin-bottom:3px">${escapeHtml(d)}</li>`).join("")}
+      <ul style="margin:8px 0 4px 0;padding:0;list-style:none;font-size:11px;color:var(--foreground);line-height:1.4">
+        ${ax.details.map((d, i) => `
+          <li style="display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px dashed var(--border)">
+            <span style="min-width:18px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${ax.color}">${ax.id}.${i + 1}</span>
+            <span style="flex:1">${escapeHtml(d)}</span>
+            <span style="display:inline-flex;gap:1px;align-items:center;flex-shrink:0">${starsHtml(ax.avg, ax.color)}</span>
+            <div style="width:50px;height:4px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0"><div style="width:${ax.avg}%;height:100%;background:${ax.color}"></div></div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${ax.color};min-width:32px;text-align:right;flex-shrink:0">${ax.avg}%</span>
+          </li>`).join("")}
       </ul>
       <div style="font-size:10px;color:var(--muted-fore);margin-top:4px">${ax.n} évaluation${ax.n > 1 ? "s" : ""} dans le périmètre</div>
     </details>`;
