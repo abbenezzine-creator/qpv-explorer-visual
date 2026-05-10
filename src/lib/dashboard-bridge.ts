@@ -441,18 +441,7 @@ function qualiteHtml(data: DashboardData, filters: DashboardFilters): string {
         ${optionsHtml}
       </select>
     </div>
-    <div id="qualAxesContainer">${axesAllHtml}</div>
-    <script>(function(){
-      var sel = document.getElementById('qualAxeSelect');
-      var box = document.getElementById('qualAxesContainer');
-      if (!sel || !box) return;
-      var all = ${JSON.stringify(axesAllHtml).replace(/</g, "\\u003c")};
-      var byId = ${axesByIdJson};
-      sel.addEventListener('change', function(){
-        var v = sel.value;
-        box.innerHTML = (v === '__all__') ? all : (byId[v] || all);
-      });
-    })();</script>`;
+    <div id="qualAxesContainer">${axesAllHtml}</div>`;
 }
 
 export function buildDashboardPayload(data: DashboardData, filters: DashboardFilters) {
