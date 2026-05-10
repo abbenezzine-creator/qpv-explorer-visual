@@ -207,10 +207,10 @@ function ActionsListPage() {
           </thead>
           <tbody>
             {actionsQ.isLoading && (
-              <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">Chargement…</td></tr>
+              <tr><td colSpan={11} className="px-3 py-6 text-center text-muted-foreground">Chargement…</td></tr>
             )}
             {!actionsQ.isLoading && filtered.length === 0 && (
-              <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">Aucune action ne correspond aux filtres.</td></tr>
+              <tr><td colSpan={11} className="px-3 py-6 text-center text-muted-foreground">Aucune action ne correspond aux filtres.</td></tr>
             )}
             {filtered.map((a) => {
               const editable = canEditAction(user, a);
