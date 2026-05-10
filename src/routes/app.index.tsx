@@ -152,8 +152,29 @@ function AppIndexPage() {
           const userId = userData.user?.id;
           if (!userId) { win?.postMessage({ type: "ab-document-saved", success: false, error: "non authentifié" }, "*"); return; }
           const { data: prof } = await supabase.from("profiles").select("assoc_id").eq("id", userId).maybeSingle();
-          const assocId = prof?.assoc_id;
-          if (!assocId) { win?.postMessage({ type: "ab-document-saved", success: false, error: "association manquante" }, "*"); return; }
+          const userAssocId = prof?.assoc_id ?? null;
+          // Determine roles to know if user can target other associations
+          const { data: roleRows } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+          const isSuperadmin = (roleRows ?? []).some((r) => r.role === "superadmin");
+
+          // Build target assoc id list
+          let targetAssocIds: string[] = [];
+          if (isSuperadmin) {
+            if (d.assocAll) {
+              const { data: allAssocs } = await supabase.from("associations").select("id");
+              targetAssocIds = (allAssocs ?? []).map((a) => a.id);
+            } else if (Array.isArray(d.assocIds) && d.assocIds.length > 0) {
+              targetAssocIds = d.assocIds.filter((x: unknown): x is string => typeof x === "string");
+            } else if (userAssocId) {
+              targetAssocIds = [userAssocId];
+            }
+          } else {
+            if (!userAssocId) { win?.postMessage({ type: "ab-document-saved", success: false, error: "association manquante" }, "*"); return; }
+            targetAssocIds = [userAssocId];
+          }
+          if (targetAssocIds.length === 0) { win?.postMessage({ type: "ab-document-saved", success: false, error: "aucune association cible" }, "*"); return; }
+
+          // Upload file once (shared across rows)
           let filePath: string | null = null;
           let fileSize: number | null = null;
           let mimeType: string | null = null;
@@ -162,15 +183,17 @@ function AppIndexPage() {
             const arr = new Uint8Array(bin.length);
             for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
             const safeName = d.fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
-            const path = `${assocId}/${Date.now()}_${safeName}`;
+            const folder = targetAssocIds[0];
+            const path = `${folder}/${Date.now()}_${safeName}`;
             const { error: upErr } = await supabase.storage.from("documents").upload(path, arr, { contentType: d.fileType ?? "application/octet-stream", upsert: false });
             if (upErr) { win?.postMessage({ type: "ab-document-saved", success: false, error: upErr.message }, "*"); return; }
             filePath = path;
             fileSize = d.fileSize ?? arr.byteLength;
             mimeType = d.fileType ?? null;
           }
-          const { error: insErr } = await supabase.from("documents").insert({
-            assoc_id: assocId,
+
+          const rows = targetAssocIds.map((aid) => ({
+            assoc_id: aid,
             titre: d.titre ?? "Document",
             type: d.docType ?? null,
             description: d.description ?? null,
@@ -179,7 +202,8 @@ function AppIndexPage() {
             file_size: fileSize,
             mime_type: mimeType,
             created_by: userId,
-          });
+          }));
+          const { error: insErr } = await supabase.from("documents").insert(rows);
           if (insErr) { win?.postMessage({ type: "ab-document-saved", success: false, error: insErr.message }, "*"); return; }
           win?.postMessage({ type: "ab-document-saved", success: true }, "*");
           qc.invalidateQueries({ queryKey: ["documents-list"] });
