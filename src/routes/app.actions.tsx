@@ -329,8 +329,8 @@ function ActionsListPage() {
         <DialogContent
           className="max-w-none sm:rounded-none p-0 gap-0 overflow-hidden top-0 translate-x-0 translate-y-0 grid-rows-[auto_1fr] border-l"
           style={{
-            left: "var(--sidebar-width, 0px)",
-            width: "calc(100vw - var(--sidebar-width, 0px))",
+            left: sidebarOffset,
+            width: `calc(100vw - ${sidebarOffset})`,
             height: "100vh",
           }}
         >
