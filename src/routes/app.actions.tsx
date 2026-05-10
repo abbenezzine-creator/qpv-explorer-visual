@@ -123,12 +123,12 @@ function ActionsListPage() {
     const list = actionsQ.data ?? [];
     return list.filter((a) => {
       if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
-      if (fQpv !== ALL && a.qpv_key !== fQpv) return false;
-      if (fThematique === QPV_ORLEANS) {
+      if (fQpv === QPV_ORLEANS) {
         const assoc = assocById.get(a.assoc_id);
         const key = assoc?.qpv_key ?? a.qpv_key;
         if (!key || !ORLEANS_QPV_KEYS.includes(key)) return false;
-      } else if (fThematique !== ALL && a.thematique !== fThematique) return false;
+      } else if (fQpv !== ALL && a.qpv_key !== fQpv) return false;
+      if (fThematique !== ALL && a.thematique !== fThematique) return false;
       if (fStatut !== ALL && a.statut !== fStatut) return false;
       if (q.trim()) {
         const needle = q.trim().toLowerCase();
@@ -184,6 +184,7 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="QPV" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Tous QPV</SelectItem>
+            <SelectItem value={QPV_ORLEANS}>QPV d'Orléans (Argonne, La Source, Dauphine, Les Blossières)</SelectItem>
             {QPV_OPTIONS.map((o) => <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -191,7 +192,6 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Thématique" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes thématiques</SelectItem>
-            <SelectItem value={QPV_ORLEANS}>QPV d'Orléans (Argonne, La Source, Dauphine, Les Blossières)</SelectItem>
             {THEMATIQUE_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
