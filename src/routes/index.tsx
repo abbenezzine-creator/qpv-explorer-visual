@@ -66,9 +66,9 @@ function DashboardPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="mx-auto max-w-7xl px-6 py-8">
+      <main className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-8">
         {/* Bandeau quartier + année + QPV picker */}
-        <section className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <section className="mb-6 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -107,7 +107,7 @@ function DashboardPage() {
 function Header() {
   return (
     <header className="border-b border-border bg-card">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-3 py-4 sm:gap-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <span className="text-[10px] font-bold leading-tight text-center">RÉP<br/>FR</span>
@@ -315,7 +315,7 @@ function AxisPane({ axis, qpv, year }: { axis: AxisKey; qpv: QPVKey; year: numbe
             <select
               value={selectedIndId}
               onChange={(e) => setSelectedIndId(e.target.value)}
-              className="min-w-[280px] rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none sm:min-w-[280px] sm:w-auto"
             >
               {inds.map((i) => (
                 <option key={i.id} value={i.id}>
@@ -596,7 +596,7 @@ function CitoyenPane() {
                 <select
                   value={scope}
                   onChange={(e) => setScope(e.target.value)}
-                  className="min-w-[240px] rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none sm:min-w-[240px] sm:w-auto"
                 >
                   <option value="__ALL__">Les 4 QPV d'Orléans ({data.totalResponses})</option>
                   {data.quartiers.map((q) => (
