@@ -19,8 +19,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Eye, ClipboardList, Pencil, Search } from "lucide-react";
+import { Plus, Eye, ClipboardList, Pencil, Search, Trash2 } from "lucide-react";
 import { ActionFormDialog } from "@/components/actions/ActionFormDialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/actions")({
   beforeLoad: async () => {
@@ -39,6 +44,8 @@ function ActionsListPage() {
   const user = mounted ? getUser() : null;
   const [editing, setEditing] = useState<Action | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Action | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [q, setQ] = useState("");
   const [fAssoc, setFAssoc] = useState<string>(ALL);
   const [fQpv, setFQpv] = useState<string>(ALL);
@@ -53,6 +60,17 @@ function ActionsListPage() {
     const m = new Map<string, string>();
     associations.forEach((a) => m.set(a.id, a.nom));
     return m;
+  }, [associations]);
+  const assocOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const out: Association[] = [];
+    for (const a of associations) {
+      const key = (a.nom ?? "").trim().toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(a);
+    }
+    return out;
   }, [associations]);
 
   const filtered = useMemo(() => {
@@ -97,7 +115,7 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Association" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes associations</SelectItem>
-            {associations.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom}</SelectItem>)}
+            {assocOptions.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={fQpv} onValueChange={setFQpv}>
@@ -178,6 +196,11 @@ function ActionsListPage() {
                           <Pencil className="h-4 w-4" />
                         </Button>
                       )}
+                      {user?.role === "superadmin" && (
+                        <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(a)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -195,6 +218,43 @@ function ActionsListPage() {
         initial={editing}
         onSaved={refresh}
       />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette action ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              « {deleteTarget?.titre} » sera supprimée définitivement, ainsi que ses évaluations associées. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={async (e) => {
+                e.preventDefault();
+                if (!deleteTarget) return;
+                setDeleting(true);
+                try {
+                  await supabase.from("evaluations").delete().eq("action_id", deleteTarget.id);
+                  const { error } = await supabase.from("actions").delete().eq("id", deleteTarget.id);
+                  if (error) throw error;
+                  toast.success("Action supprimée");
+                  setDeleteTarget(null);
+                  refresh();
+                } catch (err: any) {
+                  toast.error(err?.message ?? "Échec de la suppression");
+                } finally {
+                  setDeleting(false);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Suppression…" : "Supprimer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
