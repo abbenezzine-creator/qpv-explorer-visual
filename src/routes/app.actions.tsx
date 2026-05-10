@@ -24,6 +24,7 @@ import { ActionFormDialog } from "@/components/actions/ActionFormDialog";
 import { ActionsImportDialog } from "@/components/actions/ActionsImportDialog";
 import { ActionsRestoreDialog } from "@/components/actions/ActionsRestoreDialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useSidebar } from "@/components/ui/sidebar";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
