@@ -45,7 +45,7 @@ export function EvalBeneficiaireModal({ actionId, onClose }: Props) {
         beneficiaire_genre: b.genre || null,
         satisfaction: sat,
         commentaire: null,
-        reponses: payload as unknown as Record<string, unknown>,
+        reponses: JSON.parse(JSON.stringify(payload)),
       });
       if (error) throw error;
     },
