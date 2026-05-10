@@ -31,6 +31,7 @@ function AppIndexPage() {
   const [u, setUser] = useState<AbUser | null>(() => getUser());
   const [iframeReady, setIframeReady] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>({ year: new Date().getFullYear(), assocId: null, thematique: null });
+  const [evalActionId, setEvalActionId] = useState<string | null>(null);
   const qc = useQueryClient();
 
   // Auth sync
