@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Eye, ClipboardList, Pencil, Search, Trash2, Upload, History, ArrowLeft } from "lucide-react";
+import { Plus, Eye, ClipboardList, Pencil, Search, Trash2, Upload, History, ArrowLeft, FileText } from "lucide-react";
 import { ActionFormDialog } from "@/components/actions/ActionFormDialog";
 import { ActionsImportDialog } from "@/components/actions/ActionsImportDialog";
 import { ActionsRestoreDialog } from "@/components/actions/ActionsRestoreDialog";
@@ -106,13 +106,13 @@ function ActionsListPage() {
   const filtered = useMemo(() => {
     const list = actionsQ.data ?? [];
     return list.filter((a) => {
-      if (fAssoc === QPV_ORLEANS) {
+      if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
+      if (fQpv !== ALL && a.qpv_key !== fQpv) return false;
+      if (fThematique === QPV_ORLEANS) {
         const assoc = assocById.get(a.assoc_id);
         const key = assoc?.qpv_key ?? a.qpv_key;
         if (!key || !ORLEANS_QPV_KEYS.includes(key)) return false;
-      } else if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
-      if (fQpv !== ALL && a.qpv_key !== fQpv) return false;
-      if (fThematique !== ALL && a.thematique !== fThematique) return false;
+      } else if (fThematique !== ALL && a.thematique !== fThematique) return false;
       if (fStatut !== ALL && a.statut !== fStatut) return false;
       if (q.trim()) {
         const needle = q.trim().toLowerCase();
@@ -161,7 +161,6 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Association" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes associations</SelectItem>
-            <SelectItem value={QPV_ORLEANS}>QPV d'Orléans (Argonne, La Source, Dauphine, Les Blossières)</SelectItem>
             {assocOptions.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -176,6 +175,7 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Thématique" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes thématiques</SelectItem>
+            <SelectItem value={QPV_ORLEANS}>QPV d'Orléans (Argonne, La Source, Dauphine, Les Blossières)</SelectItem>
             {THEMATIQUE_OPTIONS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -201,15 +201,16 @@ function ActionsListPage() {
               <th className="px-3 py-2">QPV</th>
               <th className="px-3 py-2">Thématique</th>
               <th className="px-3 py-2">Statut</th>
+              <th className="px-3 py-2">Documents</th>
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {actionsQ.isLoading && (
-              <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">Chargement…</td></tr>
+              <tr><td colSpan={11} className="px-3 py-6 text-center text-muted-foreground">Chargement…</td></tr>
             )}
             {!actionsQ.isLoading && filtered.length === 0 && (
-              <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">Aucune action ne correspond aux filtres.</td></tr>
+              <tr><td colSpan={11} className="px-3 py-6 text-center text-muted-foreground">Aucune action ne correspond aux filtres.</td></tr>
             )}
             {filtered.map((a) => {
               const editable = canEditAction(user, a);
@@ -254,6 +255,22 @@ function ActionsListPage() {
                     <span className={`inline-block rounded-full border px-2 py-0.5 text-xs ${STATUT_VARIANT[a.statut]}`}>
                       {labelOf(STATUT_OPTIONS, a.statut)}
                     </span>
+                  </td>
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1">
+                      <Button asChild size="sm" variant="ghost" title="Référentiel Qualité (PDF)" className="text-red-600 hover:text-red-700">
+                        <Link to="/app/actions/$id/evaluation" params={{ id: a.id }} search={{ doc: "qualite" } as any}>
+                          <FileText className="h-4 w-4" />
+                          <span className="sr-only">Référentiel Qualité</span>
+                        </Link>
+                      </Button>
+                      <Button asChild size="sm" variant="ghost" title="Évaluation bénéficiaire (PDF)" className="text-blue-600 hover:text-blue-700">
+                        <Link to="/app/actions/$id/evaluation" params={{ id: a.id }} search={{ doc: "beneficiaire" } as any}>
+                          <FileText className="h-4 w-4" />
+                          <span className="sr-only">Évaluation bénéficiaire</span>
+                        </Link>
+                      </Button>
+                    </div>
                   </td>
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-1">
