@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getUser } from "@/lib/auth";
 import {
-  AXIS_OPTIONS,
   QPV_OPTIONS,
   STATUT_OPTIONS,
   STATUT_VARIANT,
