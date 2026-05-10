@@ -5724,29 +5724,88 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
           <div class="page-sub" id="impactsBenefSub">Synthèse des évaluations bénéficiaires</div>
         </div>
       </div>
+      <div id="impactsBenefFilters" style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
       <div id="impactsBenefBody"></div>`;
     document.getElementById('mainArea')?.appendChild(p) || document.body.appendChild(p);
     return p;
   }
 
+  window.__impactsFilters = window.__impactsFilters || { assoc:'', action:'', theme:'', year:'' };
+
+  function renderImpactsFilters(){
+    var bar = document.getElementById('impactsBenefFilters');
+    if(!bar || typeof ACTIONS==='undefined') return;
+    var f = window.__impactsFilters;
+    // Available actions = those with at least one survey response
+    var pool = ACTIONS.filter(function(a){ return (a.surveyResponses||[]).length > 0; });
+    var assocs = Array.from(new Set(pool.map(function(a){ return a.assocId; }).filter(Boolean)))
+      .map(function(id){ return { id:id, nom: (typeof getAssocName==='function' ? getAssocName(id) : id) }; })
+      .sort(function(a,b){ return (a.nom||'').localeCompare(b.nom||'','fr'); });
+    var themes = Array.from(new Set(pool.map(function(a){ return a.theme; }).filter(Boolean))).sort();
+    var years  = Array.from(new Set(pool.map(function(a){ return a.annee; }).filter(Boolean))).sort(function(a,b){ return b-a; });
+    // Filter actions by current assoc/theme/year selections
+    var actPool = pool.filter(function(a){
+      if(f.assoc && a.assocId !== f.assoc) return false;
+      if(f.theme && a.theme !== f.theme) return false;
+      if(f.year && String(a.annee) !== String(f.year)) return false;
+      return true;
+    });
+    var actions = actPool.map(function(a){ return { id:a.id, titre:a.titre||'(sans titre)' }; })
+      .sort(function(a,b){ return a.titre.localeCompare(b.titre,'fr'); });
+    function opt(val,label,sel){ return '<option value="'+String(val).replace(/"/g,'&quot;')+'"'+(String(sel)===String(val)?' selected':'')+'>'+label+'</option>'; }
+    var sty = 'width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff';
+    bar.innerHTML =
+      '<div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Association</label>'+
+      '<select id="ifAssoc" style="'+sty+'">'+opt('','Toutes les associations',f.assoc)+
+        assocs.map(function(s){ return opt(s.id, s.nom, f.assoc); }).join('')+'</select></div>'+
+      '<div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Action</label>'+
+      '<select id="ifAction" style="'+sty+'">'+opt('','Toutes les actions',f.action)+
+        actions.map(function(a){ return opt(a.id, a.titre, f.action); }).join('')+'</select></div>'+
+      '<div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Thématique</label>'+
+      '<select id="ifTheme" style="'+sty+'">'+opt('','Toutes thématiques',f.theme)+
+        themes.map(function(t){ return opt(t, t, f.theme); }).join('')+'</select></div>'+
+      '<div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Année</label>'+
+      '<select id="ifYear" style="'+sty+'">'+opt('','Toutes les années',f.year)+
+        years.map(function(y){ return opt(y, y, f.year); }).join('')+'</select></div>';
+    function bind(id, key, resetAction){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.onchange = function(){
+        window.__impactsFilters[key] = el.value;
+        if(resetAction) window.__impactsFilters.action = '';
+        renderImpactsBeneficiaires();
+      };
+    }
+    bind('ifAssoc','assoc',true);
+    bind('ifAction','action',false);
+    bind('ifTheme','theme',true);
+    bind('ifYear','year',true);
+  }
+
   window.renderImpactsBeneficiaires = function(){
     ensureImpactsBenefPage();
+    renderImpactsFilters();
+    var f = window.__impactsFilters;
     const body = document.getElementById('impactsBenefBody');
     const sub = document.getElementById('impactsBenefSub');
     if(!body) return;
     if(typeof ACTIONS==='undefined'){ body.innerHTML='<div class="card"><div class="card-body">Chargement…</div></div>'; return; }
     const filtered = ACTIONS.filter(a => {
-      if(currentAssocId && a.assocId!==currentAssocId) return false;
-      if(currentTheme && a.theme!==currentTheme) return false;
-      if(currentSousTheme && a.sousTheme!==currentSousTheme) return false;
+      if(!(a.surveyResponses||[]).length) return false;
+      if(f.assoc && a.assocId !== f.assoc) return false;
+      if(f.action && String(a.id) !== String(f.action)) return false;
+      if(f.theme && a.theme !== f.theme) return false;
+      if(f.year && String(a.annee) !== String(f.year)) return false;
       return true;
     });
     const allResp = [];
     filtered.forEach(a => (a.surveyResponses||[]).forEach(r => allResp.push(Object.assign({_assoc:getAssocName(a.assocId), _action:a.titre}, r))));
     const n = allResp.length;
-    const scopeAsso = currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Toutes les associations';
-    const scopeTheme = currentSousTheme || currentTheme || 'Toutes thématiques';
-    if(sub) sub.textContent = scopeAsso + ' · ' + scopeTheme + ' · ' + n + ' bénéficiaire' + (n>1?'s':'') + ' évalué' + (n>1?'s':'');
+    const scopeAsso = f.assoc ? (ASSOCS.find(x=>x.id===f.assoc)?.nom||'') : 'Toutes les associations';
+    const scopeAction = f.action ? (ACTIONS.find(x=>String(x.id)===String(f.action))?.titre||'') : 'Toutes les actions';
+    const scopeTheme = f.theme || 'Toutes thématiques';
+    const scopeYear = f.year || 'Toutes années';
+    if(sub) sub.textContent = scopeAsso + ' · ' + scopeAction + ' · ' + scopeTheme + ' · ' + scopeYear + ' · ' + n + ' bénéficiaire' + (n>1?'s':'') + ' évalué' + (n>1?'s':'');
     if(!n){
       body.innerHTML = '<div class="card"><div class="card-body" style="color:var(--muted-fore);font-size:14px">Aucune évaluation bénéficiaire enregistrée pour ce périmètre. Lancez une évaluation depuis une carte action.</div></div>';
       return;
