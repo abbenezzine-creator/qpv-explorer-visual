@@ -118,7 +118,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
   const [commune, setCommune] = useState("");
   const [publicQuartiers, setPublicQuartiers] = useState<PublicQuartierItem[]>([]);
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([
-    { annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 },
+    { annee: String(currentYear), financeur: "", type: "", annee_n1: String(currentYear - 1), montant_n1: 0, montant_sollicite: 0, montant_favorable: 0 },
   ]);
   const [saving, setSaving] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -173,10 +173,12 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
           annee: b.annee,
           financeur: b.financeur,
           type: b.type,
+          annee_n1: b.annee_n1 ?? String((Number(b.annee) || currentYear) - 1),
+          montant_n1: Number(b.montant_n1 ?? 0) || 0,
           montant_sollicite: Number(b.montant_sollicite ?? b.montant ?? 0) || 0,
           montant_favorable: Number(b.montant_favorable ?? 0) || 0,
         }))
-      : [{ annee: String(currentYear), financeur: "", type: "", montant_sollicite: 0, montant_favorable: 0 }]);
+      : [{ annee: String(currentYear), financeur: "", type: "", annee_n1: String(currentYear - 1), montant_n1: 0, montant_sollicite: 0, montant_favorable: 0 }]);
   }, [open, initial, isSuperadmin, associations, user?.assocId]);
 
   // Defaults dates from year (only when empty)
