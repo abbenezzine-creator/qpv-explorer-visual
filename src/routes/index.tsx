@@ -596,7 +596,7 @@ function CitoyenPane() {
                 <select
                   value={scope}
                   onChange={(e) => setScope(e.target.value)}
-                  className="min-w-[240px] rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none sm:min-w-[240px] sm:w-auto"
                 >
                   <option value="__ALL__">Les 4 QPV d'Orléans ({data.totalResponses})</option>
                   {data.quartiers.map((q) => (
