@@ -1222,8 +1222,43 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   }
   window.__abApplyDash = applyDash;
   window.addEventListener('message', function(ev){
-    var d = ev && ev.data; if(!d || d.type !== 'ab-supabase-dashboard') return;
-    dashCache = d.html || {}; applyDash();
+    var d = ev && ev.data; if(!d) return;
+    if(d.type === 'ab-supabase-dashboard'){
+      dashCache = d.html || {}; applyDash(); return;
+    }
+    if(d.type === 'ab-load-qualite'){
+      // Populate qualite dropdowns from Supabase data and select the target action
+      try{
+        var assocs = d.associations || [];
+        var actions = d.actions || [];
+        var targetActionId = d.actionId || null;
+        var sa = document.getElementById('qualAssocSel');
+        var sac = document.getElementById('qualActionSel');
+        if(sa){
+          sa.innerHTML = '<option value="">— Association —</option>' +
+            assocs.map(function(a){ return '<option value="'+a.id+'">'+(a.nom||'').replace(/</g,'&lt;')+'</option>'; }).join('');
+        }
+        var target = actions.find(function(a){ return a.id === targetActionId; });
+        if(sa && target) sa.value = target.assoc_id;
+        if(sac){
+          var assocFilter = sa ? sa.value : '';
+          var filtered = assocFilter ? actions.filter(function(a){ return a.assoc_id === assocFilter; }) : actions;
+          sac.innerHTML = '<option value="">— Action —</option>' +
+            filtered.map(function(a){ return '<option value="'+a.id+'">'+(a.titre||'').replace(/</g,'&lt;')+'</option>'; }).join('');
+          if(target) sac.value = target.id;
+        }
+        // Default to anonymous evaluator and load eval state
+        var sp = document.getElementById('qualPartnerSel'); if(sp) sp.value = '';
+        if(target && typeof window.loadEvalForKey === 'function'){
+          var key = target.id + '_anon';
+          window.QUAL_EVALS = window.QUAL_EVALS || {};
+          if(!window.QUAL_EVALS[key]) window.QUAL_EVALS[key] = {};
+          window.currentEvalKey = key;
+          try { window.loadEvalForKey(key); } catch(e){}
+        }
+      }catch(e){}
+      return;
+    }
   });
   function pingReady(){ try{ window.parent && window.parent.postMessage({type:'ab-iframe-ready'}, '*'); }catch(e){} }
   if(document.readyState === 'complete') pingReady();
