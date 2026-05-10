@@ -227,7 +227,9 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
       if (refVal == null || refVal === "") continue;
       const key = norm(String(refVal));
       const line = {
-        annee: budgetMap.annee ? String(r[budgetMap.annee] ?? "") : "",
+        annee: budgetMap.annee && r[budgetMap.annee] != null && String(r[budgetMap.annee]).trim() !== ""
+          ? String(r[budgetMap.annee])
+          : budgetDefaultYear,
         financeur: budgetMap.financeur ? String(r[budgetMap.financeur] ?? "") : "",
         type: budgetMap.type ? String(r[budgetMap.type] ?? "") : "",
         montant_sollicite: budgetMap.montant_sollicite ? (toNumber(r[budgetMap.montant_sollicite]) ?? 0) : 0,
