@@ -106,6 +106,11 @@ export type Association = {
   qpv_key?: string | null;
   login?: string | null;
   password?: string | null;
+  statut_contact?: string | null;
+  contact_nom?: string | null;
+  adresse?: string | null;
+  code_postal?: string | null;
+  ville?: string | null;
 };
 
 export type Evaluation = {
