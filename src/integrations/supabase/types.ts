@@ -193,6 +193,51 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          assoc_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          file_path: string | null
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          titre: string
+          type: string | null
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          assoc_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          titre: string
+          type?: string | null
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          assoc_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          titre?: string
+          type?: string | null
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       evaluations: {
         Row: {
           action_id: string
