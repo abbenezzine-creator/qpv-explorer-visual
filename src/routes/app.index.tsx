@@ -92,7 +92,7 @@ function AppIndexPage() {
         setIframeReady(true);
       } else if (d.type === "ab-filters-changed") {
         navigate({
-          search: (prev) => ({
+          search: (prev: { page?: string; year?: number; assoc?: string; theme?: string }) => ({
             ...prev,
             year: typeof d.year === "number" ? d.year : prev.year,
             assoc: d.assocId !== undefined ? (d.assocId || undefined) : prev.assoc,
