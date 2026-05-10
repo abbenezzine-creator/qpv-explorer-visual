@@ -27,10 +27,11 @@ export const Route = createFileRoute("/app/")({
 type IframeWin = Window & {
   nav?: (id: string) => void;
   autoLogin?: (login: string, opts?: { role?: string; nom?: string; assocId?: string | null }) => boolean;
+  openActionQualite?: (actionId: string) => void;
 };
 
 function AppIndexPage() {
-  const { page, year, assoc, theme } = Route.useSearch();
+  const { page, year, assoc, theme, qualiteAction } = Route.useSearch();
   const navigate = useNavigate({ from: "/app/" });
   const ref = useRef<HTMLIFrameElement>(null);
   const [u, setUser] = useState<AbUser | null>(() => getUser());
