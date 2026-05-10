@@ -129,7 +129,10 @@ export type Database = {
       }
       associations: {
         Row: {
+          adresse: string | null
+          code_postal: string | null
           commune: string | null
+          contact_nom: string | null
           created_at: string
           description: string | null
           id: string
@@ -137,10 +140,15 @@ export type Database = {
           nom: string
           password: string | null
           qpv_key: string | null
+          statut_contact: string | null
           updated_at: string
+          ville: string | null
         }
         Insert: {
+          adresse?: string | null
+          code_postal?: string | null
           commune?: string | null
+          contact_nom?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -148,10 +156,15 @@ export type Database = {
           nom: string
           password?: string | null
           qpv_key?: string | null
+          statut_contact?: string | null
           updated_at?: string
+          ville?: string | null
         }
         Update: {
+          adresse?: string | null
+          code_postal?: string | null
           commune?: string | null
+          contact_nom?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -159,7 +172,9 @@ export type Database = {
           nom?: string
           password?: string | null
           qpv_key?: string | null
+          statut_contact?: string | null
           updated_at?: string
+          ville?: string | null
         }
         Relationships: []
       }
