@@ -36,6 +36,7 @@ export type Database = {
           lieux: Json | null
           nb_beneficiaires_prevu: number | null
           nb_beneficiaires_reel: number | null
+          objectifs: string | null
           qpv_key: string | null
           quartiers: string[] | null
           recurrence: string | null
@@ -70,6 +71,7 @@ export type Database = {
           lieux?: Json | null
           nb_beneficiaires_prevu?: number | null
           nb_beneficiaires_reel?: number | null
+          objectifs?: string | null
           qpv_key?: string | null
           quartiers?: string[] | null
           recurrence?: string | null
@@ -104,6 +106,7 @@ export type Database = {
           lieux?: Json | null
           nb_beneficiaires_prevu?: number | null
           nb_beneficiaires_reel?: number | null
+          objectifs?: string | null
           qpv_key?: string | null
           quartiers?: string[] | null
           recurrence?: string | null
