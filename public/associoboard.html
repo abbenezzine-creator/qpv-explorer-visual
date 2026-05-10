@@ -6490,5 +6490,200 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   }
 })();
 </script>
+<script>
+// ========== DOCUMENTS — bridge Supabase via parent React ==========
+(function(){
+  window.SB_DOCUMENTS = window.SB_DOCUMENTS || [];
+  function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtDate(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleDateString('fr-FR'); }catch(e){ return ''; } }
+  function fmtSize(n){ if(!n) return ''; if(n<1024) return n+' o'; if(n<1048576) return (n/1024).toFixed(1)+' Ko'; return (n/1048576).toFixed(1)+' Mo'; }
+
+  window.renderDocuments = function(){
+    var sub = document.getElementById('docsSubtitle'); if(sub) sub.textContent = 'Documents de votre association';
+    var grid = document.getElementById('docsGrid'); if(!grid) return;
+    var docs = window.SB_DOCUMENTS || [];
+    if(!docs.length){ grid.innerHTML = '<p style="color:var(--muted-fore);font-size:13px;padding:20px">Aucun document disponible. Cliquez sur « Ajouter » pour téléverser un fichier.</p>'; return; }
+    var cc = {Convention:'oklch(0.52 0.22 285)',Bilan:'oklch(0.76 0.17 75)',Rapport:'oklch(0.62 0.22 340)',Formulaire:'oklch(0.6 0.17 240)',Guide:'oklch(0.52 0.16 150)','Procès-verbal':'oklch(0.52 0.18 200)',Statuts:'oklch(0.5 0.18 30)',Subvention:'oklch(0.6 0.2 100)',Présentation:'oklch(0.55 0.2 320)','Photo / Image':'oklch(0.6 0.18 60)',Autre:'var(--muted-fore)'};
+    grid.innerHTML = docs.map(function(d){
+      var color = cc[d.type] || 'var(--primary)';
+      var hasFile = !!(d.file_path || d.url);
+      var openBtn = hasFile ? '<button class="btn btn-outline btn-sm" style="margin-bottom:8px;display:inline-flex" onclick="openSbDoc(\''+d.id+'\')">Ouvrir ↗</button>' : '';
+      return '<div class="doc-card">'
+        + '<div class="doc-icon" style="background:'+color+'1a;cursor:'+(hasFile?'pointer':'default')+'" '+(hasFile?'onclick="openSbDoc(\''+d.id+'\')"':'')+'><svg viewBox="0 0 18 18" width="20" height="20" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round"><path d="M10 1.5H4a1.5 1.5 0 0 0-1.5 1.5v12a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V7l-5-5.5z"/><path d="M10 1.5V7h5"/></svg></div>'
+        + '<div class="doc-name" style="cursor:'+(hasFile?'pointer':'default')+'" '+(hasFile?'onclick="openSbDoc(\''+d.id+'\')"':'')+'>'+escHtml(d.titre)+'</div>'
+        + '<div class="doc-meta">'+escHtml(d.type||'—')+' · '+fmtDate(d.created_at)+(d.file_size?' · '+fmtSize(d.file_size):'')+'</div>'
+        + (d.description?'<div style="font-size:11px;color:var(--muted-fore);margin:4px 0 6px">'+escHtml(d.description)+'</div>':'')
+        + openBtn
+        + '<div class="doc-card-footer">'
+        +   '<button class="btn btn-danger btn-sm" onclick="deleteSbDoc(\''+d.id+'\')">✕ Supprimer</button>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+  };
+
+  window.openUploadDocModal = function(){
+    window.editingDocId = null;
+    var t = document.getElementById('docModalTitle'); if(t) t.textContent='Ajouter un document';
+    var b = document.getElementById('docSaveBtn'); if(b) b.textContent='Enregistrer';
+    ['ud-nom','ud-url','ud-desc'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+    var fn = document.getElementById('ud-filename'); if(fn) fn.textContent='';
+    var fi = document.getElementById('ud-file'); if(fi) fi.value='';
+    if(typeof openModal==='function') openModal('uploadDocModal');
+  };
+
+  window.saveDocument = function(){
+    var nom = (document.getElementById('ud-nom')?.value || '').trim();
+    if(!nom){ if(typeof showToast==='function') showToast('Le nom est requis','error'); return; }
+    var type = document.getElementById('ud-cat')?.value || 'Autre';
+    var url = (document.getElementById('ud-url')?.value || '').trim();
+    var desc = (document.getElementById('ud-desc')?.value || '').trim();
+    var fileInput = document.getElementById('ud-file');
+    var file = fileInput && fileInput.files && fileInput.files[0];
+    var btn = document.getElementById('docSaveBtn');
+    if(btn){ btn.disabled = true; btn.textContent = 'Enregistrement…'; }
+    function send(payload){
+      window.parent && window.parent.postMessage(Object.assign({type:'ab-save-document', titre:nom, docType:type, url:url||null, description:desc||null}, payload), '*');
+    }
+    if(file){
+      if(file.size > 15*1024*1024){
+        if(typeof showToast==='function') showToast('Fichier trop volumineux (max 15 Mo)','error');
+        if(btn){ btn.disabled = false; btn.textContent = 'Enregistrer'; }
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function(){
+        send({ fileName: file.name, fileType: file.type || 'application/octet-stream', fileSize: file.size, fileBase64: String(reader.result).split(',')[1] });
+      };
+      reader.onerror = function(){ if(typeof showToast==='function') showToast('Lecture du fichier impossible','error'); if(btn){ btn.disabled = false; btn.textContent = 'Enregistrer'; } };
+      reader.readAsDataURL(file);
+    } else {
+      send({});
+    }
+  };
+
+  window.deleteSbDoc = function(id){
+    if(!confirm('Supprimer ce document ?')) return;
+    window.parent && window.parent.postMessage({type:'ab-delete-document', id:id}, '*');
+  };
+  window.openSbDoc = function(id){
+    window.parent && window.parent.postMessage({type:'ab-open-document', id:id}, '*');
+  };
+  window.openEditDoc = function(){};
+  window.deleteDoc = window.deleteSbDoc;
+
+  window.addEventListener('message', function(ev){
+    var d = ev && ev.data; if(!d) return;
+    if(d.type === 'ab-load-documents'){
+      window.SB_DOCUMENTS = Array.isArray(d.documents) ? d.documents : [];
+      try{ window.renderDocuments(); }catch(e){}
+      return;
+    }
+    if(d.type === 'ab-document-saved'){
+      var btn = document.getElementById('docSaveBtn');
+      if(btn){ btn.disabled = false; btn.textContent = 'Enregistrer'; }
+      if(d.success){
+        if(typeof closeModal==='function') closeModal('uploadDocModal');
+        if(typeof showToast==='function') showToast('Document enregistré','success');
+      } else {
+        if(typeof showToast==='function') showToast('Échec : '+(d.error||'erreur'),'error');
+      }
+      return;
+    }
+    if(d.type === 'ab-document-url' && d.url){
+      try{ window.open(d.url, '_blank', 'noopener'); }catch(e){}
+      return;
+    }
+  });
+})();
+
+// ========== DASHBOARD — barre de filtres in-page (Assoc, Action, Thématique, Année) ==========
+(function(){
+  function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  window.__dashFilters = window.__dashFilters || { assoc:'', action:'', theme:'', year:'' };
+  window.__dashMeta = window.__dashMeta || { years:[], themes:[], assocs:[], actions:[] };
+
+  function ensureBar(){
+    var page = document.getElementById('page-dashboard'); if(!page) return null;
+    var bar = document.getElementById('dashFilterBar');
+    if(bar) return bar;
+    bar = document.createElement('div');
+    bar.id = 'dashFilterBar';
+    bar.className = 'card';
+    bar.style.cssText = 'margin-bottom:14px;padding:12px 14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:end';
+    bar.innerHTML = ''
+      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Association</label><select id="dashFAssoc" class="form-sel" style="width:100%"></select></div>'
+      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Action</label><select id="dashFAction" class="form-sel" style="width:100%"></select></div>'
+      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Thématique</label><select id="dashFTheme" class="form-sel" style="width:100%"></select></div>'
+      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Année</label><select id="dashFYear" class="form-sel" style="width:100%"></select></div>';
+    var hdr = page.querySelector('.page-hdr');
+    if(hdr && hdr.nextSibling) page.insertBefore(bar, hdr.nextSibling);
+    else page.insertBefore(bar, page.firstChild);
+    ['dashFAssoc','dashFAction','dashFTheme','dashFYear'].forEach(function(id){
+      bar.querySelector('#'+id).addEventListener('change', onDashFilterChange);
+    });
+    return bar;
+  }
+  function populate(){
+    var bar = ensureBar(); if(!bar) return;
+    var f = window.__dashFilters, m = window.__dashMeta;
+    var sa = bar.querySelector('#dashFAssoc');
+    sa.innerHTML = '<option value="">— Toutes les associations —</option>' + (m.assocs||[]).map(function(a){ return '<option value="'+escHtml(a.id)+'"'+(a.id===f.assoc?' selected':'')+'>'+escHtml(a.nom)+'</option>'; }).join('');
+    var st = bar.querySelector('#dashFTheme');
+    st.innerHTML = '<option value="">Toutes thématiques</option>' + (m.themes||[]).map(function(t){ return '<option value="'+escHtml(t)+'"'+(t===f.theme?' selected':'')+'>'+escHtml(t)+'</option>'; }).join('');
+    var sy = bar.querySelector('#dashFYear');
+    sy.innerHTML = '<option value="">Toutes années</option>' + (m.years||[]).map(function(y){ return '<option value="'+y+'"'+(String(y)===String(f.year)?' selected':'')+'>'+y+'</option>'; }).join('');
+    var sac = bar.querySelector('#dashFAction');
+    var acts = (m.actions||[]).filter(function(a){
+      if(f.assoc && a.assoc_id !== f.assoc) return false;
+      if(f.theme && a.thematique !== f.theme) return false;
+      if(f.year && String(a.annee) !== String(f.year)) return false;
+      return true;
+    });
+    sac.innerHTML = '<option value="">Toutes les actions</option>' + acts.map(function(a){ return '<option value="'+escHtml(a.id)+'"'+(a.id===f.action?' selected':'')+'>'+escHtml(a.titre)+'</option>'; }).join('');
+  }
+  function onDashFilterChange(){
+    var bar = document.getElementById('dashFilterBar'); if(!bar) return;
+    window.__dashFilters = {
+      assoc: bar.querySelector('#dashFAssoc').value,
+      action: bar.querySelector('#dashFAction').value,
+      theme: bar.querySelector('#dashFTheme').value,
+      year: bar.querySelector('#dashFYear').value,
+    };
+    populate();
+    window.parent && window.parent.postMessage({
+      type: 'ab-dash-filters',
+      assocId: window.__dashFilters.assoc || null,
+      actionId: window.__dashFilters.action || null,
+      thematique: window.__dashFilters.theme || null,
+      year: window.__dashFilters.year ? Number(window.__dashFilters.year) : null,
+    }, '*');
+  }
+  window.__updateDashMeta = function(meta){
+    if(!meta) return;
+    window.__dashMeta = {
+      years: meta.years || [],
+      themes: meta.themes || [],
+      assocs: meta.assocs || [],
+      actions: meta.actions || [],
+    };
+    populate();
+  };
+  function syncTopbar(){
+    var hash = (location.hash||'').replace('#page=','');
+    var page = hash || 'dashboard';
+    var hide = (page === 'dashboard');
+    ['assocSelWrap','yearFilter','globalThemeSel','globalSousThemeSel'].forEach(function(id){
+      var el = document.getElementById(id); if(!el) return;
+      el.style.display = hide ? 'none' : (id==='globalSousThemeSel' ? 'none' : '');
+    });
+    if(hide){ ensureBar(); populate(); }
+  }
+  window.addEventListener('hashchange', syncTopbar);
+  document.addEventListener('DOMContentLoaded', syncTopbar);
+  setTimeout(syncTopbar, 200);
+  var _origNav = window.nav;
+  window.nav = function(p){ try{ if(typeof _origNav==='function') _origNav(p); }catch(e){} setTimeout(syncTopbar, 50); };
+})();
+</script>
 </body>
 </html>
