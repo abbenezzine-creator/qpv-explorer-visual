@@ -526,16 +526,7 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
 
           {/* QUALIFICATION DU PROJET */}
           <Section icon={Target} title="Qualification du projet" tone="violet">
-            <div>
-              <Label>QPV (axe principal)</Label>
-              <Select value={qpv} onValueChange={(v) => setQpv(v as QpvKey)}>
-                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
-                <SelectContent>
-                  {QPV_OPTIONS.map(o => <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
+            <div className="col-span-2">
               <Label>Thématique principale</Label>
               <Select value={thematique} onValueChange={setThematique}>
                 <SelectTrigger><SelectValue placeholder="Aucune" /></SelectTrigger>
