@@ -235,6 +235,10 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
       objectifs: objectifs.trim() || null,
       budget: totalFavorable || totalSollicite || null,
       budget_financeurs: cleanBudget,
+      ref: refCode.trim() || null,
+      reference_administrative: referenceAdmin.trim() || null,
+      commune: commune.trim() || null,
+      public_quartiers: publicQuartiers.filter(p => p.quartier.trim() || p.nombre).map(p => ({ quartier: p.quartier.trim(), nombre: Number(p.nombre) || 0 })),
     };
     const res = initial
       ? await supabase.from("actions").update(payload).eq("id", initial.id)
@@ -274,6 +278,14 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
                   {TYPE_ACTION_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Réf. interne</Label>
+              <Input value={refCode} onChange={(e) => setRefCode(e.target.value)} placeholder="ex : ACT-2026-001" />
+            </div>
+            <div>
+              <Label>Référence administrative</Label>
+              <Input value={referenceAdmin} onChange={(e) => setReferenceAdmin(e.target.value)} placeholder="ex : DDCS-2026-…" />
             </div>
             <div className="col-span-2">
               <Label>Titre *</Label>
