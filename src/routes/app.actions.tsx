@@ -194,19 +194,34 @@ function ActionsListPage() {
               const editable = canEditAction(user, a);
               const sollicite = (a.budget_financeurs ?? []).reduce((s, l) => s + (Number(l.montant_sollicite ?? l.montant ?? 0) || 0), 0);
               return (
-                <tr key={a.id} className="border-t border-border hover:bg-muted/30">
+                <tr
+                  key={a.id}
+                  className="border-t border-border hover:bg-muted/30 cursor-pointer"
+                  onClick={() => setViewing(a)}
+                >
                   <td className="px-3 py-2 font-semibold text-primary">{a.annee ?? "—"}</td>
                   <td className="px-3 py-2 font-medium">{a.titre}</td>
                   <td className="px-3 py-2">{assocMap.get(a.assoc_id) ?? "—"}</td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
-                    {frDate(a.date_debut)}{a.date_fin ? <> → {frDate(a.date_fin)}</> : null}
+                    {frDate(a.date_debut)} → {frDate(a.date_fin)}
                   </td>
                   <td className="px-3 py-2 max-w-[24rem] align-top">
-                    <div className="whitespace-pre-line text-sm">
-                      {a.description ? <div>{a.description}</div> : null}
-                      {a.objectifs ? <div className="mt-1 text-muted-foreground"><span className="font-medium text-foreground">Objectifs : </span>{a.objectifs}</div> : null}
-                      {!a.description && !a.objectifs ? "—" : null}
-                    </div>
+                    {(a.description || a.objectifs) ? (
+                      <div className="text-sm">
+                        <div className="line-clamp-3 whitespace-pre-line">
+                          {a.description}
+                          {a.description && a.objectifs ? "\n" : ""}
+                          {a.objectifs ? <><span className="font-medium">Objectifs : </span>{a.objectifs}</> : null}
+                        </div>
+                        <button
+                          type="button"
+                          className="mt-1 text-xs font-medium text-primary hover:underline"
+                          onClick={(e) => { e.stopPropagation(); setViewing(a); }}
+                        >
+                          Voir détail
+                        </button>
+                      </div>
+                    ) : "—"}
                   </td>
                   <td className="px-3 py-2 text-right whitespace-nowrap">{sollicite ? `${sollicite.toLocaleString("fr-FR")} €` : "—"}</td>
                   <td className="px-3 py-2">{labelOf(QPV_OPTIONS, a.qpv_key)}</td>
@@ -216,7 +231,7 @@ function ActionsListPage() {
                       {labelOf(STATUT_OPTIONS, a.statut)}
                     </span>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-1">
                       <Button size="sm" variant="ghost" onClick={() => setViewing(a)} title="Voir en plein écran">
                         <Eye className="h-4 w-4" />
