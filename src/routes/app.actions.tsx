@@ -54,6 +54,8 @@ export const Route = createFileRoute("/app/actions")({
 });
 
 const ALL = "__all__";
+const QPV_ORLEANS = "__qpv_orleans__";
+const ORLEANS_QPV_KEYS = ["argonne", "lasource", "dauphine", "blossieres"];
 
 function ActionsListPage() {
   const [mounted, setMounted] = useState(false);
