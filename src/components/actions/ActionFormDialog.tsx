@@ -569,29 +569,24 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
                 </span>
               </div>
               <div className="space-y-2">
-                <div className="grid grid-cols-16 gap-2 px-1 text-xs text-muted-foreground" style={{ gridTemplateColumns: "repeat(16, minmax(0, 1fr))" }}>
+                <div className="grid gap-2 px-1 text-xs text-muted-foreground" style={{ gridTemplateColumns: "repeat(14, minmax(0, 1fr))" }}>
                   <div className="col-span-2">Année</div>
                   <div className="col-span-3">Financeur</div>
-                  <div className="col-span-2">Type</div>
-                  <div className="col-span-2">An. N-1</div>
+                  <div className="col-span-3">Type</div>
                   <div className="col-span-2">Subv. N-1 (€)</div>
                   <div className="col-span-2">Sollicité (€)</div>
                   <div className="col-span-2">Favorable (€)</div>
-                  <div className="col-span-1"></div>
                 </div>
                 {budgetLines.map((b, i) => (
-                  <div key={i} className="grid gap-2" style={{ gridTemplateColumns: "repeat(16, minmax(0, 1fr))" }}>
+                  <div key={i} className="grid gap-2" style={{ gridTemplateColumns: "repeat(14, minmax(0, 1fr))" }}>
                     <Input className="col-span-2" type="number" value={b.annee} onChange={(e) => {
                       const n = [...budgetLines]; n[i] = { ...b, annee: e.target.value }; setBudgetLines(n);
                     }} />
                     <Input className="col-span-3" value={b.financeur} placeholder="ex : Orléans Métropole" onChange={(e) => {
                       const n = [...budgetLines]; n[i] = { ...b, financeur: e.target.value }; setBudgetLines(n);
                     }} />
-                    <Input className="col-span-2" value={b.type} placeholder="Subvention…" onChange={(e) => {
+                    <Input className="col-span-3" value={b.type} placeholder="Subvention…" onChange={(e) => {
                       const n = [...budgetLines]; n[i] = { ...b, type: e.target.value }; setBudgetLines(n);
-                    }} />
-                    <Input className="col-span-2" type="number" value={b.annee_n1 ?? ""} onChange={(e) => {
-                      const n = [...budgetLines]; n[i] = { ...b, annee_n1: e.target.value }; setBudgetLines(n);
                     }} />
                     <Input className="col-span-2" type="number" value={b.montant_n1 ?? 0} onChange={(e) => {
                       const n = [...budgetLines]; n[i] = { ...b, montant_n1: Number(e.target.value) || 0 }; setBudgetLines(n);
@@ -602,8 +597,8 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
                     <Input className="col-span-2" type="number" value={b.montant_favorable ?? 0} onChange={(e) => {
                       const n = [...budgetLines]; n[i] = { ...b, montant_favorable: Number(e.target.value) || 0 }; setBudgetLines(n);
                     }} />
-                    <Button type="button" size="sm" variant="ghost" className="col-span-1" onClick={() => setBudgetLines(budgetLines.filter((_, j) => j !== i))}>
-                      <X className="h-4 w-4" />
+                    <Button type="button" size="sm" variant="ghost" className="col-span-14 justify-self-end" onClick={() => setBudgetLines(budgetLines.filter((_, j) => j !== i))}>
+                      <X className="h-4 w-4" /> Retirer la ligne
                     </Button>
                   </div>
                 ))}
