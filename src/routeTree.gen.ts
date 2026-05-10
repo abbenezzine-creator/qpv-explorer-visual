@@ -14,6 +14,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppAssociationsRouteImport } from './routes/app.associations'
 import { Route as AppActionsRouteImport } from './routes/app.actions'
 import { Route as AppActionsIdRouteImport } from './routes/app.actions.$id'
@@ -44,6 +45,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAssociationsRoute = AppAssociationsRouteImport.update({
   id: '/associations',
   path: '/associations',
@@ -73,17 +79,18 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
+  '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
+  '/app': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
 }
@@ -96,6 +103,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
+  '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
 }
@@ -109,17 +117,18 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/actions'
     | '/app/associations'
+    | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app'
     | '/login'
     | '/reset-password'
     | '/signup'
     | '/app/actions'
     | '/app/associations'
+    | '/app'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
   id:
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/actions'
     | '/app/associations'
+    | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
   fileRoutesById: FileRoutesById
@@ -179,6 +189,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/associations': {
       id: '/app/associations'
@@ -238,11 +255,13 @@ const AppActionsRouteWithChildren = AppActionsRoute._addFileChildren(
 interface AppRouteChildren {
   AppActionsRoute: typeof AppActionsRouteWithChildren
   AppAssociationsRoute: typeof AppAssociationsRoute
+  AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppActionsRoute: AppActionsRouteWithChildren,
   AppAssociationsRoute: AppAssociationsRoute,
+  AppIndexRoute: AppIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

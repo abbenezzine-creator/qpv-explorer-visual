@@ -1,0 +1,70 @@
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+
+export const Route = createFileRoute("/app/")({
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      throw redirect({ to: "/login" });
+    }
+  },
+  component: AppIndexPage,
+  validateSearch: (s: Record<string, unknown>) => ({
+    page: typeof s.page === "string" ? s.page : "dashboard",
+  }),
+});
+
+type IframeWin = Window & {
+  nav?: (id: string) => void;
+  autoLogin?: (login: string, opts?: { role?: string; nom?: string; assocId?: string | null }) => boolean;
+};
+
+function AppIndexPage() {
+  const { page } = Route.useSearch();
+  const ref = useRef<HTMLIFrameElement>(null);
+  const [u, setUser] = useState<AbUser | null>(() => getUser());
+
+  useEffect(() => {
+    const sync = () => setUser(getUser());
+    window.addEventListener("ab-auth-change", sync);
+    void refreshFromSession().then(setUser);
+    return () => window.removeEventListener("ab-auth-change", sync);
+  }, []);
+
+  useEffect(() => {
+    const f = ref.current;
+    if (!f || !u) return;
+    const onLoad = () => {
+      try {
+        const win = f.contentWindow as IframeWin | null;
+        if (win?.autoLogin) win.autoLogin(u.login, { role: u.role, nom: u.nom, assocId: u.assocId });
+        if (win?.nav) win.nav(page);
+      } catch { /* noop */ }
+    };
+    f.addEventListener("load", onLoad);
+    onLoad();
+    return () => f.removeEventListener("load", onLoad);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [u?.login, u?.role, u?.nom, u?.assocId, page]);
+
+  useEffect(() => {
+    const f = ref.current;
+    if (!f) return;
+    try {
+      const win = f.contentWindow as IframeWin | null;
+      if (win?.nav) win.nav(page);
+    } catch { /* noop */ }
+  }, [page]);
+
+  return (
+    <iframe
+      ref={ref}
+      title="AssocioBoard"
+      src={`/associoboard.html#page=${encodeURIComponent(page)}`}
+      className="h-[calc(100vh-3rem)] w-full border-0"
+    />
+  );
+}

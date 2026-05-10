@@ -1,6 +1,5 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
+import { createFileRoute, redirect, useNavigate, Outlet } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app")({
@@ -11,21 +10,10 @@ export const Route = createFileRoute("/app")({
       throw redirect({ to: "/login" });
     }
   },
-  component: AppPage,
-  validateSearch: (s: Record<string, unknown>) => ({
-    page: typeof s.page === "string" ? s.page : "dashboard",
-  }),
+  component: AppLayout,
 });
 
-type IframeWin = Window & {
-  nav?: (id: string) => void;
-  autoLogin?: (login: string, opts?: { role?: string; nom?: string; assocId?: string | null }) => boolean;
-};
-
-function AppPage() {
-  const { page } = Route.useSearch();
-  const ref = useRef<HTMLIFrameElement>(null);
-  const [u, setUser] = useState<AbUser | null>(() => getUser());
+function AppLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,44 +27,5 @@ function AppPage() {
     return () => window.removeEventListener("message", onMsg);
   }, [navigate]);
 
-  useEffect(() => {
-    const sync = () => setUser(getUser());
-    window.addEventListener("ab-auth-change", sync);
-    void refreshFromSession().then(setUser);
-    return () => window.removeEventListener("ab-auth-change", sync);
-  }, []);
-
-  useEffect(() => {
-    const f = ref.current;
-    if (!f || !u) return;
-    const onLoad = () => {
-      try {
-        const win = f.contentWindow as IframeWin | null;
-        if (win?.autoLogin) win.autoLogin(u.login, { role: u.role, nom: u.nom, assocId: u.assocId });
-        if (win?.nav) win.nav(page);
-      } catch { /* noop */ }
-    };
-    f.addEventListener("load", onLoad);
-    onLoad();
-    return () => f.removeEventListener("load", onLoad);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [u?.login, u?.role, u?.nom, u?.assocId, page]);
-
-  useEffect(() => {
-    const f = ref.current;
-    if (!f) return;
-    try {
-      const win = f.contentWindow as IframeWin | null;
-      if (win?.nav) win.nav(page);
-    } catch { /* noop */ }
-  }, [page]);
-
-  return (
-    <iframe
-      ref={ref}
-      title="AssocioBoard"
-      src={`/associoboard.html#page=${encodeURIComponent(page)}`}
-      className="h-[calc(100vh-3rem)] w-full border-0"
-    />
-  );
+  return <Outlet />;
 }
