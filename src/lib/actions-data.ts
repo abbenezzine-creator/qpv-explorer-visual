@@ -180,7 +180,12 @@ export function labelOf<T extends { key: string; label: string }>(opts: readonly
 export const STATUT_VARIANT: Record<StatutKey, string> = {
   planifiee: "bg-blue-500/10 text-blue-700 border-blue-500/30",
   en_cours: "bg-amber-500/10 text-amber-700 border-amber-500/30",
+  recurrent: "bg-violet-500/10 text-violet-700 border-violet-500/30",
   terminee: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30",
+  favorable: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30",
+  non_retenu: "bg-rose-500/10 text-rose-700 border-rose-500/30",
+  ajournee: "bg-amber-500/10 text-amber-700 border-amber-500/30",
+  oriente: "bg-cyan-500/10 text-cyan-700 border-cyan-500/30",
   annulee: "bg-muted text-muted-foreground border-border",
 };
 
