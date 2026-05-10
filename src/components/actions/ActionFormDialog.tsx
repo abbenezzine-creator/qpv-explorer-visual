@@ -182,12 +182,13 @@ export function ActionFormDialog({ open, onOpenChange, user, associations, initi
       : [{ annee: String(currentYear), financeur: "", type: "", annee_n1: String(currentYear - 1), montant_n1: 0, montant_sollicite: 0, montant_favorable: 0 }]);
   }, [open, initial, isSuperadmin, associations, user?.assocId]);
 
-  // Defaults dates from year (only when empty)
+  // Defaults dates from year — auto-align with selected année (overwrite if outside year)
   useEffect(() => {
     const y = Number(annee);
     if (!y) return;
-    if (!dateDebut) setDateDebut(`${y}-01-01`);
-    if (!dateFin) setDateFin(`${y}-12-31`);
+    const inYear = (s: string) => s && s.startsWith(`${y}-`);
+    if (!dateDebut || !inYear(dateDebut)) setDateDebut(`${y}-01-01`);
+    if (!dateFin || !inYear(dateFin)) setDateFin(`${y}-12-31`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annee]);
 
