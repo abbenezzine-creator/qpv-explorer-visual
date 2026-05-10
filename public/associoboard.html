@@ -1191,6 +1191,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       <div class="form-row full"><div class="form-grp"><label class="form-lbl">Nom *</label><input class="form-inp" id="ud-nom" placeholder="ex : Bilan annuel 2024"/></div></div>
       <div class="form-row"><div class="form-grp"><label class="form-lbl">Type de document *</label><select class="form-sel" id="ud-cat"><option>Bilan</option><option>Convention</option><option>Rapport</option><option>Procès-verbal</option><option>Statuts</option><option>Subvention</option><option>Formulaire</option><option>Guide</option><option>Présentation</option><option>Photo / Image</option><option>Autre</option></select></div><div class="form-grp"><label class="form-lbl">Lien URL (optionnel)</label><input class="form-inp" id="ud-url" placeholder="https://…"/></div></div>
       <div class="form-row full"><div class="form-grp"><label class="form-lbl">Description</label><textarea class="form-inp" id="ud-desc" rows="2" placeholder="Description courte du document"></textarea></div></div>
+      <div class="form-row full" id="ud-assocs-wrap" style="display:none"><div class="form-grp">
+        <label class="form-lbl">Associations concernées *</label>
+        <select class="form-sel" id="ud-assocs-mode" onchange="onUdAssocsModeChange()" style="margin-bottom:6px">
+          <option value="all">Toutes les associations</option>
+          <option value="some">Sélectionner une ou plusieurs</option>
+        </select>
+        <select class="form-sel" id="ud-assocs-list" multiple size="5" style="display:none;height:auto;min-height:110px"></select>
+        <div style="font-size:11px;color:var(--muted-fore);margin-top:4px">Maintenez Ctrl (⌘ sur Mac) pour sélectionner plusieurs associations.</div>
+      </div></div>
       <div id="ud-visib-wrap" class="form-row full" style="display:none">
         <div class="form-grp">
           <label class="form-lbl">Visible par</label>
@@ -6522,6 +6531,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     }).join('');
   };
 
+  window.onUdAssocsModeChange = function(){
+    var mode = document.getElementById('ud-assocs-mode')?.value;
+    var lst = document.getElementById('ud-assocs-list');
+    if(lst) lst.style.display = (mode === 'some') ? 'block' : 'none';
+  };
+
   window.openUploadDocModal = function(){
     window.editingDocId = null;
     var t = document.getElementById('docModalTitle'); if(t) t.textContent='Ajouter un document';
@@ -6529,6 +6544,26 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     ['ud-nom','ud-url','ud-desc'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
     var fn = document.getElementById('ud-filename'); if(fn) fn.textContent='';
     var fi = document.getElementById('ud-file'); if(fi) fi.value='';
+    // Associations multi-select (superadmin only)
+    var wrap = document.getElementById('ud-assocs-wrap');
+    var isAdmin = (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'superadmin');
+    if(wrap){
+      if(isAdmin){
+        wrap.style.display = '';
+        var list = document.getElementById('ud-assocs-list');
+        var assocs = (typeof ASSOCS !== 'undefined' && Array.isArray(ASSOCS)) ? ASSOCS : [];
+        if(list){
+          list.innerHTML = assocs.map(function(a){
+            return '<option value="'+String(a.id)+'">'+ String(a.nom||'').replace(/</g,'&lt;') +'</option>';
+          }).join('');
+        }
+        var modeSel = document.getElementById('ud-assocs-mode');
+        if(modeSel){ modeSel.value = 'all'; }
+        if(list){ list.style.display = 'none'; }
+      } else {
+        wrap.style.display = 'none';
+      }
+    }
     if(typeof openModal==='function') openModal('uploadDocModal');
   };
 
@@ -6541,9 +6576,24 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     var fileInput = document.getElementById('ud-file');
     var file = fileInput && fileInput.files && fileInput.files[0];
     var btn = document.getElementById('docSaveBtn');
+    // Associations targeting (superadmin only)
+    var assocIds = null; // null => current user's association
+    var assocAll = false;
+    var isAdmin = (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'superadmin');
+    if(isAdmin){
+      var mode = document.getElementById('ud-assocs-mode')?.value || 'all';
+      if(mode === 'all'){
+        assocAll = true;
+      } else {
+        var list = document.getElementById('ud-assocs-list');
+        var sel = list ? Array.from(list.selectedOptions).map(function(o){ return o.value; }) : [];
+        if(sel.length === 0){ if(typeof showToast==='function') showToast('Sélectionnez au moins une association','error'); return; }
+        assocIds = sel;
+      }
+    }
     if(btn){ btn.disabled = true; btn.textContent = 'Enregistrement…'; }
     function send(payload){
-      window.parent && window.parent.postMessage(Object.assign({type:'ab-save-document', titre:nom, docType:type, url:url||null, description:desc||null}, payload), '*');
+      window.parent && window.parent.postMessage(Object.assign({type:'ab-save-document', titre:nom, docType:type, url:url||null, description:desc||null, assocIds:assocIds, assocAll:assocAll}, payload), '*');
     }
     if(file){
       if(file.size > 15*1024*1024){
