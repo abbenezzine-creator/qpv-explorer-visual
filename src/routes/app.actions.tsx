@@ -226,6 +226,19 @@ function ActionsListPage() {
         </table>
       </div>
 
+      <ActionsImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        associations={associations}
+        onImported={refresh}
+      />
+
+      <ActionsRestoreDialog
+        open={restoreOpen}
+        onOpenChange={setRestoreOpen}
+        onRestored={refresh}
+      />
+
       <ActionFormDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
