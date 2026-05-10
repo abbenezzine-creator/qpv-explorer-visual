@@ -240,7 +240,7 @@ function AppIndexPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("documents")
-        .select("id, assoc_id, titre, type, description, url, file_path, file_size, mime_type, created_at")
+        .select("id, assoc_id, titre, type, description, url, file_path, file_size, mime_type, visible_all, visible_assoc_ids, created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
