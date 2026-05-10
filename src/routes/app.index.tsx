@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,9 @@ export const Route = createFileRoute("/app/")({
   component: AppIndexPage,
   validateSearch: (s: Record<string, unknown>) => ({
     page: typeof s.page === "string" ? s.page : "dashboard",
+    year: typeof s.year === "string" && /^\d{4}$/.test(s.year) ? Number(s.year) : (typeof s.year === "number" ? s.year : undefined),
+    assoc: typeof s.assoc === "string" && s.assoc ? s.assoc : undefined,
+    theme: typeof s.theme === "string" && s.theme ? s.theme : undefined,
   }),
 });
 
@@ -26,11 +29,16 @@ type IframeWin = Window & {
 };
 
 function AppIndexPage() {
-  const { page } = Route.useSearch();
+  const { page, year, assoc, theme } = Route.useSearch();
+  const navigate = useNavigate({ from: "/app/" });
   const ref = useRef<HTMLIFrameElement>(null);
   const [u, setUser] = useState<AbUser | null>(() => getUser());
   const [iframeReady, setIframeReady] = useState(false);
-  const [filters, setFilters] = useState<DashboardFilters>({ year: new Date().getFullYear(), assocId: null, thematique: null });
+  const filters = useMemo<DashboardFilters>(() => ({
+    year: year ?? new Date().getFullYear(),
+    assocId: assoc ?? null,
+    thematique: theme ?? null,
+  }), [year, assoc, theme]);
   const [evalActionId, setEvalActionId] = useState<string | null>(null);
   const qc = useQueryClient();
 
@@ -83,11 +91,15 @@ function AppIndexPage() {
       if (d.type === "ab-iframe-ready") {
         setIframeReady(true);
       } else if (d.type === "ab-filters-changed") {
-        setFilters(prev => ({
-          year: typeof d.year === "number" ? d.year : prev.year,
-          assocId: d.assocId !== undefined ? (d.assocId || null) : prev.assocId,
-          thematique: d.thematique !== undefined ? (d.thematique || null) : prev.thematique,
-        }));
+        navigate({
+          search: (prev: { page?: string; year?: number; assoc?: string; theme?: string }) => ({
+            ...prev,
+            year: typeof d.year === "number" ? d.year : prev.year,
+            assoc: d.assocId !== undefined ? (d.assocId || undefined) : prev.assoc,
+            theme: d.thematique !== undefined ? (d.thematique || undefined) : prev.theme,
+          }),
+          replace: true,
+        });
       } else if (d.type === "ab-refresh-dashboard") {
         qc.invalidateQueries({ queryKey: ["dashboard-data"] });
       } else if (d.type === "ab-open-eval-modal" && typeof d.actionId === "string") {
@@ -96,7 +108,7 @@ function AppIndexPage() {
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
-  }, [qc]);
+  }, [qc, navigate]);
 
   // Push payload to iframe whenever data, filters, readiness or page change
   useEffect(() => {
