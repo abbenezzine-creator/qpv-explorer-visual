@@ -1266,21 +1266,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         var byAction = {};
         evals.forEach(function(e){
           var aid = String(e.actionId);
-          if(!byAction[aid]) byAction[aid] = { titre:e.titre||'', assocName:e.assocName||'', theme:e.theme||'', sousTheme:e.sousTheme||'', responses:[] };
+          if(!byAction[aid]) byAction[aid] = { titre:e.titre||'', assocId:e.assocId||null, assocName:e.assocName||'', theme:e.theme||'', sousTheme:e.sousTheme||'', annee:e.annee||null, responses:[] };
           if(e.payload) byAction[aid].responses.push(e.payload);
         });
-        // Merge into ACTIONS (or create synthetic entries)
         if(typeof ACTIONS !== 'undefined'){
           Object.keys(byAction).forEach(function(aid){
             var info = byAction[aid];
             var existing = ACTIONS.find(function(x){ return String(x.id) === aid; });
             if(existing){
               existing.surveyResponses = info.responses;
+              if(info.annee) existing.annee = info.annee;
             } else {
-              // synthetic action just for impacts aggregation
-              var assocId = '__sb_' + (info.assocName || 'na');
-              ACTIONS.push({ id: aid, assocId: assocId, titre: info.titre, theme: info.theme, sousTheme: info.sousTheme, surveyResponses: info.responses, _synthetic:true });
-              // Ensure ASSOCS has a label so getAssocName works
+              var assocId = info.assocId || ('__sb_' + (info.assocName || 'na'));
+              ACTIONS.push({ id: aid, assocId: assocId, titre: info.titre, theme: info.theme, sousTheme: info.sousTheme, annee: info.annee, surveyResponses: info.responses, _synthetic:true });
               if(typeof ASSOCS !== 'undefined' && !ASSOCS.find(function(s){ return s.id===assocId; })){
                 ASSOCS.push({ id: assocId, nom: info.assocName || '—' });
               }
