@@ -109,11 +109,14 @@ function AppIndexPage() {
   }, [iframeReady, dashQ.data, filters, page]);
 
   return (
-    <iframe
-      ref={ref}
-      title="AssocioBoard"
-      src={`/associoboard.html#page=${encodeURIComponent(page)}`}
-      className="h-[calc(100vh-3rem)] w-full border-0"
-    />
+    <>
+      <iframe
+        ref={ref}
+        title="AssocioBoard"
+        src={`/associoboard.html#page=${encodeURIComponent(page)}`}
+        className="h-[calc(100vh-3rem)] w-full border-0"
+      />
+      <EvalBeneficiaireModal actionId={evalActionId} onClose={() => setEvalActionId(null)} />
+    </>
   );
 }
