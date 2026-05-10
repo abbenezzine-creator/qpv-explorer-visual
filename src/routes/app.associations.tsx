@@ -27,7 +27,9 @@ export const Route = createFileRoute("/app/associations")({
 type Row = Association;
 
 function AssociationsPage() {
-  const user = getUser();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const user = mounted ? getUser() : null;
   const isSuper = user?.role === "superadmin";
   const qc = useQueryClient();
   const [showAllPwd, setShowAllPwd] = useState(false);
@@ -94,6 +96,32 @@ function AssociationsPage() {
               </tr>
             </thead>
             <tbody>
+              {isSuper && (() => {
+                const visible = showAllPwd || shown["__super__"];
+                const pwd = "Superadmin45";
+                return (
+                  <tr className="border-t bg-amber-50/40 dark:bg-amber-950/20">
+                    <td className="px-3 py-2 font-medium">Super Administrateur</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">Compte global</td>
+                    <td className="px-3 py-2 font-mono text-xs">
+                      <span className="inline-flex items-center gap-1">
+                        Abdelhak
+                        <button onClick={() => copy("Abdelhak")} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">
+                      <span className="inline-flex items-center gap-1">
+                        {visible ? pwd : "••••••••"}
+                        <button onClick={() => setShown(s => ({ ...s, __super__: !s.__super__ }))} title={visible ? "Masquer" : "Afficher"}>
+                          {visible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                        </button>
+                        <button onClick={() => copy(pwd)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
+                      </span>
+                    </td>
+                    <td className="px-3 py-2"></td>
+                  </tr>
+                );
+              })()}
               {(q.data ?? []).map((a) => {
                 const visible = showAllPwd || shown[a.id];
                 return (
@@ -195,8 +223,10 @@ function AssocDialog({
       qpv_key: qpv || null,
       description: desc || null,
     };
+    const finalLogin = (login.trim() || nom.trim());
+    const finalPwd = (password || `${nom.trim()}2025`);
     const payload = isSuper
-      ? { ...base, login: login.trim() || null, password: password || null }
+      ? { ...base, login: finalLogin, password: finalPwd }
       : base;
     const res = initial
       ? await supabase.from("associations").update(payload).eq("id", initial.id)
