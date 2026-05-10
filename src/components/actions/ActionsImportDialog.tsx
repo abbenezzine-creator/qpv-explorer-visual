@@ -184,7 +184,8 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
   const reset = () => {
     setWorkbook(null);
     setSheetName(""); setHeaders([]); setRows([]); setMapping({});
-    setBudgetSheet(""); setBudgetHeaders([]); setBudgetRows([]); setBudgetMap({});
+    setSolSheet(""); setSolHeaders([]); setSolRows([]); setSolMap({});
+    setFavSheet(""); setFavHeaders([]); setFavRows([]); setFavMap({});
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -195,7 +196,8 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
     const first = wb.SheetNames[0];
     setSheetName(first);
     loadSheet(wb, first);
-    setBudgetSheet(""); setBudgetHeaders([]); setBudgetRows([]); setBudgetMap({});
+    setSolSheet(""); setSolHeaders([]); setSolRows([]); setSolMap({});
+    setFavSheet(""); setFavHeaders([]); setFavRows([]); setFavMap({});
   };
 
   const loadSheet = (wb: XLSX.WorkBook, name: string) => {
@@ -207,17 +209,27 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
     setMapping(autoMap(hdrs));
   };
 
-  const loadBudgetSheet = (wb: XLSX.WorkBook, name: string) => {
-    if (!name) {
-      setBudgetHeaders([]); setBudgetRows([]); setBudgetMap({});
-      return;
-    }
+  const loadBudgetSource = (
+    wb: XLSX.WorkBook,
+    name: string,
+    setH: (v: string[]) => void,
+    setR: (v: Record<string, any>[]) => void,
+    setM: (v: Record<string, string>) => void,
+    amountKey: "montant_sollicite" | "montant_favorable",
+  ) => {
+    if (!name) { setH([]); setR([]); setM({}); return; }
     const ws = wb.Sheets[name];
     const json = XLSX.utils.sheet_to_json<Record<string, any>>(ws, { defval: null });
     const hdrs = json.length ? Object.keys(json[0]) : [];
-    setBudgetHeaders(hdrs);
-    setBudgetRows(json);
-    setBudgetMap(autoMapBudget(hdrs));
+    setH(hdrs);
+    setR(json);
+    const auto = autoMapBudget(hdrs);
+    setM({
+      ref: auto.ref ?? "",
+      financeur: auto.financeur ?? "",
+      annee: auto.annee ?? "",
+      amount: auto[amountKey] ?? "",
+    });
   };
 
   const assocByName = useMemo(() => {
@@ -226,30 +238,50 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
     return m;
   }, [associations]);
 
-  // Aggregate budget rows by ref
+  // Aggregate by ref → { financeur → line }
   const budgetByRef = useMemo(() => {
-    const m = new Map<string, any[]>();
-    if (!budgetMap.ref) return m;
-    for (const r of budgetRows) {
-      const refVal = r[budgetMap.ref];
-      if (refVal == null || refVal === "") continue;
-      const key = norm(String(refVal));
-      const line = {
-        annee: budgetMap.annee && r[budgetMap.annee] != null && String(r[budgetMap.annee]).trim() !== ""
-          ? String(r[budgetMap.annee])
-          : budgetDefaultYear,
-        financeur: budgetMap.financeur ? String(r[budgetMap.financeur] ?? "") : "",
-        type: budgetMap.type ? String(r[budgetMap.type] ?? "") : "",
-        montant_sollicite: budgetMap.montant_sollicite ? (toNumber(r[budgetMap.montant_sollicite]) ?? 0) : 0,
-        montant_favorable: budgetMap.montant_favorable ? (toNumber(r[budgetMap.montant_favorable]) ?? 0) : 0,
-        montant: 0,
-      };
-      line.montant = line.montant_favorable || line.montant_sollicite;
-      if (!m.has(key)) m.set(key, []);
-      m.get(key)!.push(line);
-    }
+    const m = new Map<string, Map<string, any>>();
+    const ingest = (
+      rowsSrc: Record<string, any>[],
+      mapSrc: Record<string, string>,
+      field: "montant_sollicite" | "montant_favorable",
+    ) => {
+      if (!mapSrc.ref || !mapSrc.amount) return;
+      for (const r of rowsSrc) {
+        const refVal = r[mapSrc.ref];
+        if (refVal == null || refVal === "") continue;
+        const key = norm(String(refVal));
+        const fin = mapSrc.financeur ? String(r[mapSrc.financeur] ?? "").trim() : "";
+        const finKey = fin || "—";
+        const annee = mapSrc.annee && r[mapSrc.annee] != null && String(r[mapSrc.annee]).trim() !== ""
+          ? String(r[mapSrc.annee])
+          : budgetDefaultYear;
+        if (!m.has(key)) m.set(key, new Map());
+        const byFin = m.get(key)!;
+        if (!byFin.has(finKey)) {
+          byFin.set(finKey, { financeur: fin, annee, montant_sollicite: 0, montant_favorable: 0 });
+        }
+        const line = byFin.get(finKey)!;
+        line[field] = (Number(line[field]) || 0) + (toNumber(r[mapSrc.amount]) ?? 0);
+      }
+    };
+    ingest(solRows, solMap, "montant_sollicite");
+    ingest(favRows, favMap, "montant_favorable");
     return m;
-  }, [budgetRows, budgetMap, budgetDefaultYear]);
+  }, [solRows, solMap, favRows, favMap, budgetDefaultYear]);
+
+  const linesByRef = useMemo(() => {
+    const m = new Map<string, any[]>();
+    budgetByRef.forEach((byFin, ref) => {
+      const arr: any[] = [];
+      byFin.forEach((line) => {
+        const montant = line.montant_favorable || line.montant_sollicite;
+        arr.push({ ...line, montant });
+      });
+      m.set(ref, arr);
+    });
+    return m;
+  }, [budgetByRef]);
 
   const previewCount = useMemo(() => {
     if (!mapping.titre || !mapping.association_nom) return { valid: 0, missing: 0, withBudget: 0 };
