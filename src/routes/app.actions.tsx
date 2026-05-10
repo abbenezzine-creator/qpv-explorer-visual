@@ -54,6 +54,8 @@ export const Route = createFileRoute("/app/actions")({
 });
 
 const ALL = "__all__";
+const QPV_ORLEANS = "__qpv_orleans__";
+const ORLEANS_QPV_KEYS = ["argonne", "lasource", "dauphine", "blossieres"];
 
 function ActionsListPage() {
   const [mounted, setMounted] = useState(false);
@@ -95,10 +97,20 @@ function ActionsListPage() {
     return out;
   }, [associations]);
 
+  const assocById = useMemo(() => {
+    const m = new Map<string, Association>();
+    associations.forEach((a) => m.set(a.id, a));
+    return m;
+  }, [associations]);
+
   const filtered = useMemo(() => {
     const list = actionsQ.data ?? [];
     return list.filter((a) => {
-      if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
+      if (fAssoc === QPV_ORLEANS) {
+        const assoc = assocById.get(a.assoc_id);
+        const key = assoc?.qpv_key ?? a.qpv_key;
+        if (!key || !ORLEANS_QPV_KEYS.includes(key)) return false;
+      } else if (fAssoc !== ALL && a.assoc_id !== fAssoc) return false;
       if (fQpv !== ALL && a.qpv_key !== fQpv) return false;
       if (fThematique !== ALL && a.thematique !== fThematique) return false;
       if (fStatut !== ALL && a.statut !== fStatut) return false;
@@ -109,7 +121,7 @@ function ActionsListPage() {
       }
       return true;
     });
-  }, [actionsQ.data, fAssoc, fQpv, fThematique, fStatut, q]);
+  }, [actionsQ.data, fAssoc, fQpv, fThematique, fStatut, q, assocById]);
 
   const refresh = () => actionsQ.refetch();
   const canCreate = canCreateAny(user);
@@ -149,6 +161,7 @@ function ActionsListPage() {
           <SelectTrigger><SelectValue placeholder="Association" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Toutes associations</SelectItem>
+            <SelectItem value={QPV_ORLEANS}>QPV d'Orléans (Argonne, La Source, Dauphine, Les Blossières)</SelectItem>
             {assocOptions.map((a) => <SelectItem key={a.id} value={a.id}>{a.nom}</SelectItem>)}
           </SelectContent>
         </Select>
