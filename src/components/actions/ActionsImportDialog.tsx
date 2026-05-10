@@ -165,11 +165,18 @@ export function ActionsImportDialog({ open, onOpenChange, associations, onImport
   const [rows, setRows] = useState<Record<string, any>[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
 
-  // Budget sheet (optional)
-  const [budgetSheet, setBudgetSheet] = useState<string>("");
-  const [budgetHeaders, setBudgetHeaders] = useState<string[]>([]);
-  const [budgetRows, setBudgetRows] = useState<Record<string, any>[]>([]);
-  const [budgetMap, setBudgetMap] = useState<Record<string, string>>({});
+  // Budget — Sollicité source
+  const [solSheet, setSolSheet] = useState<string>("");
+  const [solHeaders, setSolHeaders] = useState<string[]>([]);
+  const [solRows, setSolRows] = useState<Record<string, any>[]>([]);
+  const [solMap, setSolMap] = useState<Record<string, string>>({});
+
+  // Budget — Favorable source
+  const [favSheet, setFavSheet] = useState<string>("");
+  const [favHeaders, setFavHeaders] = useState<string[]>([]);
+  const [favRows, setFavRows] = useState<Record<string, any>[]>([]);
+  const [favMap, setFavMap] = useState<Record<string, string>>({});
+
   const [budgetDefaultYear, setBudgetDefaultYear] = useState<string>(String(new Date().getFullYear()));
 
   const [importing, setImporting] = useState(false);
