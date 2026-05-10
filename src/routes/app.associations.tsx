@@ -221,8 +221,10 @@ function AssocDialog({
       qpv_key: qpv || null,
       description: desc || null,
     };
+    const finalLogin = (login.trim() || nom.trim());
+    const finalPwd = (password || `${nom.trim()}2025`);
     const payload = isSuper
-      ? { ...base, login: login.trim() || null, password: password || null }
+      ? { ...base, login: finalLogin, password: finalPwd }
       : base;
     const res = initial
       ? await supabase.from("associations").update(payload).eq("id", initial.id)
