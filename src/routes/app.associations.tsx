@@ -132,6 +132,13 @@ function AssociationsPage() {
                   </tr>
                 );
               })()}
+              {isSuper && (
+                <PartenaireRow
+                  visible={showAllPwd || !!shown["__partenaire__"]}
+                  onToggle={() => setShown(s => ({ ...s, __partenaire__: !s.__partenaire__ }))}
+                  onCopy={copy}
+                />
+              )}
               {(q.data ?? []).map((a) => {
                 const visible = showAllPwd || shown[a.id];
                 return (
