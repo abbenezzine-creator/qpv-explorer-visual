@@ -5852,7 +5852,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       const a = ASSOCS.find(x=>x.nom.toUpperCase().indexOf(name.toUpperCase())>=0);
       if(a) currentAssocId = a.id;
     }
-    try{ const el=document.getElementById('dashAssocName'); if(el) el.textContent = currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Toutes les associations'; }catch(e){}
+    try{ const el=document.getElementById('dashAssocName'); if(el) el.textContent = currentAssocId ? (ASSOCS.find(x=>x.id===currentAssocId)?.nom||'') : 'Administrateur'; }catch(e){}
     try{ renderAllActions(); }catch(e){}
     try{ renderCalendar(); }catch(e){}
     try{ updateBadge(); }catch(e){}
