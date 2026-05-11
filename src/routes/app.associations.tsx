@@ -564,3 +564,54 @@ function ImportButton({ existing, onDone }: { existing: Row[]; onDone: () => voi
     </>
   );
 }
+
+function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onToggle: () => void; onCopy: (s: string) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [info, setInfo] = useState<{ email: string; password: string } | null>(null);
+
+  const provision = async () => {
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("setup-partenaire");
+      if (error) throw error;
+      if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+      const d = data as { email: string; password: string; created: boolean };
+      setInfo({ email: d.email, password: d.password });
+      toast.success(d.created ? "Compte Partenaire créé" : "Compte Partenaire actualisé");
+    } catch (e) {
+      toast.error("Erreur : " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const email = info?.email ?? "partenaire@associoboard.app";
+  const pwd = info?.password ?? "Partenaire2025";
+
+  return (
+    <tr className="border-t bg-sky-50/40 dark:bg-sky-950/20">
+      <td className="px-3 py-2 font-medium">Partenaire</td>
+      <td className="px-3 py-2 text-xs text-muted-foreground" colSpan={4}>Compte global · lecture seule</td>
+      <td className="px-3 py-2 font-mono text-xs">
+        <span className="inline-flex items-center gap-1">
+          {email}
+          <button onClick={() => onCopy(email)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
+        </span>
+      </td>
+      <td className="px-3 py-2 font-mono text-xs">
+        <span className="inline-flex items-center gap-1">
+          {visible ? pwd : "••••••••"}
+          <button onClick={onToggle} title={visible ? "Masquer" : "Afficher"}>
+            {visible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+          </button>
+          <button onClick={() => onCopy(pwd)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
+        </span>
+      </td>
+      <td className="px-3 py-2 text-right">
+        <Button size="sm" variant="outline" onClick={provision} disabled={busy}>
+          {busy ? "…" : info ? "Réinitialiser" : "Activer"}
+        </Button>
+      </td>
+    </tr>
+  );
+}
