@@ -106,6 +106,7 @@ export function AppSidebar() {
     superadmin: "Super Admin",
     admin_asso: "Admin Asso",
     agent: "Agent",
+    partenaire: "Partenaire",
     viewer: "Lecteur",
   };
 

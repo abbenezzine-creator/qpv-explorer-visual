@@ -1,7 +1,7 @@
 // Auth helpers backed by Supabase. Keeps the AbUser shape used across the app.
 import { supabase } from "@/integrations/supabase/client";
 
-export type Role = "superadmin" | "admin_asso" | "agent" | "viewer";
+export type Role = "superadmin" | "admin_asso" | "agent" | "viewer" | "partenaire";
 
 export type AbUser = {
   id: string;
@@ -42,7 +42,7 @@ export function getUser(): AbUser | null {
   return null;
 }
 
-const ROLE_PRIORITY: Role[] = ["superadmin", "admin_asso", "agent", "viewer"];
+const ROLE_PRIORITY: Role[] = ["superadmin", "admin_asso", "agent", "partenaire", "viewer"];
 
 async function loadProfile(userId: string, email: string): Promise<AbUser> {
   const [profileRes, rolesRes] = await Promise.all([
