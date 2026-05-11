@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_alerts: {
+        Row: {
+          assoc_id: string | null
+          created_at: string
+          id: string
+          login_attempted: string | null
+          message: string | null
+          resolved: boolean
+          resolved_at: string | null
+          type: string
+        }
+        Insert: {
+          assoc_id?: string | null
+          created_at?: string
+          id?: string
+          login_attempted?: string | null
+          message?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          type?: string
+        }
+        Update: {
+          assoc_id?: string | null
+          created_at?: string
+          id?: string
+          login_attempted?: string | null
+          message?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_alerts_assoc_id_fkey"
+            columns: ["assoc_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       actions: {
         Row: {
           annee: number | null
@@ -145,11 +186,14 @@ export type Database = {
       associations: {
         Row: {
           adresse: string | null
+          auth_email: string | null
+          autorisation_modif: boolean
           code_postal: string | null
           commune: string | null
           contact_nom: string | null
           created_at: string
           description: string | null
+          email_contact: string | null
           id: string
           login: string | null
           nom: string
@@ -161,11 +205,14 @@ export type Database = {
         }
         Insert: {
           adresse?: string | null
+          auth_email?: string | null
+          autorisation_modif?: boolean
           code_postal?: string | null
           commune?: string | null
           contact_nom?: string | null
           created_at?: string
           description?: string | null
+          email_contact?: string | null
           id?: string
           login?: string | null
           nom: string
@@ -177,11 +224,14 @@ export type Database = {
         }
         Update: {
           adresse?: string | null
+          auth_email?: string | null
+          autorisation_modif?: boolean
           code_postal?: string | null
           commune?: string | null
           contact_nom?: string | null
           created_at?: string
           description?: string | null
+          email_contact?: string | null
           id?: string
           login?: string | null
           nom?: string
@@ -559,6 +609,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      resolve_login_to_email: { Args: { _login: string }; Returns: string }
       user_assoc_id: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
