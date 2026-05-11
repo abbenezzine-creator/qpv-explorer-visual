@@ -43,6 +43,25 @@ function AssociationsPage() {
     return (data ?? []) as Row[];
   }});
 
+  // Alertes "perte d'accès" (uniquement visibles par superadmin via RLS)
+  const alertsQ = useQuery({
+    queryKey: ["access-alerts", "unresolved"],
+    queryFn: async () => {
+      if (!isSuper) return [] as { id: string; assoc_id: string | null }[];
+      const { data, error } = await supabase
+        .from("access_alerts")
+        .select("id, assoc_id")
+        .eq("resolved", false);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: mounted && isSuper,
+  });
+  const alertsByAssoc = (alertsQ.data ?? []).reduce<Record<string, number>>((acc, a) => {
+    if (a.assoc_id) acc[a.assoc_id] = (acc[a.assoc_id] ?? 0) + 1;
+    return acc;
+  }, {});
+
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Row | null>(null);
 
@@ -57,6 +76,44 @@ function AssociationsPage() {
 
   const copy = (text: string) => {
     navigator.clipboard.writeText(text).then(() => toast.success("Copié"));
+  };
+
+  const toggleAutorisation = async (a: Row, checked: boolean) => {
+    const { error } = await supabase
+      .from("associations")
+      .update({ autorisation_modif: checked })
+      .eq("id", a.id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["associations-full"] });
+  };
+
+  const resendAccess = async (a: Row) => {
+    if (!a.login || !a.password) {
+      toast.error("Identifiant ou mot de passe manquant pour cette association.");
+      return;
+    }
+    const to = a.email_contact ?? "";
+    const subject = encodeURIComponent(`Vos accès AssocioBoard — ${a.nom}`);
+    const body = encodeURIComponent(
+      `Bonjour ${a.contact_nom ?? ""},\n\n` +
+      `Voici vos accès à la plateforme AssocioBoard :\n\n` +
+      `  Identifiant : ${a.login}\n` +
+      `  Mot de passe : ${a.password}\n\n` +
+      `Lien de connexion : ${window.location.origin}/login\n\n` +
+      `Cordialement,\nLe Super Administrateur`
+    );
+    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+
+    // Marque les alertes de cette assoc comme résolues
+    const { error } = await supabase
+      .from("access_alerts")
+      .update({ resolved: true, resolved_at: new Date().toISOString() })
+      .eq("assoc_id", a.id)
+      .eq("resolved", false);
+    if (!error) {
+      toast.success("Alerte clôturée");
+      qc.invalidateQueries({ queryKey: ["access-alerts", "unresolved"] });
+    }
   };
 
   return (
