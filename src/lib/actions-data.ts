@@ -177,6 +177,7 @@ export type Theme = {
 
 const ROLE_RANK: Record<Role, number> = {
   viewer: 0,
+  partenaire: 0,
   agent: 1,
   admin_asso: 2,
   superadmin: 3,
