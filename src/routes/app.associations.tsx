@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Copy, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Copy, Upload, AlertTriangle, Send } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/associations")({
@@ -42,6 +43,25 @@ function AssociationsPage() {
     return (data ?? []) as Row[];
   }});
 
+  // Alertes "perte d'accès" (uniquement visibles par superadmin via RLS)
+  const alertsQ = useQuery({
+    queryKey: ["access-alerts", "unresolved"],
+    queryFn: async () => {
+      if (!isSuper) return [] as { id: string; assoc_id: string | null }[];
+      const { data, error } = await supabase
+        .from("access_alerts")
+        .select("id, assoc_id")
+        .eq("resolved", false);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: mounted && isSuper,
+  });
+  const alertsByAssoc = (alertsQ.data ?? []).reduce<Record<string, number>>((acc, a) => {
+    if (a.assoc_id) acc[a.assoc_id] = (acc[a.assoc_id] ?? 0) + 1;
+    return acc;
+  }, {});
+
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Row | null>(null);
 
@@ -56,6 +76,44 @@ function AssociationsPage() {
 
   const copy = (text: string) => {
     navigator.clipboard.writeText(text).then(() => toast.success("Copié"));
+  };
+
+  const toggleAutorisation = async (a: Row, checked: boolean) => {
+    const { error } = await supabase
+      .from("associations")
+      .update({ autorisation_modif: checked })
+      .eq("id", a.id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["associations-full"] });
+  };
+
+  const resendAccess = async (a: Row) => {
+    if (!a.login || !a.password) {
+      toast.error("Identifiant ou mot de passe manquant pour cette association.");
+      return;
+    }
+    const to = a.email_contact ?? "";
+    const subject = encodeURIComponent(`Vos accès AssocioBoard — ${a.nom}`);
+    const body = encodeURIComponent(
+      `Bonjour ${a.contact_nom ?? ""},\n\n` +
+      `Voici vos accès à la plateforme AssocioBoard :\n\n` +
+      `  Identifiant : ${a.login}\n` +
+      `  Mot de passe : ${a.password}\n\n` +
+      `Lien de connexion : ${window.location.origin}/login\n\n` +
+      `Cordialement,\nLe Super Administrateur`
+    );
+    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+
+    // Marque les alertes de cette assoc comme résolues
+    const { error } = await supabase
+      .from("access_alerts")
+      .update({ resolved: true, resolved_at: new Date().toISOString() })
+      .eq("assoc_id", a.id)
+      .eq("resolved", false);
+    if (!error) {
+      toast.success("Alerte clôturée");
+      qc.invalidateQueries({ queryKey: ["access-alerts", "unresolved"] });
+    }
   };
 
   return (
@@ -95,6 +153,7 @@ function AssociationsPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
+                {isSuper && <th className="px-2 py-2 w-8" title="Alertes accès">!</th>}
                 <th className="px-3 py-2">Nom</th>
                 <th className="px-3 py-2">Contact</th>
                 <th className="px-3 py-2">Adresse</th>
@@ -102,6 +161,7 @@ function AssociationsPage() {
                 <th className="px-3 py-2">QPV</th>
                 {isSuper && <th className="px-3 py-2">Identifiant</th>}
                 {isSuper && <th className="px-3 py-2">Mot de passe</th>}
+                {isSuper && <th className="px-3 py-2 text-center" title="Autoriser l'utilisateur à modifier ses actions">Modif. autorisée</th>}
                 <th className="px-3 py-2 text-right">Actions</th>
               </tr>
             </thead>
@@ -111,12 +171,13 @@ function AssociationsPage() {
                 const pwd = "Superadmin45";
                 return (
                   <tr className="border-t bg-amber-50/40 dark:bg-amber-950/20">
+                    <td className="px-2 py-2"></td>
                     <td className="px-3 py-2 font-medium">Super Administrateur</td>
                     <td className="px-3 py-2 text-xs text-muted-foreground" colSpan={4}>Compte global</td>
                     <td className="px-3 py-2 font-mono text-xs">
                       <span className="inline-flex items-center gap-1">
-                        Abdelhak
-                        <button onClick={() => copy("Abdelhak")} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
+                        Superadmin
+                        <button onClick={() => copy("Superadmin")} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
                       </span>
                     </td>
                     <td className="px-3 py-2 font-mono text-xs">
@@ -128,6 +189,7 @@ function AssociationsPage() {
                         <button onClick={() => copy(pwd)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
                       </span>
                     </td>
+                    <td className="px-3 py-2"></td>
                     <td className="px-3 py-2"></td>
                   </tr>
                 );
@@ -141,14 +203,25 @@ function AssociationsPage() {
               )}
               {(q.data ?? []).map((a) => {
                 const visible = showAllPwd || shown[a.id];
+                const alertCount = alertsByAssoc[a.id] ?? 0;
                 return (
-                  <tr key={a.id} className="border-t">
+                  <tr key={a.id} className={`border-t ${alertCount > 0 ? "bg-destructive/5" : ""}`}>
+                    {isSuper && (
+                      <td className="px-2 py-2 text-center">
+                        {alertCount > 0 ? (
+                          <span title={`${alertCount} demande(s) d'accès en attente`}>
+                            <AlertTriangle className="h-4 w-4 text-destructive inline animate-pulse" />
+                          </span>
+                        ) : null}
+                      </td>
+                    )}
                     <td className="px-3 py-2 font-medium">{a.nom}</td>
                     <td className="px-3 py-2 text-xs">
                       {a.contact_nom ? (
                         <div>
                           <div>{a.contact_nom}</div>
                           {a.statut_contact && <div className="text-muted-foreground">{a.statut_contact}</div>}
+                          {a.email_contact && <div className="text-muted-foreground">{a.email_contact}</div>}
                         </div>
                       ) : <span className="text-muted-foreground">—</span>}
                     </td>
@@ -182,10 +255,25 @@ function AssociationsPage() {
                         ) : <span className="text-muted-foreground">—</span>}
                       </td>
                     )}
+                    {isSuper && (
+                      <td className="px-3 py-2 text-center">
+                        <Checkbox
+                          checked={!!a.autorisation_modif}
+                          onCheckedChange={(v) => toggleAutorisation(a, !!v)}
+                        />
+                      </td>
+                    )}
                     <td className="px-3 py-2">
                       <div className="flex justify-end gap-1">
                         {isSuper && (
                           <>
+                            <Button
+                              size="sm" variant="outline"
+                              onClick={() => resendAccess(a)}
+                              title="Ouvre Outlook avec l'identifiant et le mot de passe pré-remplis"
+                            >
+                              <Send className="h-3.5 w-3.5 mr-1" /> Renvoyer accès
+                            </Button>
                             <Button size="sm" variant="ghost" onClick={() => { setEditing(a); setOpen(true); }}>
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -212,6 +300,7 @@ function AssociationsPage() {
         onSaved={() => {
           qc.invalidateQueries({ queryKey: ["associations-full"] });
           qc.invalidateQueries({ queryKey: ["associations"] });
+          qc.invalidateQueries({ queryKey: ["access-alerts", "unresolved"] });
         }}
       />
     </div>
@@ -232,6 +321,7 @@ function AssocDialog({
   const [adresse, setAdresse] = useState("");
   const [codePostal, setCodePostal] = useState("");
   const [ville, setVille] = useState("");
+  const [emailContact, setEmailContact] = useState("");
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -248,6 +338,7 @@ function AssocDialog({
     setAdresse(initial?.adresse ?? "");
     setCodePostal(initial?.code_postal ?? "");
     setVille(initial?.ville ?? "");
+    setEmailContact(initial?.email_contact ?? "");
     setLogin(initial?.login ?? "");
     setPassword(initial?.password ?? "");
     setShowPwd(false);
@@ -266,6 +357,7 @@ function AssocDialog({
       adresse: adresse || null,
       code_postal: codePostal || null,
       ville: ville || null,
+      email_contact: emailContact.trim() || null,
     };
     const finalLogin = (login.trim() || nom.trim());
     const finalPwd = (password || `${nom.trim()}2025`);
@@ -273,10 +365,23 @@ function AssocDialog({
       ? { ...base, login: finalLogin, password: finalPwd }
       : base;
     const res = initial
-      ? await supabase.from("associations").update(payload).eq("id", initial.id)
-      : await supabase.from("associations").insert(payload);
+      ? await supabase.from("associations").update(payload).eq("id", initial.id).select("id").maybeSingle()
+      : await supabase.from("associations").insert(payload).select("id").maybeSingle();
+    if (res.error) {
+      setSaving(false);
+      return toast.error(res.error.message);
+    }
+    const assocId = (res.data as { id: string } | null)?.id ?? initial?.id;
+    // Provisionne / synchronise le compte Supabase Auth associé
+    if (isSuper && assocId) {
+      const { error: provErr } = await supabase.functions.invoke("provision-assoc-account", {
+        body: { assoc_id: assocId },
+      });
+      if (provErr) {
+        toast.warning("Association enregistrée mais le compte de connexion n'a pas pu être provisionné : " + provErr.message);
+      }
+    }
     setSaving(false);
-    if (res.error) return toast.error(res.error.message);
     toast.success(initial ? "Mise à jour" : "Créée");
     onOpenChange(false);
     onSaved();
@@ -303,6 +408,10 @@ function AssocDialog({
               <Label>Nom et prénom du contact</Label>
               <Input value={contactNom} onChange={(e) => setContactNom(e.target.value)} />
             </div>
+          </div>
+          <div>
+            <Label>Email du contact (pour le bouton "Renvoyer accès")</Label>
+            <Input type="email" value={emailContact} onChange={(e) => setEmailContact(e.target.value)} placeholder="contact@asso.fr" />
           </div>
           <div>
             <Label>Adresse</Label>
