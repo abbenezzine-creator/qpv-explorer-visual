@@ -4053,7 +4053,7 @@ function updateAllSelects(){
   popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
   popSel('qActionSel',filteredActions(),'id','titre','— Sélectionner —');
 }
-function switchAssociation(val){currentAssocId=val?parseInt(val):null;const a=ASSOCS.find(x=>x.id===currentAssocId);document.getElementById('dashAssocName').textContent=a?a.nom:'Toutes les associations';renderDashboard();renderCalendar();renderAllActions();updateBadge();}
+function switchAssociation(val){currentAssocId=val?parseInt(val):null;const a=ASSOCS.find(x=>x.id===currentAssocId);document.getElementById('dashAssocName').textContent=a?a.nom:'Administrateur';renderDashboard();renderCalendar();renderAllActions();updateBadge();}
 
 // ===================================================================
 // QPV DIAGNOSTIC DATA + RENDERING
