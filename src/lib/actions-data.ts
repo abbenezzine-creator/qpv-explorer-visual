@@ -127,6 +127,9 @@ export type Association = {
   adresse?: string | null;
   code_postal?: string | null;
   ville?: string | null;
+  autorisation_modif?: boolean | null;
+  email_contact?: string | null;
+  auth_email?: string | null;
 };
 
 export function defaultActionStartDate(annee: number | string | null | undefined): string | null {
