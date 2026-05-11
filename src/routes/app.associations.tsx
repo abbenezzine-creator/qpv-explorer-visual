@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Copy, Upload, AlertTriangle, Send, KeyRound } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Copy, Upload, AlertTriangle, Send } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
