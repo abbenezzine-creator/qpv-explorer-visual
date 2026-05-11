@@ -153,6 +153,7 @@ function AssociationsPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
+                {isSuper && <th className="px-2 py-2 w-8" title="Alertes accès">!</th>}
                 <th className="px-3 py-2">Nom</th>
                 <th className="px-3 py-2">Contact</th>
                 <th className="px-3 py-2">Adresse</th>
@@ -160,6 +161,7 @@ function AssociationsPage() {
                 <th className="px-3 py-2">QPV</th>
                 {isSuper && <th className="px-3 py-2">Identifiant</th>}
                 {isSuper && <th className="px-3 py-2">Mot de passe</th>}
+                {isSuper && <th className="px-3 py-2 text-center" title="Autoriser l'utilisateur à modifier ses actions">Modif. autorisée</th>}
                 <th className="px-3 py-2 text-right">Actions</th>
               </tr>
             </thead>
@@ -169,12 +171,13 @@ function AssociationsPage() {
                 const pwd = "Superadmin45";
                 return (
                   <tr className="border-t bg-amber-50/40 dark:bg-amber-950/20">
+                    <td className="px-2 py-2"></td>
                     <td className="px-3 py-2 font-medium">Super Administrateur</td>
                     <td className="px-3 py-2 text-xs text-muted-foreground" colSpan={4}>Compte global</td>
                     <td className="px-3 py-2 font-mono text-xs">
                       <span className="inline-flex items-center gap-1">
-                        Abdelhak
-                        <button onClick={() => copy("Abdelhak")} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
+                        Superadmin
+                        <button onClick={() => copy("Superadmin")} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
                       </span>
                     </td>
                     <td className="px-3 py-2 font-mono text-xs">
@@ -186,6 +189,7 @@ function AssociationsPage() {
                         <button onClick={() => copy(pwd)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
                       </span>
                     </td>
+                    <td className="px-3 py-2"></td>
                     <td className="px-3 py-2"></td>
                   </tr>
                 );
@@ -199,14 +203,25 @@ function AssociationsPage() {
               )}
               {(q.data ?? []).map((a) => {
                 const visible = showAllPwd || shown[a.id];
+                const alertCount = alertsByAssoc[a.id] ?? 0;
                 return (
-                  <tr key={a.id} className="border-t">
+                  <tr key={a.id} className={`border-t ${alertCount > 0 ? "bg-destructive/5" : ""}`}>
+                    {isSuper && (
+                      <td className="px-2 py-2 text-center">
+                        {alertCount > 0 ? (
+                          <span title={`${alertCount} demande(s) d'accès en attente`}>
+                            <AlertTriangle className="h-4 w-4 text-destructive inline animate-pulse" />
+                          </span>
+                        ) : null}
+                      </td>
+                    )}
                     <td className="px-3 py-2 font-medium">{a.nom}</td>
                     <td className="px-3 py-2 text-xs">
                       {a.contact_nom ? (
                         <div>
                           <div>{a.contact_nom}</div>
                           {a.statut_contact && <div className="text-muted-foreground">{a.statut_contact}</div>}
+                          {a.email_contact && <div className="text-muted-foreground">{a.email_contact}</div>}
                         </div>
                       ) : <span className="text-muted-foreground">—</span>}
                     </td>
@@ -240,10 +255,25 @@ function AssociationsPage() {
                         ) : <span className="text-muted-foreground">—</span>}
                       </td>
                     )}
+                    {isSuper && (
+                      <td className="px-3 py-2 text-center">
+                        <Checkbox
+                          checked={!!a.autorisation_modif}
+                          onCheckedChange={(v) => toggleAutorisation(a, !!v)}
+                        />
+                      </td>
+                    )}
                     <td className="px-3 py-2">
                       <div className="flex justify-end gap-1">
                         {isSuper && (
                           <>
+                            <Button
+                              size="sm" variant="outline"
+                              onClick={() => resendAccess(a)}
+                              title="Ouvre Outlook avec l'identifiant et le mot de passe pré-remplis"
+                            >
+                              <Send className="h-3.5 w-3.5 mr-1" /> Renvoyer accès
+                            </Button>
                             <Button size="sm" variant="ghost" onClick={() => { setEditing(a); setOpen(true); }}>
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -270,6 +300,7 @@ function AssociationsPage() {
         onSaved={() => {
           qc.invalidateQueries({ queryKey: ["associations-full"] });
           qc.invalidateQueries({ queryKey: ["associations"] });
+          qc.invalidateQueries({ queryKey: ["access-alerts", "unresolved"] });
         }}
       />
     </div>
