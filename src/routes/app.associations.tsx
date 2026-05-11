@@ -321,6 +321,7 @@ function AssocDialog({
   const [adresse, setAdresse] = useState("");
   const [codePostal, setCodePostal] = useState("");
   const [ville, setVille] = useState("");
+  const [emailContact, setEmailContact] = useState("");
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -337,6 +338,7 @@ function AssocDialog({
     setAdresse(initial?.adresse ?? "");
     setCodePostal(initial?.code_postal ?? "");
     setVille(initial?.ville ?? "");
+    setEmailContact(initial?.email_contact ?? "");
     setLogin(initial?.login ?? "");
     setPassword(initial?.password ?? "");
     setShowPwd(false);
@@ -355,6 +357,7 @@ function AssocDialog({
       adresse: adresse || null,
       code_postal: codePostal || null,
       ville: ville || null,
+      email_contact: emailContact.trim() || null,
     };
     const finalLogin = (login.trim() || nom.trim());
     const finalPwd = (password || `${nom.trim()}2025`);
@@ -362,10 +365,23 @@ function AssocDialog({
       ? { ...base, login: finalLogin, password: finalPwd }
       : base;
     const res = initial
-      ? await supabase.from("associations").update(payload).eq("id", initial.id)
-      : await supabase.from("associations").insert(payload);
+      ? await supabase.from("associations").update(payload).eq("id", initial.id).select("id").maybeSingle()
+      : await supabase.from("associations").insert(payload).select("id").maybeSingle();
+    if (res.error) {
+      setSaving(false);
+      return toast.error(res.error.message);
+    }
+    const assocId = (res.data as { id: string } | null)?.id ?? initial?.id;
+    // Provisionne / synchronise le compte Supabase Auth associé
+    if (isSuper && assocId) {
+      const { error: provErr } = await supabase.functions.invoke("provision-assoc-account", {
+        body: { assoc_id: assocId },
+      });
+      if (provErr) {
+        toast.warning("Association enregistrée mais le compte de connexion n'a pas pu être provisionné : " + provErr.message);
+      }
+    }
     setSaving(false);
-    if (res.error) return toast.error(res.error.message);
     toast.success(initial ? "Mise à jour" : "Créée");
     onOpenChange(false);
     onSaved();
