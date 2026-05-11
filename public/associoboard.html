@@ -1625,7 +1625,7 @@ function setupUserCtx(){
   document.querySelectorAll('.nav-admin-only').forEach(el=>el.classList.toggle('show',isAdmin));
   document.getElementById('assocSelWrap').style.display=isAdmin?'inline-flex':'none';
   if(!isAdmin){currentAssocId=u.assocId;document.getElementById('dashAssocName').textContent=getAssocName(u.assocId);}
-  else{currentAssocId=null;document.getElementById('dashAssocName').textContent='Toutes les associations';}
+  else{currentAssocId=null;document.getElementById('dashAssocName').textContent='Administrateur';}
 }
 
 // ========== NAV ==========
