@@ -410,6 +410,10 @@ function AssocDialog({
             </div>
           </div>
           <div>
+            <Label>Email du contact (pour le bouton "Renvoyer accès")</Label>
+            <Input type="email" value={emailContact} onChange={(e) => setEmailContact(e.target.value)} placeholder="contact@asso.fr" />
+          </div>
+          <div>
             <Label>Adresse</Label>
             <Textarea rows={2} value={adresse} onChange={(e) => setAdresse(e.target.value)} />
           </div>
