@@ -249,8 +249,38 @@ function Tabs({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
   );
 }
 
+/* ============== AGGREGATION HELPERS ============== */
+function isAvgUnit(u: string): boolean {
+  if (u.includes("%") || u === "€" || u === "/100") return true;
+  if (u.startsWith("/") && (u.includes("hab") || u.includes("logts"))) return true;
+  return false;
+}
+function aggregateValueAt(ind: Indicator, year: number): number | null {
+  const vals: number[] = [];
+  for (const q of QPVS) {
+    const v = ind.series[q.key][year];
+    if (v !== null && v !== undefined) vals.push(v);
+  }
+  if (vals.length === 0) return null;
+  if (isAvgUnit(ind.unit)) return vals.reduce((s, v) => s + v, 0) / vals.length;
+  return vals.reduce((s, v) => s + v, 0);
+}
+function aggregateLatestValue(ind: Indicator, year: number): { year: number; value: number } | null {
+  for (let y = year; y >= 2014; y--) {
+    const v = aggregateValueAt(ind, y);
+    if (v !== null) return { year: y, value: Math.round(v * 100) / 100 };
+  }
+  return null;
+}
+function scopedLatestValue(ind: Indicator, scope: QPVScope, year: number) {
+  return scope === "all" ? aggregateLatestValue(ind, year) : latestValue(ind, scope, year);
+}
+function scopedValueAt(ind: Indicator, scope: QPVScope, year: number) {
+  return scope === "all" ? aggregateValueAt(ind, year) : valueAt(ind, scope, year);
+}
+
 /* ======================== SYNTHÈSE ======================== */
-function SynthesePane({ qpv, year }: { qpv: QPVKey; year: number }) {
+function SynthesePane({ scope, year }: { scope: QPVScope; year: number }) {
   // KPI clés transverses
   const kpis: { ind: Indicator }[] = [
     { ind: INDICATORS.find((i) => i.id === "pop")! },
@@ -263,7 +293,7 @@ function SynthesePane({ qpv, year }: { qpv: QPVKey; year: number }) {
     <div className="space-y-8">
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map(({ ind }) => (
-          <IndicatorCard key={ind.id} ind={ind} qpv={qpv} year={year} />
+          <IndicatorCard key={ind.id} ind={ind} scope={scope} year={year} />
         ))}
       </section>
 
