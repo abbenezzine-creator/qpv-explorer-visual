@@ -13,7 +13,7 @@ import {
   indicatorsByAxis, latestValue, valueAt,
 } from "@/data/qpv";
 import { fetchCitizenSurvey } from "@/lib/citizen-survey.functions";
-import { QPVSelector } from "@/components/dashboard/QPVSelector";
+import { QPVSelector, type QPVScope } from "@/components/dashboard/QPVSelector";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { cn } from "@/lib/utils";
 import {
@@ -56,11 +56,12 @@ export const Route = createFileRoute("/")({
 type Tab = AxisKey | "synthese" | "citoyen";
 
 function DashboardPage() {
-  const [selected, setSelected] = useState<QPVKey>("argonne");
+  const [selected, setSelected] = useState<QPVScope>("argonne");
   const [tab, setTab] = useState<Tab>("synthese");
   const [year, setYear] = useState<number>(2024);
 
-  const quartier = QPVS.find((q) => q.key === selected)!;
+  const isAll = selected === "all";
+  const quartier = isAll ? null : QPVS.find((q) => q.key === selected)!;
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,10 +73,16 @@ function DashboardPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Quartier sélectionné · {quartier.commune}
+                {isAll ? "Vue agrégée · Orléans Métropole" : `Quartier sélectionné · ${quartier!.commune}`}
               </div>
-              <h2 className="text-2xl font-semibold">{quartier.name}</h2>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{quartier.description}</p>
+              <h2 className="text-2xl font-semibold">
+                {isAll ? "Les QPV d'Orléans" : quartier!.name}
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                {isAll
+                  ? "Agrégation des 4 QPV (Argonne, La Source, Dauphine, Les Blossières) — totaux pour les volumes, moyennes pour les taux et indicateurs en %."
+                  : quartier!.description}
+              </p>
             </div>
             <YearSlider year={year} onChange={setYear} />
           </div>
@@ -87,10 +94,10 @@ function DashboardPage() {
         <Tabs tab={tab} onChange={setTab} />
 
         <div className="mt-6">
-          {tab === "synthese" && <SynthesePane qpv={selected} year={year} />}
-          {tab === "citoyen" && <CitoyenPane />}
+          {tab === "synthese" && <SynthesePane scope={selected} year={year} />}
+          {tab === "citoyen" && <CitoyenPane scope={selected} />}
           {AXES.find((a) => a.key === tab) && (
-            <AxisPane axis={tab as AxisKey} qpv={selected} year={year} />
+            <AxisPane axis={tab as AxisKey} scope={selected} year={year} />
           )}
         </div>
 
@@ -242,8 +249,38 @@ function Tabs({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
   );
 }
 
+/* ============== AGGREGATION HELPERS ============== */
+function isAvgUnit(u: string): boolean {
+  if (u.includes("%") || u === "€" || u === "/100") return true;
+  if (u.startsWith("/") && (u.includes("hab") || u.includes("logts"))) return true;
+  return false;
+}
+function aggregateValueAt(ind: Indicator, year: number): number | null {
+  const vals: number[] = [];
+  for (const q of QPVS) {
+    const v = ind.series[q.key][year];
+    if (v !== null && v !== undefined) vals.push(v);
+  }
+  if (vals.length === 0) return null;
+  if (isAvgUnit(ind.unit)) return vals.reduce((s, v) => s + v, 0) / vals.length;
+  return vals.reduce((s, v) => s + v, 0);
+}
+function aggregateLatestValue(ind: Indicator, year: number): { year: number; value: number } | null {
+  for (let y = year; y >= 2014; y--) {
+    const v = aggregateValueAt(ind, y);
+    if (v !== null) return { year: y, value: Math.round(v * 100) / 100 };
+  }
+  return null;
+}
+function scopedLatestValue(ind: Indicator, scope: QPVScope, year: number) {
+  return scope === "all" ? aggregateLatestValue(ind, year) : latestValue(ind, scope, year);
+}
+function scopedValueAt(ind: Indicator, scope: QPVScope, year: number) {
+  return scope === "all" ? aggregateValueAt(ind, year) : valueAt(ind, scope, year);
+}
+
 /* ======================== SYNTHÈSE ======================== */
-function SynthesePane({ qpv, year }: { qpv: QPVKey; year: number }) {
+function SynthesePane({ scope, year }: { scope: QPVScope; year: number }) {
   // KPI clés transverses
   const kpis: { ind: Indicator }[] = [
     { ind: INDICATORS.find((i) => i.id === "pop")! },
@@ -256,7 +293,7 @@ function SynthesePane({ qpv, year }: { qpv: QPVKey; year: number }) {
     <div className="space-y-8">
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map(({ ind }) => (
-          <IndicatorCard key={ind.id} ind={ind} qpv={qpv} year={year} />
+          <IndicatorCard key={ind.id} ind={ind} scope={scope} year={year} />
         ))}
       </section>
 
@@ -291,11 +328,13 @@ function SynthesePane({ qpv, year }: { qpv: QPVKey; year: number }) {
 }
 
 /* ======================== AXIS PANE ======================== */
-function AxisPane({ axis, qpv, year }: { axis: AxisKey; qpv: QPVKey; year: number }) {
+function AxisPane({ axis, scope, year }: { axis: AxisKey; scope: QPVScope; year: number }) {
   const axisDef = AXES.find((a) => a.key === axis)!;
   const inds = useMemo(() => indicatorsByAxis(axis), [axis]);
   const [selectedIndId, setSelectedIndId] = useState<string>(inds[0].id);
   const ind = inds.find((i) => i.id === selectedIndId) ?? inds[0];
+  const isAll = scope === "all";
+  const scopeLabel = isAll ? "Les QPV d'Orléans" : QPVS.find((q) => q.key === scope)!.name;
 
   return (
     <div className="space-y-6">
@@ -327,10 +366,11 @@ function AxisPane({ axis, qpv, year }: { axis: AxisKey; qpv: QPVKey; year: numbe
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {QPVS.map((q) => (
-          <IndicatorCard key={q.key} ind={ind} qpv={q.key} year={year} compact label={q.name} highlight={q.key === qpv} />
+          <IndicatorCard key={q.key} ind={ind} scope={q.key} year={year} compact label={q.name} highlight={q.key === scope} />
         ))}
+        <IndicatorCard ind={ind} scope="all" year={year} compact label="Les QPV d'Orléans" highlight={isAll} />
       </div>
 
       <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
@@ -371,10 +411,10 @@ function AxisPane({ axis, qpv, year }: { axis: AxisKey; qpv: QPVKey; year: numbe
                 <SourceBadge source={i.source} category={i.category} compact />
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
-                Dernière donnée pour {QPVS.find((q) => q.key === qpv)!.name} :
+                Dernière donnée pour {scopeLabel} :
                 <span className="ml-1 font-semibold text-foreground">
                   {(() => {
-                    const lv = latestValue(i, qpv, year);
+                    const lv = scopedLatestValue(i, scope, year);
                     return lv ? `${lv.value.toLocaleString("fr-FR")} ${i.unit} (${lv.year})` : "n.c.";
                   })()}
                 </span>
@@ -389,12 +429,12 @@ function AxisPane({ axis, qpv, year }: { axis: AxisKey; qpv: QPVKey; year: numbe
 
 /* ======================== INDICATOR CARD ======================== */
 function IndicatorCard({
-  ind, qpv, year, compact = false, label, highlight,
+  ind, scope, year, compact = false, label, highlight,
 }: {
-  ind: Indicator; qpv: QPVKey; year: number; compact?: boolean; label?: string; highlight?: boolean;
+  ind: Indicator; scope: QPVScope; year: number; compact?: boolean; label?: string; highlight?: boolean;
 }) {
-  const lv = latestValue(ind, qpv, year);
-  const v2014 = valueAt(ind, qpv, 2014);
+  const lv = scopedLatestValue(ind, scope, year);
+  const v2014 = scopedValueAt(ind, scope, 2014);
   const delta = lv && v2014 != null ? lv.value - v2014 : null;
   const projected = lv && lv.year < year;
 
@@ -528,14 +568,24 @@ const CHART_PALETTE = [
   "var(--success)",
 ];
 
-function CitoyenPane() {
+const QPV_TO_SCOPE: Record<QPVKey, string> = {
+  argonne: "L'Argonne",
+  lasource: "La Source",
+  dauphine: "Dauphine",
+  blossieres: "Les Blossières",
+};
+
+function CitoyenPane({ scope: parentScope }: { scope: QPVScope }) {
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["citizen-survey"],
     queryFn: () => fetchCitizenSurvey(),
     staleTime: 5 * 60 * 1000,
   });
 
-  const [scope, setScope] = useState<string>("__ALL__");
+  const derived = parentScope === "all" ? "__ALL__" : QPV_TO_SCOPE[parentScope];
+  const [scope, setScope] = useState<string>(derived);
+  // Sync when the parent QPV button selection changes
+  React.useEffect(() => { setScope(derived); }, [derived]);
 
   const current = useMemo(() => {
     if (!data) return null;

@@ -1,15 +1,21 @@
 import { QPVS, QPVKey } from "@/data/qpv";
 import { cn } from "@/lib/utils";
 
+export type QPVScope = QPVKey | "all";
+
 interface Props {
-  selected: QPVKey;
-  onSelect: (k: QPVKey) => void;
+  selected: QPVScope;
+  onSelect: (k: QPVScope) => void;
 }
 
 export function QPVSelector({ selected, onSelect }: Props) {
+  const items: { key: QPVScope; name: string }[] = [
+    ...QPVS.map((q) => ({ key: q.key as QPVScope, name: q.name })),
+    { key: "all", name: "Les QPV d'Orléans" },
+  ];
   return (
     <div className="flex flex-wrap gap-2">
-      {QPVS.map((q) => {
+      {items.map((q) => {
         const active = q.key === selected;
         return (
           <button
@@ -20,6 +26,7 @@ export function QPVSelector({ selected, onSelect }: Props) {
               active
                 ? "border-primary bg-primary text-primary-foreground shadow-sm"
                 : "border-border bg-card text-foreground hover:border-primary/40 hover:bg-accent",
+              q.key === "all" && !active && "border-primary/40 bg-primary/5 font-semibold",
             )}
           >
             {q.name}
