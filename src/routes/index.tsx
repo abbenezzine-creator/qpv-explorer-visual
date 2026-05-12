@@ -13,7 +13,7 @@ import {
   indicatorsByAxis, latestValue, valueAt,
 } from "@/data/qpv";
 import { fetchCitizenSurvey } from "@/lib/citizen-survey.functions";
-import { QPVSelector } from "@/components/dashboard/QPVSelector";
+import { QPVSelector, type QPVScope } from "@/components/dashboard/QPVSelector";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { cn } from "@/lib/utils";
 import {
