@@ -568,14 +568,24 @@ const CHART_PALETTE = [
   "var(--success)",
 ];
 
-function CitoyenPane() {
+const QPV_TO_SCOPE: Record<QPVKey, string> = {
+  argonne: "L'Argonne",
+  lasource: "La Source",
+  dauphine: "Dauphine",
+  blossieres: "Les Blossières",
+};
+
+function CitoyenPane({ scope: parentScope }: { scope: QPVScope }) {
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["citizen-survey"],
     queryFn: () => fetchCitizenSurvey(),
     staleTime: 5 * 60 * 1000,
   });
 
-  const [scope, setScope] = useState<string>("__ALL__");
+  const derived = parentScope === "all" ? "__ALL__" : QPV_TO_SCOPE[parentScope];
+  const [scope, setScope] = useState<string>(derived);
+  // Sync when the parent QPV button selection changes
+  React.useEffect(() => { setScope(derived); }, [derived]);
 
   const current = useMemo(() => {
     if (!data) return null;
