@@ -140,16 +140,16 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <SidebarProvider>
-        <div className="flex h-screen w-full overflow-hidden">
+        <div className="flex h-screen w-full max-w-full overflow-x-hidden">
           <AppSidebar />
-          <div className="flex min-h-0 flex-1 flex-col min-w-0">
+          <div className="flex min-h-0 flex-1 flex-col min-w-0 max-w-full">
             <header className="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur">
-              <SidebarTrigger />
-              <span className="text-sm font-medium text-muted-foreground">
+              <SidebarTrigger aria-label="Ouvrir le menu" />
+              <span className="truncate text-sm font-medium text-muted-foreground">
                 Orléans Insights · Contrat de Ville
               </span>
             </header>
-            <main className="min-h-0 flex-1 min-w-0 overflow-auto">
+            <main className="min-h-0 flex-1 min-w-0 max-w-full overflow-x-hidden overflow-y-auto">
               <Outlet />
             </main>
           </div>
