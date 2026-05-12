@@ -118,6 +118,7 @@
 
 @layer base {
   * { border-color: var(--color-border); }
+  html, body { overflow-x: hidden; max-width: 100vw; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -125,4 +126,6 @@
     -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, h4 { letter-spacing: -0.02em; }
+  /* Tableaux jamais en débordement silencieux */
+  table { max-width: 100%; }
 }
