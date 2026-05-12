@@ -328,11 +328,13 @@ function SynthesePane({ scope, year }: { scope: QPVScope; year: number }) {
 }
 
 /* ======================== AXIS PANE ======================== */
-function AxisPane({ axis, qpv, year }: { axis: AxisKey; qpv: QPVKey; year: number }) {
+function AxisPane({ axis, scope, year }: { axis: AxisKey; scope: QPVScope; year: number }) {
   const axisDef = AXES.find((a) => a.key === axis)!;
   const inds = useMemo(() => indicatorsByAxis(axis), [axis]);
   const [selectedIndId, setSelectedIndId] = useState<string>(inds[0].id);
   const ind = inds.find((i) => i.id === selectedIndId) ?? inds[0];
+  const isAll = scope === "all";
+  const scopeLabel = isAll ? "Les QPV d'Orléans" : QPVS.find((q) => q.key === scope)!.name;
 
   return (
     <div className="space-y-6">
@@ -364,10 +366,11 @@ function AxisPane({ axis, qpv, year }: { axis: AxisKey; qpv: QPVKey; year: numbe
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {QPVS.map((q) => (
-          <IndicatorCard key={q.key} ind={ind} qpv={q.key} year={year} compact label={q.name} highlight={q.key === qpv} />
+          <IndicatorCard key={q.key} ind={ind} scope={q.key} year={year} compact label={q.name} highlight={q.key === scope} />
         ))}
+        <IndicatorCard ind={ind} scope="all" year={year} compact label="Les QPV d'Orléans" highlight={isAll} />
       </div>
 
       <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
@@ -408,10 +411,10 @@ function AxisPane({ axis, qpv, year }: { axis: AxisKey; qpv: QPVKey; year: numbe
                 <SourceBadge source={i.source} category={i.category} compact />
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
-                Dernière donnée pour {QPVS.find((q) => q.key === qpv)!.name} :
+                Dernière donnée pour {scopeLabel} :
                 <span className="ml-1 font-semibold text-foreground">
                   {(() => {
-                    const lv = latestValue(i, qpv, year);
+                    const lv = scopedLatestValue(i, scope, year);
                     return lv ? `${lv.value.toLocaleString("fr-FR")} ${i.unit} (${lv.year})` : "n.c.";
                   })()}
                 </span>
@@ -426,12 +429,12 @@ function AxisPane({ axis, qpv, year }: { axis: AxisKey; qpv: QPVKey; year: numbe
 
 /* ======================== INDICATOR CARD ======================== */
 function IndicatorCard({
-  ind, qpv, year, compact = false, label, highlight,
+  ind, scope, year, compact = false, label, highlight,
 }: {
-  ind: Indicator; qpv: QPVKey; year: number; compact?: boolean; label?: string; highlight?: boolean;
+  ind: Indicator; scope: QPVScope; year: number; compact?: boolean; label?: string; highlight?: boolean;
 }) {
-  const lv = latestValue(ind, qpv, year);
-  const v2014 = valueAt(ind, qpv, 2014);
+  const lv = scopedLatestValue(ind, scope, year);
+  const v2014 = scopedValueAt(ind, scope, 2014);
   const delta = lv && v2014 != null ? lv.value - v2014 : null;
   const projected = lv && lv.year < year;
 
