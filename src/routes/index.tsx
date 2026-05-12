@@ -56,11 +56,12 @@ export const Route = createFileRoute("/")({
 type Tab = AxisKey | "synthese" | "citoyen";
 
 function DashboardPage() {
-  const [selected, setSelected] = useState<QPVKey>("argonne");
+  const [selected, setSelected] = useState<QPVScope>("argonne");
   const [tab, setTab] = useState<Tab>("synthese");
   const [year, setYear] = useState<number>(2024);
 
-  const quartier = QPVS.find((q) => q.key === selected)!;
+  const isAll = selected === "all";
+  const quartier = isAll ? null : QPVS.find((q) => q.key === selected)!;
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,10 +73,16 @@ function DashboardPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Quartier sélectionné · {quartier.commune}
+                {isAll ? "Vue agrégée · Orléans Métropole" : `Quartier sélectionné · ${quartier!.commune}`}
               </div>
-              <h2 className="text-2xl font-semibold">{quartier.name}</h2>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{quartier.description}</p>
+              <h2 className="text-2xl font-semibold">
+                {isAll ? "Les QPV d'Orléans" : quartier!.name}
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                {isAll
+                  ? "Agrégation des 4 QPV (Argonne, La Source, Dauphine, Les Blossières) — totaux pour les volumes, moyennes pour les taux et indicateurs en %."
+                  : quartier!.description}
+              </p>
             </div>
             <YearSlider year={year} onChange={setYear} />
           </div>
@@ -87,10 +94,10 @@ function DashboardPage() {
         <Tabs tab={tab} onChange={setTab} />
 
         <div className="mt-6">
-          {tab === "synthese" && <SynthesePane qpv={selected} year={year} />}
-          {tab === "citoyen" && <CitoyenPane />}
+          {tab === "synthese" && <SynthesePane scope={selected} year={year} />}
+          {tab === "citoyen" && <CitoyenPane scope={selected} />}
           {AXES.find((a) => a.key === tab) && (
-            <AxisPane axis={tab as AxisKey} qpv={selected} year={year} />
+            <AxisPane axis={tab as AxisKey} scope={selected} year={year} />
           )}
         </div>
 
