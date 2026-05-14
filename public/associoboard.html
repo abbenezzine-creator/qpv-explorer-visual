@@ -1247,6 +1247,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       <span style="margin-left:auto;font-size:11px;color:var(--muted-fore)" id="dashAllCount"></span>
     </div>
     <div class="modal-body" id="dashAllActions"></div>
+    <div id="dashAllRecap" style="display:none"></div>
   </div>
 </div>
 
@@ -1256,6 +1257,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 function openDashAllActions(){
   try{
     var modal = document.getElementById('dashAllActionsModal'); if(!modal) return;
+    closeDashAllRecap();
     var c = window.__abDashCache || {};
     var meta = window.__dashMeta || {};
     var sel = window.__dashFilters || {};
