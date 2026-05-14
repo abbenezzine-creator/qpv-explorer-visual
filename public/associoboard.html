@@ -2775,6 +2775,7 @@ function renderQualite(){
           <div class="ref-stars" id="rs-${c.id}">
             ${[1,2,3,4,5].map(n=>`<button type="button" class="ref-star" title="${['Non conforme','Insuffisant','Partiellement','Conforme','Très conforme'][n-1]}" onclick="rateRef('${ax.id}','${c.id}',${n})">★</button>`).join('')}
           </div>
+          <span class="ref-crit-pct" id="rp-${c.id}" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${ax.color};min-width:34px;text-align:right">—</span>
         </div>`).join('')}
       </div>
     </div>`).join('');
