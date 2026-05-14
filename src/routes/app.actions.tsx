@@ -431,8 +431,15 @@ function ActionsListPage() {
           {viewing && (
             <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
               <div className="flex shrink-0 items-center justify-between border-b border-border bg-card px-6 py-3">
-                <Button variant="ghost" size="sm" onClick={() => setViewing(null)}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Retour à la table
+                <Button variant="ghost" size="sm" onClick={() => {
+                  const origin = viewOrigin;
+                  setViewing(null);
+                  setViewOrigin(null);
+                  if (origin === "dashboard") {
+                    navigate({ to: "/app/", search: { page: "dashboard" } as never });
+                  }
+                }}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> {viewOrigin === "dashboard" ? "Retour au tableau de bord" : "Retour à la table"}
                 </Button>
                 <div className="flex items-center gap-2">
                   <span className={`rounded-full border px-2 py-0.5 text-xs ${STATUT_VARIANT[viewing.statut]}`}>
