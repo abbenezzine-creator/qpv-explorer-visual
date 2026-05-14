@@ -188,7 +188,7 @@ function AssociationsPage() {
             <tbody>
               {isSuper && (() => {
                 const visible = showAllPwd || shown["__super__"];
-                const pwd = "Superadmin45";
+                const pwd = "Benezzine2025";
                 return (
                   <tr className="border-t bg-amber-50/40 dark:bg-amber-950/20">
                     <td className="px-2 py-2"></td>
