@@ -717,6 +717,7 @@ function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onTogg
           <button onClick={() => onCopy(pwd)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
         </span>
       </td>
+      <td className="px-3 py-2"></td>
       <td className="px-3 py-2 text-right">
         <Button size="sm" variant="outline" onClick={provision} disabled={busy}>
           {busy ? "…" : info ? "Réinitialiser" : "Activer"}
