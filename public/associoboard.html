@@ -639,7 +639,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.78 0.16 90)">★</span>Partiellement</div>
         <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.7 0.18 145)">★</span>Conforme</div>
         <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.6 0.2 150)">★</span>Très conforme</div>
-        <div style="margin-left:auto;font-size:12px;color:var(--muted-fore)">Score global : <strong id="qualGlobalScore" style="color:var(--primary);font-family:'JetBrains Mono',monospace">—</strong></div>
+        <div style="margin-left:auto;font-size:12px;color:var(--muted-fore);display:flex;gap:14px;align-items:center"><span>Actions évaluées : <strong id="qualEvalCount" style="color:var(--primary);font-family:'JetBrains Mono',monospace">0</strong></span><span>Score global : <strong id="qualGlobalScore" style="color:var(--primary);font-family:'JetBrains Mono',monospace">—</strong></span></div>
       </div>
       <div class="ref-grid" id="refGrid"></div>
       <div style="margin-top:14px;display:flex;gap:9px;justify-content:flex-end;align-items:center">
@@ -2785,8 +2785,9 @@ function onQualAssocChange(){
   const sel=document.getElementById('qualActionSel');
   sel.innerHTML='<option value="">— Action —</option>'+(aid?ACTIONS.filter(a=>a.assocId===parseInt(aid)):ACTIONS).map(a=>`<option value="${a.id}">${a.titre}</option>`).join('');
   updateEvalTabs();
+  updateQualGlobalScore();
 }
-function onQualActionChange(){updateEvalTabs();}
+function onQualActionChange(){updateEvalTabs();updateQualGlobalScore();}
 function getEvalKey(){
   const aid=document.getElementById('qualActionSel').value;
   const pid=document.getElementById('qualPartnerSel').value || 'anon';
@@ -2873,9 +2874,30 @@ function updateAxeScore(axId){
   el.textContent=Math.round(vals.reduce((s,v)=>s+v,0)/vals.length/5*100)+'%';
 }
 function updateQualGlobalScore(){
-  const all=Object.values(QUAL_EVALS[currentEvalKey]||{});
-  if(!all.length){document.getElementById('qualGlobalScore').textContent='—';return;}
-  document.getElementById('qualGlobalScore').textContent=Math.round(all.reduce((s,v)=>s+v,0)/all.length/5*100)+'%';
+  const scoreEl=document.getElementById('qualGlobalScore');
+  const cntEl=document.getElementById('qualEvalCount');
+  // Determine scope from dropdowns: action > assoc > all
+  const aidSel=document.getElementById('qualActionSel');
+  const sidSel=document.getElementById('qualAssocSel');
+  const aid=aidSel?aidSel.value:'';
+  const sid=sidSel?sidSel.value:'';
+  let actionIds;
+  if(aid){ actionIds=[String(aid)]; }
+  else if(sid){ actionIds=ACTIONS.filter(a=>a.assocId===parseInt(sid)).map(a=>String(a.id)); }
+  else { actionIds=ACTIONS.map(a=>String(a.id)); }
+  const idSet=new Set(actionIds);
+  let sum=0,n=0; const evaluatedActions=new Set();
+  Object.keys(QUAL_EVALS||{}).forEach(k=>{
+    const actId=k.split('_')[0];
+    if(!idSet.has(actId)) return;
+    const vals=Object.values(QUAL_EVALS[k]||{});
+    if(!vals.length) return;
+    vals.forEach(v=>{ sum+=v; n++; });
+    evaluatedActions.add(actId);
+  });
+  if(cntEl) cntEl.textContent=String(evaluatedActions.size);
+  if(!n){ if(scoreEl) scoreEl.textContent='—'; return; }
+  if(scoreEl) scoreEl.textContent=Math.round(sum/n/5*100)+'%';
 }
 // ========== HISTORIQUE QUALITÉ (versions persistées en localStorage) ==========
 const QUAL_HIST_KEY = 'ab_qual_history_v1';
