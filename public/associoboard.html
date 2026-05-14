@@ -1727,6 +1727,7 @@ function nav(id){
   if(id==='documents') renderDocuments();
   if(id==='utilite') renderUtilite();
   try { const nb=document.getElementById('topNewActionBtn'); if(nb) nb.style.display=(id==='dashboard'||id==='agenda')?'':'none'; } catch(e){}
+  try { const tb=document.getElementById('topbar'); if(tb) tb.style.display=(id==='qualite')?'none':''; } catch(e){}
 }
 
 // ========== SIDEBAR ==========
