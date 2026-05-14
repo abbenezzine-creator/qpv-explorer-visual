@@ -50,7 +50,11 @@ function ActionDetailPage() {
     <div className="h-full min-h-0 overflow-y-auto overflow-x-auto p-6 pb-20" style={{ scrollbarGutter: "stable" }}>
       <div className="mb-4 flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
-          <Link to="/app/actions"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Link>
+          {fromDashboard ? (
+            <Link to="/app" search={{ page: "dashboard" } as never}><ArrowLeft className="mr-2 h-4 w-4" /> Retour au tableau de bord</Link>
+          ) : (
+            <Link to="/app/actions"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Link>
+          )}
         </Button>
         <div className="flex gap-2">
           {editable && (
