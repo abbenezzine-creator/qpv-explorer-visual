@@ -2799,6 +2799,61 @@ function renderQualite(){
   if(qa && aidGlobal){ qa.value=String(aidGlobal); }
   popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
   onQualAssocChange();
+  renderQualTopFilters();
+}
+function renderQualTopFilters(){
+  const bar=document.getElementById('qualTopFilters'); if(!bar) return;
+  const all=qualSourceActions();
+  const userAid=currentUser?.role==='association'?currentUser.assocId:null;
+  const poolBase=userAid?all.filter(a=>String(a.assocId)===String(userAid)):all;
+  const assocsAll=qualSourceAssocs();
+  const assocIdsInPool=new Set(poolBase.map(a=>String(a.assocId)));
+  const assocs=assocsAll.filter(a=>assocIdsInPool.has(String(a.id))).sort((a,b)=>(a.nom||'').localeCompare(b.nom||'','fr'));
+  const themes=Array.from(new Set(poolBase.map(a=>a.theme).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'fr'));
+  const years=Array.from(new Set(poolBase.map(a=>a.annee).filter(Boolean))).sort((a,b)=>b-a);
+  const aidSel=userAid?String(userAid):(currentAssocId?String(currentAssocId):'');
+  const themeSel=currentTheme||'';
+  const yearSel=currentYear?String(currentYear):'';
+  const actionPool=poolBase.filter(a=>{
+    if(aidSel && String(a.assocId)!==aidSel) return false;
+    if(themeSel && a.theme!==themeSel) return false;
+    if(yearSel && String(a.annee)!==yearSel) return false;
+    return true;
+  }).sort((a,b)=>(a.titre||'').localeCompare(b.titre||'','fr'));
+  const actSel=document.getElementById('qualActionSel')?.value||'';
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const opt=(v,l,sel)=>`<option value="${esc(v)}"${String(sel)===String(v)?' selected':''}>${esc(l)}</option>`;
+  const sty='width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--fore)';
+  const lblSty='display:block;font-size:11px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em';
+  bar.innerHTML=
+    `<div><label style="${lblSty}">Association</label>`+
+      `<select id="qfAssoc" style="${sty}"${userAid?' disabled':''}>`+opt('','— Toutes les associations —',aidSel)+
+      assocs.map(a=>opt(a.id,a.nom,aidSel)).join('')+`</select></div>`+
+    `<div><label style="${lblSty}">Action</label>`+
+      `<select id="qfAction" style="${sty}">`+opt('','Toutes les actions',actSel)+
+      actionPool.map(a=>opt(a.id,a.titre||'(sans titre)',actSel)).join('')+`</select></div>`+
+    `<div><label style="${lblSty}">Thématique</label>`+
+      `<select id="qfTheme" style="${sty}">`+opt('','Toutes thématiques',themeSel)+
+      themes.map(t=>opt(t,t,themeSel)).join('')+`</select></div>`+
+    `<div><label style="${lblSty}">Année</label>`+
+      `<select id="qfYear" style="${sty}">`+opt('','Toutes années',yearSel)+
+      years.map(y=>opt(y,y,yearSel)).join('')+`</select></div>`;
+  const qfA=document.getElementById('qfAssoc');
+  if(qfA) qfA.onchange=function(){ try{ switchAssociation(this.value); }catch(e){} };
+  const qfT=document.getElementById('qfTheme');
+  if(qfT) qfT.onchange=function(){ const g=document.getElementById('globalThemeSel'); if(g){ g.value=this.value; } try{ onGlobalThemeChange(); }catch(e){} };
+  const qfY=document.getElementById('qfYear');
+  if(qfY) qfY.onchange=function(){ const g=document.getElementById('yearFilter'); if(g){ g.value=this.value; } try{ onYearChange(); }catch(e){} };
+  const qfAct=document.getElementById('qfAction');
+  if(qfAct) qfAct.onchange=function(){
+    const sa=document.getElementById('qualAssocSel');
+    const sac=document.getElementById('qualActionSel');
+    if(this.value){
+      const a=qualSourceActions().find(x=>String(x.id)===String(this.value));
+      if(a && sa){ sa.value=String(a.assocId); onQualAssocChange(); }
+    }
+    if(sac){ sac.value=this.value; onQualActionChange(); }
+  };
 }
 function paintStars(critId,val){
   const row=document.getElementById('rs-'+critId); if(!row) return;
