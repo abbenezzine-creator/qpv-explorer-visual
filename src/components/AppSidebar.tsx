@@ -50,6 +50,7 @@ const principal: NavItem[] = [
 
 const evaluation: NavItem[] = [
   { title: "Évaluations bénéficiaires", to: "/app/evaluations", icon: ClipboardList },
+  { title: "Évaluation association", to: "/app", search: { page: "qualite" }, icon: ShieldCheck },
   { title: "Impacts bénéficiaires", to: "/app", search: { page: "impacts-beneficiaires" }, icon: TrendingUp },
 ];
 
