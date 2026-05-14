@@ -699,6 +699,7 @@ function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onTogg
 
   return (
     <tr className="border-t bg-sky-50/40 dark:bg-sky-950/20">
+      <td className="px-2 py-2"></td>
       <td className="px-3 py-2 font-medium">Partenaire</td>
       <td className="px-3 py-2 text-xs text-muted-foreground" colSpan={4}>Compte global · lecture seule</td>
       <td className="px-3 py-2 font-mono text-xs">
@@ -716,6 +717,7 @@ function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onTogg
           <button onClick={() => onCopy(pwd)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
         </span>
       </td>
+      <td className="px-3 py-2"></td>
       <td className="px-3 py-2 text-right">
         <Button size="sm" variant="outline" onClick={provision} disabled={busy}>
           {busy ? "…" : info ? "Réinitialiser" : "Activer"}
