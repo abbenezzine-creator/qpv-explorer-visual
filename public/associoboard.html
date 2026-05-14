@@ -2746,6 +2746,16 @@ function prevMonth(){currentMonth.setMonth(currentMonth.getMonth()-1);renderCale
 function nextMonth(){currentMonth.setMonth(currentMonth.getMonth()+1);renderCalendar();}
 
 // ========== QUALITY REFERENTIAL — multi-evaluator per action ==========
+function qualScopedActions(){
+  const aid=currentUser?.role==='association'?currentUser.assocId:currentAssocId;
+  return ACTIONS.filter(a=>{
+    if(aid&&a.assocId!==aid) return false;
+    if(a.annee&&a.annee!==currentYear) return false;
+    if(currentTheme&&a.theme!==currentTheme) return false;
+    if(currentSousTheme&&a.sousTheme!==currentSousTheme) return false;
+    return true;
+  });
+}
 function renderQualite(){
   const cont=document.getElementById('refGrid');
   cont.innerHTML=QUALITE_AXES.map(ax=>`
@@ -2767,9 +2777,17 @@ function renderQualite(){
         </div>`).join('')}
       </div>
     </div>`).join('');
-  updateQualGlobalScore();
-  popSel('qualAssocSel',ASSOCS,'id','nom','— Association —');
+  // Restreindre la liste Association aux assocs ayant des actions dans le scope global
+  const scopedActs=qualScopedActions();
+  const scopedAssocIds=new Set(scopedActs.map(a=>a.assocId));
+  const scopedAssocs=ASSOCS.filter(a=>scopedAssocIds.has(a.id));
+  popSel('qualAssocSel',scopedAssocs,'id','nom','— Association —');
+  // Pré-sélection si filtre global association actif
+  const aidGlobal=currentUser?.role==='association'?currentUser.assocId:currentAssocId;
+  const qa=document.getElementById('qualAssocSel');
+  if(qa && aidGlobal){ qa.value=String(aidGlobal); }
   popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
+  onQualAssocChange();
 }
 function paintStars(critId,val){
   const row=document.getElementById('rs-'+critId); if(!row) return;
@@ -2782,7 +2800,9 @@ function paintStars(critId,val){
 function onQualAssocChange(){
   const aid=document.getElementById('qualAssocSel').value;
   const sel=document.getElementById('qualActionSel');
-  sel.innerHTML='<option value="">— Action —</option>'+(aid?ACTIONS.filter(a=>a.assocId===parseInt(aid)):ACTIONS).map(a=>`<option value="${a.id}">${a.titre}</option>`).join('');
+  const scoped=qualScopedActions();
+  const list=aid?scoped.filter(a=>a.assocId===parseInt(aid)):scoped;
+  sel.innerHTML='<option value="">— Action —</option>'+list.map(a=>`<option value="${a.id}">${a.titre}</option>`).join('');
   updateEvalTabs();
   updateQualGlobalScore();
 }
@@ -2880,10 +2900,11 @@ function updateQualGlobalScore(){
   const sidSel=document.getElementById('qualAssocSel');
   const aid=aidSel?aidSel.value:'';
   const sid=sidSel?sidSel.value:'';
+  const scoped=qualScopedActions().map(a=>String(a.id));
   let actionIds;
   if(aid){ actionIds=[String(aid)]; }
-  else if(sid){ actionIds=ACTIONS.filter(a=>a.assocId===parseInt(sid)).map(a=>String(a.id)); }
-  else { actionIds=ACTIONS.map(a=>String(a.id)); }
+  else if(sid){ actionIds=qualScopedActions().filter(a=>a.assocId===parseInt(sid)).map(a=>String(a.id)); }
+  else { actionIds=scoped; }
   const idSet=new Set(actionIds);
   let sum=0,n=0; const evaluatedActions=new Set();
   Object.keys(QUAL_EVALS||{}).forEach(k=>{
