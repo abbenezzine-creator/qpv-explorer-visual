@@ -410,7 +410,16 @@ function ActionsListPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
+      <Dialog open={!!viewing} onOpenChange={(o) => {
+        if (!o) {
+          const origin = viewOrigin;
+          setViewing(null);
+          setViewOrigin(null);
+          if (origin === "dashboard") {
+            navigate({ to: "/app/", search: { page: "dashboard" } as never });
+          }
+        }
+      }}>
         <DialogContent
           className="flex max-w-none sm:rounded-none p-0 gap-0 overflow-hidden top-0 left-0 translate-x-0 translate-y-0 border-0"
           style={{
