@@ -511,7 +511,7 @@ function TrajectoryChart({ indicator, highlightYear }: { indicator: Indicator; h
         <YAxis stroke="var(--muted-foreground)" />
         <Tooltip
           contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
-          formatter={(v: number) => `${v?.toLocaleString("fr-FR")} ${indicator.unit}`}
+          formatter={(v: number) => `${Math.round(v ?? 0).toLocaleString("fr-FR")} ${indicator.unit}`}
         />
         <Legend />
         <ReferenceLine x={2024} stroke="var(--muted-foreground)" strokeDasharray="4 4" label={{ value: "Signature CV", position: "insideTopLeft", fill: "var(--muted-foreground)", fontSize: 10 }} />
