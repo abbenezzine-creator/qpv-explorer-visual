@@ -2738,10 +2738,30 @@ function prevMonth(){currentMonth.setMonth(currentMonth.getMonth()-1);renderCale
 function nextMonth(){currentMonth.setMonth(currentMonth.getMonth()+1);renderCalendar();}
 
 // ========== QUALITY REFERENTIAL — multi-evaluator per action ==========
+function qualSourceActions(){
+  // Source de vérité = table `actions` Supabase (via __dashMeta) si dispo, sinon ACTIONS local
+  const sb=(window.__dashMeta&&Array.isArray(window.__dashMeta.actions))?window.__dashMeta.actions:null;
+  if(sb&&sb.length){
+    return sb.map(a=>({
+      id:a.id,
+      assocId:a.assoc_id,
+      titre:a.titre,
+      theme:a.thematique||a.theme||null,
+      sousTheme:a.sousTheme||null,
+      annee:a.annee||null,
+    }));
+  }
+  return ACTIONS.map(a=>({id:a.id,assocId:a.assocId,titre:a.titre,theme:a.theme,sousTheme:a.sousTheme,annee:a.annee}));
+}
+function qualSourceAssocs(){
+  const sb=(window.__dashMeta&&Array.isArray(window.__dashMeta.assocs))?window.__dashMeta.assocs:null;
+  if(sb&&sb.length) return sb.map(a=>({id:a.id,nom:a.nom}));
+  return ASSOCS.map(a=>({id:a.id,nom:a.nom}));
+}
 function qualScopedActions(){
-  const aid=currentUser?.role==='association'?currentUser.assocId:currentAssocId;
-  return ACTIONS.filter(a=>{
-    if(aid&&a.assocId!==aid) return false;
+  const userAid=currentUser?.role==='association'?currentUser.assocId:currentAssocId;
+  return qualSourceActions().filter(a=>{
+    if(userAid&&String(a.assocId)!==String(userAid)) return false;
     if(a.annee&&a.annee!==currentYear) return false;
     if(currentTheme&&a.theme!==currentTheme) return false;
     if(currentSousTheme&&a.sousTheme!==currentSousTheme) return false;
@@ -2769,10 +2789,10 @@ function renderQualite(){
         </div>`).join('')}
       </div>
     </div>`).join('');
-  // Restreindre la liste Association aux assocs ayant des actions dans le scope global
+  // Restreindre la liste Association aux assocs ayant des actions dans le scope global (source = table actions Supabase)
   const scopedActs=qualScopedActions();
-  const scopedAssocIds=new Set(scopedActs.map(a=>a.assocId));
-  const scopedAssocs=ASSOCS.filter(a=>scopedAssocIds.has(a.id));
+  const scopedAssocIds=new Set(scopedActs.map(a=>String(a.assocId)));
+  const scopedAssocs=qualSourceAssocs().filter(a=>scopedAssocIds.has(String(a.id)));
   popSel('qualAssocSel',scopedAssocs,'id','nom','— Association —');
   // Pré-sélection si filtre global association actif
   const aidGlobal=currentUser?.role==='association'?currentUser.assocId:currentAssocId;
@@ -2793,8 +2813,8 @@ function onQualAssocChange(){
   const aid=document.getElementById('qualAssocSel').value;
   const sel=document.getElementById('qualActionSel');
   const scoped=qualScopedActions();
-  const list=aid?scoped.filter(a=>a.assocId===parseInt(aid)):scoped;
-  sel.innerHTML='<option value="">— Action —</option>'+list.map(a=>`<option value="${a.id}">${a.titre}</option>`).join('');
+  const list=aid?scoped.filter(a=>String(a.assocId)===String(aid)):scoped;
+  sel.innerHTML='<option value="">— Action —</option>'+list.map(a=>`<option value="${a.id}">${(a.titre||'').replace(/</g,'&lt;')}</option>`).join('');
   updateEvalTabs();
   updateQualGlobalScore();
 }
@@ -2895,7 +2915,7 @@ function updateQualGlobalScore(){
   const scoped=qualScopedActions().map(a=>String(a.id));
   let actionIds;
   if(aid){ actionIds=[String(aid)]; }
-  else if(sid){ actionIds=qualScopedActions().filter(a=>a.assocId===parseInt(sid)).map(a=>String(a.id)); }
+  else if(sid){ actionIds=qualScopedActions().filter(a=>String(a.assocId)===String(sid)).map(a=>String(a.id)); }
   else { actionIds=scoped; }
   const idSet=new Set(actionIds);
   let sum=0,n=0; const evaluatedActions=new Set();
@@ -6996,6 +7016,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       };
     }
     populate();
+    try{ if(document.getElementById('page-qualite')?.classList.contains('active') && typeof window.renderQualite==='function') window.renderQualite(); }catch(e){}
   };
   function syncTopbar(){
     var hash = (location.hash||'').replace('#page=','');
