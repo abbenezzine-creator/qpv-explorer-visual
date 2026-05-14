@@ -412,7 +412,7 @@ function AxisPane({ axis, scope, year }: { axis: AxisKey; scope: QPVScope; year:
                 <span className="ml-1 font-semibold text-foreground">
                   {(() => {
                     const lv = scopedLatestValue(i, scope, year);
-                    return lv ? `${(i.unit === "hab." ? Math.round(lv.value) : lv.value).toLocaleString("fr-FR")} ${i.unit} (${lv.year})` : "n.c.";
+                    return lv ? `${Math.round(lv.value).toLocaleString("fr-FR")} ${i.unit} (${lv.year})` : "n.c.";
                   })()}
                 </span>
               </div>
