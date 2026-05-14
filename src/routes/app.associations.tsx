@@ -137,6 +137,26 @@ function AssociationsPage() {
             }} />
           )}
           {mounted && isSuper && (
+            <Button size="sm" variant="outline" onClick={async () => {
+              const rows = (q.data ?? []).filter(r => r.login && r.password);
+              if (!rows.length) { toast.info("Aucune association à provisionner"); return; }
+              const missing = rows.filter(r => !(r as Row & { auth_email?: string }).auth_email);
+              const target = missing.length ? missing : rows;
+              const t = toast.loading(`Provisionnement de ${target.length} compte(s)…`);
+              let ok = 0, ko = 0;
+              for (const r of target) {
+                const { error } = await supabase.functions.invoke("provision-assoc-account", { body: { assoc_id: r.id } });
+                if (error) ko++; else ok++;
+              }
+              toast.dismiss(t);
+              if (ko === 0) toast.success(`${ok} compte(s) prêt(s) à se connecter`);
+              else toast.warning(`${ok} OK · ${ko} en erreur`);
+              qc.invalidateQueries({ queryKey: ["associations-full"] });
+            }}>
+              Synchroniser les connexions
+            </Button>
+          )}
+          {mounted && isSuper && (
             <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
               <Plus className="h-4 w-4 mr-1" /> Ajouter
             </Button>
