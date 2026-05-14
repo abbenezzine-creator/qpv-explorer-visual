@@ -625,13 +625,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <!-- QUALITE -->
     <div class="page" id="page-qualite">
       <div class="page-hdr"><div><div class="page-title">Référentiel Qualité</div><div class="page-sub">7 critères Qualiopi — évaluation par action et partenaire</div></div></div>
-      <div style="display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualAssocSel" onchange="onQualAssocChange()"><option value="">— Association —</option></select>
-        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualActionSel" onchange="onQualActionChange()"><option value="">— Action —</option></select>
-        <span style="font-size:12px;color:var(--muted-fore);margin-left:auto">Évaluateur :</span>
-        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualPartnerSel" onchange="loadEvalForEvaluator()"><option value="">Anonyme (par défaut)</option></select>
-        <button class="btn btn-outline btn-sm" onclick="addEvaluator()">+ Nouvel évaluateur</button>
-      </div>
       <div class="eval-tabs" id="evalTabs"></div>
       <div class="ref-leg">
         <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.6 0.24 25)">★</span>Non conforme</div>
@@ -642,15 +635,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <div style="margin-left:auto;font-size:12px;color:var(--muted-fore)">Score global : <strong id="qualGlobalScore" style="color:var(--primary);font-family:'JetBrains Mono',monospace">—</strong></div>
       </div>
       <div class="ref-grid" id="refGrid"></div>
-      <div style="margin-top:14px;display:flex;gap:9px;justify-content:flex-end;align-items:center">
-        <button class="btn btn-outline" type="button" onclick="openQualiteHistory()" title="Historique des versions">
-          <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><polyline points="7 4 7 7 9.2 8.3"/></svg>
-          Historique
-        </button>
-        <button class="btn btn-primary" id="btnSaveQualite" type="button" onclick="saveQualite()">
-          <svg id="btnSaveQualiteIcn" viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 1H3L1 3v9a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 13 12V3z"/><path d="M4 1v4h6V1"/><rect x="3.5" y="8" width="7" height="5"/></svg>
-          <span id="btnSaveQualiteLbl">Enregistrer l'évaluation</span>
-        </button>
+      <div style="margin-top:14px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;justify-content:flex-end">
+        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualAssocSel" onchange="onQualAssocChange()"><option value="">— Association —</option></select>
+        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualActionSel" onchange="onQualActionChange()"><option value="">— Action —</option></select>
+        <select class="form-sel" id="qualPartnerSel" style="display:none"></select>
       </div>
     </div>
 
