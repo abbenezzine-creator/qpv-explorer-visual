@@ -1656,6 +1656,7 @@ function onYearChange(){
   currentYear=parseInt(document.getElementById('yearFilter').value);
   document.getElementById('dashYear').textContent=currentYear;
   renderDashboard(); renderCalendar(); renderAllActions(); updateBadge();
+  try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
 }
 
 // ========== AUTH ==========
@@ -1723,7 +1724,7 @@ function nav(id){
   if(id==='documents') renderDocuments();
   if(id==='utilite') renderUtilite();
   try { const nb=document.getElementById('topNewActionBtn'); if(nb) nb.style.display=(id==='dashboard'||id==='agenda')?'':'none'; } catch(e){}
-  try { const tb=document.getElementById('topbar'); if(tb) tb.style.display=(id==='qualite')?'none':''; } catch(e){}
+  try { const tb=document.getElementById('topbar'); if(tb) tb.style.display=''; } catch(e){}
 }
 
 // ========== SIDEBAR ==========
@@ -1827,11 +1828,13 @@ function onGlobalThemeChange(){
   refreshSousThemeSel();
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
   try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
+  try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
 }
 function onGlobalSousThemeChange(){
   currentSousTheme=document.getElementById('globalSousThemeSel').value;
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
   try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
+  try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
 }
 
 function filteredActions(){
@@ -4165,7 +4168,7 @@ function updateAllSelects(){
   popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
   popSel('qActionSel',filteredActions(),'id','titre','— Sélectionner —');
 }
-function switchAssociation(val){currentAssocId=val?parseInt(val):null;const a=ASSOCS.find(x=>x.id===currentAssocId);document.getElementById('dashAssocName').textContent=a?a.nom:'Administrateur';renderDashboard();renderCalendar();renderAllActions();updateBadge();}
+function switchAssociation(val){currentAssocId=val?parseInt(val):null;const a=ASSOCS.find(x=>x.id===currentAssocId);document.getElementById('dashAssocName').textContent=a?a.nom:'Administrateur';renderDashboard();renderCalendar();renderAllActions();updateBadge();try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}}
 
 // ===================================================================
 // QPV DIAGNOSTIC DATA + RENDERING
