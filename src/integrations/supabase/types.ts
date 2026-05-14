@@ -253,6 +253,7 @@ export type Database = {
           file_size: number | null
           id: string
           mime_type: string | null
+          thematique: string | null
           titre: string
           type: string | null
           updated_at: string
@@ -269,6 +270,7 @@ export type Database = {
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          thematique?: string | null
           titre: string
           type?: string | null
           updated_at?: string
@@ -285,6 +287,7 @@ export type Database = {
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          thematique?: string | null
           titre?: string
           type?: string | null
           updated_at?: string

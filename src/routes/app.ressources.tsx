@@ -1,0 +1,456 @@
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { getUser } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  FileText, Link2, Plus, Trash2, ExternalLink, Search, FileImage, FileType2, File as FileIcon,
+} from "lucide-react";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/app/ressources")({
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw redirect({ to: "/login" });
+  },
+  component: RessourcesPage,
+});
+
+const THEMATIQUES = [
+  "Méthodologie",
+  "Évaluation",
+  "Référentiel Qualité",
+  "Boîte à outils",
+  "Réglementation",
+  "Formation",
+  "Communication",
+  "Autre",
+] as const;
+
+type DocRow = {
+  id: string;
+  titre: string;
+  description: string | null;
+  url: string | null;
+  file_path: string | null;
+  mime_type: string | null;
+  file_size: number | null;
+  thematique: string | null;
+  type: string | null;
+  visible_all: boolean;
+  created_at: string;
+};
+
+function RessourcesPage() {
+  const user = getUser();
+  const isAdmin = user?.role === "superadmin" || user?.role === "admin_asso";
+  const qc = useQueryClient();
+
+  const [search, setSearch] = useState("");
+  const [filterTheme, setFilterTheme] = useState<string>("__all");
+  const [filterKind, setFilterKind] = useState<"all" | "file" | "link">("all");
+  const [openCreate, setOpenCreate] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<DocRow | null>(null);
+
+  const docsQ = useQuery({
+    queryKey: ["ressources"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("id, titre, description, url, file_path, mime_type, file_size, thematique, type, visible_all, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as DocRow[];
+    },
+  });
+
+  const filtered = useMemo(() => {
+    const list = docsQ.data ?? [];
+    const q = search.trim().toLowerCase();
+    return list.filter((d) => {
+      if (filterTheme !== "__all" && (d.thematique ?? "") !== filterTheme) return false;
+      const isLink = !!d.url && !d.file_path;
+      if (filterKind === "file" && isLink) return false;
+      if (filterKind === "link" && !isLink) return false;
+      if (q && !`${d.titre} ${d.description ?? ""} ${d.thematique ?? ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [docsQ.data, search, filterTheme, filterKind]);
+
+  const delMut = useMutation({
+    mutationFn: async (row: DocRow) => {
+      if (row.file_path) {
+        await supabase.storage.from("documents").remove([row.file_path]);
+      }
+      const { error } = await supabase.from("documents").delete().eq("id", row.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Ressource supprimée");
+      qc.invalidateQueries({ queryKey: ["ressources"] });
+    },
+    onError: (e: unknown) => toast.error("Suppression impossible : " + (e instanceof Error ? e.message : String(e))),
+  });
+
+  return (
+    <div className="h-full overflow-y-auto p-6 pb-20">
+      <div className="mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Centre de Ressources</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Documents, guides et liens utiles pour piloter le Contrat de Ville.
+            </p>
+          </div>
+          {isAdmin && (
+            <Button onClick={() => setOpenCreate(true)} size="lg" className="shadow-md">
+              <Plus className="mr-2 h-4 w-4" /> Ajouter une ressource
+            </Button>
+          )}
+        </div>
+
+        {/* Filters */}
+        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher une ressource…"
+              className="pl-9"
+            />
+          </div>
+          <Select value={filterTheme} onValueChange={setFilterTheme}>
+            <SelectTrigger className="w-[200px]"><SelectValue placeholder="Thématique" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all">Toutes les thématiques</SelectItem>
+              {THEMATIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Tabs value={filterKind} onValueChange={(v) => setFilterKind(v as typeof filterKind)}>
+            <TabsList>
+              <TabsTrigger value="all">Tous</TabsTrigger>
+              <TabsTrigger value="file"><FileText className="mr-1 h-3.5 w-3.5" /> Documents</TabsTrigger>
+              <TabsTrigger value="link"><Link2 className="mr-1 h-3.5 w-3.5" /> Liens</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {/* Grid */}
+        {docsQ.isLoading ? (
+          <p className="text-muted-foreground">Chargement…</p>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
+            <FileText className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
+            <p className="text-sm text-muted-foreground">Aucune ressource pour le moment.</p>
+            {isAdmin && (
+              <Button variant="outline" className="mt-4" onClick={() => setOpenCreate(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Ajouter la première ressource
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((d) => (
+              <ResourceCard
+                key={d.id}
+                doc={d}
+                canDelete={isAdmin}
+                onDelete={() => setConfirmDelete(d)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <CreateResourceDialog
+        open={openCreate}
+        onOpenChange={setOpenCreate}
+        onCreated={() => qc.invalidateQueries({ queryKey: ["ressources"] })}
+      />
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette ressource ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              « {confirmDelete?.titre} » sera retirée définitivement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { if (confirmDelete) delMut.mutate(confirmDelete); setConfirmDelete(null); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+/* ---------------- Card ---------------- */
+
+function ResourceCard({ doc, canDelete, onDelete }: { doc: DocRow; canDelete: boolean; onDelete: () => void }) {
+  const isLink = !!doc.url && !doc.file_path;
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+
+  // Resolve target URL (signed for files)
+  const open = async () => {
+    if (isLink) {
+      window.open(doc.url!, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (signedUrl) {
+      window.open(signedUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+    const { data, error } = await supabase.storage.from("documents").createSignedUrl(doc.file_path!, 3600);
+    if (error || !data) { toast.error("Lien indisponible"); return; }
+    setSignedUrl(data.signedUrl);
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const mime = doc.mime_type ?? "";
+  const isPdf = mime.includes("pdf");
+  const isImg = mime.startsWith("image/");
+  const sizeKb = doc.file_size ? Math.round(doc.file_size / 1024) : null;
+  const host = isLink ? safeHost(doc.url!) : null;
+
+  return (
+    <article
+      onClick={open}
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-xl"
+    >
+      {/* Preview */}
+      <div className="relative h-40 overflow-hidden bg-gradient-to-br from-muted to-muted/40">
+        {isLink ? (
+          <LinkPreview host={host ?? ""} />
+        ) : isImg ? (
+          <SignedImage path={doc.file_path!} alt={doc.titre} />
+        ) : isPdf ? (
+          <div className="flex h-full items-center justify-center">
+            <div className="rounded-xl bg-background/70 p-4 shadow-sm backdrop-blur">
+              <FileType2 className="h-12 w-12 text-rose-500" />
+            </div>
+          </div>
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <FileIcon className="h-12 w-12 text-muted-foreground/60" />
+          </div>
+        )}
+
+        {/* Kind badge */}
+        <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-foreground shadow-sm backdrop-blur">
+          {isLink ? <><Link2 className="h-3 w-3" /> Lien</>
+            : isPdf ? <><FileType2 className="h-3 w-3 text-rose-500" /> PDF</>
+            : isImg ? <><FileImage className="h-3 w-3 text-violet-500" /> Image</>
+            : <><FileText className="h-3 w-3" /> Fichier</>}
+        </div>
+
+        {canDelete && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-background/90 p-1.5 text-muted-foreground opacity-0 shadow-sm backdrop-blur transition hover:text-destructive group-hover:opacity-100"
+            aria-label="Supprimer"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* Body */}
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        {doc.thematique && (
+          <span className="self-start rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+            {doc.thematique}
+          </span>
+        )}
+        <h3 className="line-clamp-2 text-base font-semibold leading-tight">{doc.titre}</h3>
+        {doc.description && (
+          <p className="line-clamp-2 text-sm text-muted-foreground">{doc.description}</p>
+        )}
+        <div className="mt-auto flex items-center justify-between pt-2 text-xs text-muted-foreground">
+          <span className="truncate">
+            {isLink ? host : sizeKb ? `${sizeKb} Ko` : ""}
+          </span>
+          <span className="inline-flex items-center gap-1 font-medium text-primary opacity-0 transition group-hover:opacity-100">
+            Ouvrir <ExternalLink className="h-3 w-3" />
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function safeHost(url: string): string {
+  try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
+}
+
+function LinkPreview({ host }: { host: string }) {
+  const initial = (host[0] ?? "?").toUpperCase();
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
+      <div className="flex flex-col items-center gap-2">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-background text-2xl font-bold text-primary shadow-md">
+          {initial}
+        </div>
+        <span className="text-xs font-medium text-muted-foreground">{host}</span>
+      </div>
+    </div>
+  );
+}
+
+function SignedImage({ path, alt }: { path: string; alt: string }) {
+  const q = useQuery({
+    queryKey: ["signed-img", path],
+    queryFn: async () => {
+      const { data } = await supabase.storage.from("documents").createSignedUrl(path, 3600);
+      return data?.signedUrl ?? null;
+    },
+    staleTime: 50 * 60 * 1000,
+  });
+  if (!q.data) return <div className="flex h-full items-center justify-center"><FileImage className="h-10 w-10 text-muted-foreground/50" /></div>;
+  return <img src={q.data} alt={alt} className="h-full w-full object-cover" loading="lazy" />;
+}
+
+/* ---------------- Create dialog ---------------- */
+
+function CreateResourceDialog({
+  open, onOpenChange, onCreated,
+}: { open: boolean; onOpenChange: (o: boolean) => void; onCreated: () => void }) {
+  const user = getUser();
+  const [kind, setKind] = useState<"file" | "link">("file");
+  const [titre, setTitre] = useState("");
+  const [description, setDescription] = useState("");
+  const [thematique, setThematique] = useState<string>(THEMATIQUES[0]);
+  const [url, setUrl] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const reset = () => {
+    setKind("file"); setTitre(""); setDescription(""); setThematique(THEMATIQUES[0]);
+    setUrl(""); setFile(null);
+  };
+
+  const submit = async () => {
+    if (!titre.trim()) { toast.error("Le titre est requis"); return; }
+    if (kind === "link" && !url.trim()) { toast.error("L'URL est requise"); return; }
+    if (kind === "file" && !file) { toast.error("Sélectionnez un fichier"); return; }
+
+    setSaving(true);
+    try {
+      let file_path: string | null = null;
+      let mime_type: string | null = null;
+      let file_size: number | null = null;
+      const folder = user?.assocId ?? "shared";
+
+      if (kind === "file" && file) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_");
+        file_path = `${folder}/${Date.now()}_${safeName}`;
+        const { error: upErr } = await supabase.storage.from("documents").upload(file_path, file, { upsert: false });
+        if (upErr) throw upErr;
+        mime_type = file.type || null;
+        file_size = file.size;
+      }
+
+      const { error } = await supabase.from("documents").insert({
+        titre: titre.trim(),
+        description: description.trim() || null,
+        thematique,
+        type: kind,
+        url: kind === "link" ? url.trim() : null,
+        file_path,
+        mime_type,
+        file_size,
+        assoc_id: user?.assocId ?? null,
+        visible_all: true,
+      });
+      if (error) throw error;
+      toast.success("Ressource ajoutée");
+      reset();
+      onOpenChange(false);
+      onCreated();
+    } catch (e) {
+      toast.error("Échec : " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) reset(); }}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Ajouter une ressource</DialogTitle>
+          <DialogDescription>Document (PDF, image…) ou lien externe.</DialogDescription>
+        </DialogHeader>
+
+        <Tabs value={kind} onValueChange={(v) => setKind(v as "file" | "link")}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="file"><FileText className="mr-2 h-4 w-4" /> Document</TabsTrigger>
+            <TabsTrigger value="link"><Link2 className="mr-2 h-4 w-4" /> Lien</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="r-titre">Titre *</Label>
+            <Input id="r-titre" value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="Ex. Guide du Référentiel Qualité" />
+          </div>
+          <div>
+            <Label htmlFor="r-desc">Description</Label>
+            <Textarea id="r-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+          <div>
+            <Label>Thématique</Label>
+            <Select value={thematique} onValueChange={setThematique}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {THEMATIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          {kind === "link" ? (
+            <div>
+              <Label htmlFor="r-url">URL *</Label>
+              <Input id="r-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" />
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="r-file">Fichier *</Label>
+              <Input id="r-file" type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              {file && <p className="mt-1 text-xs text-muted-foreground">{file.name} · {Math.round(file.size / 1024)} Ko</p>}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Annuler</Button>
+          <Button onClick={submit} disabled={saving}>{saving ? "Enregistrement…" : "Ajouter"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
