@@ -2996,17 +2996,24 @@ function updateQualGlobalScore(){
   });
   if(cntEl) cntEl.textContent=String(evaluatedActions.size);
   if(scoreEl) scoreEl.textContent = n ? (Math.round(sum/n)+'%') : '—';
-  // Moyenne par axe (C1..C10) sur les refs en scope
+  // Moyenne par axe (C1..C10) sur les refs en scope + propagation aux critères
   try{
     const scopedRefs=refs.filter(r=>idSet.has(String(r.action_id)));
     (typeof QUALITE_AXES!=='undefined'?QUALITE_AXES:[]).forEach(ax=>{
-      const el=document.getElementById('sc-'+ax.id); if(!el) return;
+      const el=document.getElementById('sc-'+ax.id);
       const key=String(ax.id).toLowerCase(); // 'C1' -> 'c1'
       const vals=scopedRefs.map(r=>r[key]).filter(v=>v!=null && !isNaN(Number(v))).map(Number);
-      if(!vals.length){ el.textContent='—'; return; }
-      const avg=vals.reduce((s,v)=>s+v,0)/vals.length;
-      // c1..c10 sont des notes 0..5 -> conversion en pourcentage
-      el.textContent=Math.round(avg/5*100)+'%';
+      const hasData=vals.length>0;
+      const avg=hasData?(vals.reduce((s,v)=>s+v,0)/vals.length):0; // 0..5
+      const pct=hasData?Math.round(avg/5*100):null;
+      if(el) el.textContent=hasData?(pct+'%'):'—';
+      // Propagation : chaque critère/indicateur de l'axe affiche la même moyenne (jauge + %)
+      const lvl=hasData?Math.max(1,Math.min(5,Math.round(avg))):0;
+      (ax.criteria||[]).forEach(c=>{
+        try{ paintStars(c.id,lvl); }catch(e){}
+        const pe=document.getElementById('rp-'+c.id);
+        if(pe) pe.textContent=hasData?(pct+'%'):'—';
+      });
     });
   }catch(e){}
 }
