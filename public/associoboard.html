@@ -6943,43 +6943,37 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
   window.__dashFilters = window.__dashFilters || { assoc:'', action:'', theme:'', year:'' };
   window.__dashMeta = window.__dashMeta || { years:[], themes:[], assocs:[], actions:[] };
 
-  var BAR_PAGES = [
-    { pageId:'page-dashboard',  barId:'dashFilterBar',  prefix:'dashF' },
-    { pageId:'page-qualite',    barId:'qualFilterBar',  prefix:'qualF' },
-  ];
-
-  function ensureBar(spec){
-    var page = document.getElementById(spec.pageId); if(!page) return null;
-    var bar = document.getElementById(spec.barId);
+  function ensureBar(){
+    var page = document.getElementById('page-dashboard'); if(!page) return null;
+    var bar = document.getElementById('dashFilterBar');
     if(bar) return bar;
     bar = document.createElement('div');
-    bar.id = spec.barId;
+    bar.id = 'dashFilterBar';
     bar.className = 'card';
     bar.style.cssText = 'margin-bottom:14px;padding:12px 14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:end';
-    var p = spec.prefix;
     bar.innerHTML = ''
-      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Association</label><select id="'+p+'Assoc" class="form-sel" style="width:100%"></select></div>'
-      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Action</label><select id="'+p+'Action" class="form-sel" style="width:100%"></select></div>'
-      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Thématique</label><select id="'+p+'Theme" class="form-sel" style="width:100%"></select></div>'
-      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Année</label><select id="'+p+'Year" class="form-sel" style="width:100%"></select></div>';
+      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Association</label><select id="dashFAssoc" class="form-sel" style="width:100%"></select></div>'
+      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Action</label><select id="dashFAction" class="form-sel" style="width:100%"></select></div>'
+      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Thématique</label><select id="dashFTheme" class="form-sel" style="width:100%"></select></div>'
+      + '<div><label style="display:block;font-size:10px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Année</label><select id="dashFYear" class="form-sel" style="width:100%"></select></div>';
     var hdr = page.querySelector('.page-hdr');
     if(hdr && hdr.nextSibling) page.insertBefore(bar, hdr.nextSibling);
     else page.insertBefore(bar, page.firstChild);
-    [p+'Assoc', p+'Action', p+'Theme', p+'Year'].forEach(function(id){
+    ['dashFAssoc','dashFAction','dashFTheme','dashFYear'].forEach(function(id){
       bar.querySelector('#'+id).addEventListener('change', onDashFilterChange);
     });
     return bar;
   }
-  function populateBar(spec){
-    var bar = ensureBar(spec); if(!bar) return;
-    var f = window.__dashFilters, m = window.__dashMeta, p = spec.prefix;
-    var sa = bar.querySelector('#'+p+'Assoc');
+  function populate(){
+    var bar = ensureBar(); if(!bar) return;
+    var f = window.__dashFilters, m = window.__dashMeta;
+    var sa = bar.querySelector('#dashFAssoc');
     sa.innerHTML = '<option value="">— Toutes les associations —</option>' + (m.assocs||[]).map(function(a){ return '<option value="'+escHtml(a.id)+'"'+(a.id===f.assoc?' selected':'')+'>'+escHtml(a.nom)+'</option>'; }).join('');
-    var st = bar.querySelector('#'+p+'Theme');
+    var st = bar.querySelector('#dashFTheme');
     st.innerHTML = '<option value="">Toutes thématiques</option>' + (m.themes||[]).map(function(t){ return '<option value="'+escHtml(t)+'"'+(t===f.theme?' selected':'')+'>'+escHtml(t)+'</option>'; }).join('');
-    var sy = bar.querySelector('#'+p+'Year');
+    var sy = bar.querySelector('#dashFYear');
     sy.innerHTML = '<option value="">Toutes années</option>' + (m.years||[]).map(function(y){ return '<option value="'+y+'"'+(String(y)===String(f.year)?' selected':'')+'>'+y+'</option>'; }).join('');
-    var sac = bar.querySelector('#'+p+'Action');
+    var sac = bar.querySelector('#dashFAction');
     var acts = (m.actions||[]).filter(function(a){
       if(f.assoc && a.assoc_id !== f.assoc) return false;
       if(f.theme && a.thematique !== f.theme) return false;
@@ -6988,26 +6982,15 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     });
     sac.innerHTML = '<option value="">Toutes les actions</option>' + acts.map(function(a){ return '<option value="'+escHtml(a.id)+'"'+(a.id===f.action?' selected':'')+'>'+escHtml(a.titre)+'</option>'; }).join('');
   }
-  function populate(){ BAR_PAGES.forEach(populateBar); }
-  function onDashFilterChange(ev){
-    var src = ev && ev.target; if(!src) return;
-    // Find which bar fired and read its values
-    var spec = BAR_PAGES.find(function(s){ return document.getElementById(s.barId) && document.getElementById(s.barId).contains(src); });
-    if(!spec) return;
-    var bar = document.getElementById(spec.barId), p = spec.prefix;
+  function onDashFilterChange(){
+    var bar = document.getElementById('dashFilterBar'); if(!bar) return;
     window.__dashFilters = {
-      assoc: bar.querySelector('#'+p+'Assoc').value,
-      action: bar.querySelector('#'+p+'Action').value,
-      theme: bar.querySelector('#'+p+'Theme').value,
-      year: bar.querySelector('#'+p+'Year').value,
+      assoc: bar.querySelector('#dashFAssoc').value,
+      action: bar.querySelector('#dashFAction').value,
+      theme: bar.querySelector('#dashFTheme').value,
+      year: bar.querySelector('#dashFYear').value,
     };
     populate();
-    // Sync les sélecteurs locaux du Référentiel Qualité
-    try{
-      var qa=document.getElementById('qualAssocSel'); if(qa){ qa.value = window.__dashFilters.assoc || ''; }
-      if(typeof window.onQualAssocChange==='function') window.onQualAssocChange();
-      var qac=document.getElementById('qualActionSel'); if(qac && window.__dashFilters.action){ qac.value = window.__dashFilters.action; if(typeof window.onQualActionChange==='function') window.onQualActionChange(); }
-    }catch(e){}
     window.parent && window.parent.postMessage({
       type: 'ab-dash-filters',
       assocId: window.__dashFilters.assoc || null,
@@ -7043,8 +7026,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       var el = document.getElementById(id); if(!el) return;
       el.style.display = hide ? 'none' : (id==='globalSousThemeSel' ? 'none' : '');
     });
-    BAR_PAGES.forEach(ensureBar);
-    populate();
+    if(hide){ ensureBar(); populate(); }
   }
   window.addEventListener('hashchange', syncTopbar);
   document.addEventListener('DOMContentLoaded', syncTopbar);
