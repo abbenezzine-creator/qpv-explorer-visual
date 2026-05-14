@@ -2842,11 +2842,11 @@ function renderQualTopFilters(){
       `<select id="qfYear" style="${sty}">`+opt('','Toutes années',yearSel)+
       years.map(y=>opt(y,y,yearSel)).join('')+`</select></div>`;
   const qfA=document.getElementById('qfAssoc');
-  if(qfA) qfA.onchange=function(){ try{ switchAssociation(this.value); }catch(e){} };
+  if(qfA) qfA.onchange=function(){ try{ switchAssociation(this.value); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
   const qfT=document.getElementById('qfTheme');
-  if(qfT) qfT.onchange=function(){ const g=document.getElementById('globalThemeSel'); if(g){ g.value=this.value; } try{ onGlobalThemeChange(); }catch(e){} };
+  if(qfT) qfT.onchange=function(){ const g=document.getElementById('globalThemeSel'); if(g){ g.value=this.value; } try{ onGlobalThemeChange(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
   const qfY=document.getElementById('qfYear');
-  if(qfY) qfY.onchange=function(){ const g=document.getElementById('yearFilter'); if(g){ g.value=this.value; } try{ onYearChange(); }catch(e){} };
+  if(qfY) qfY.onchange=function(){ const g=document.getElementById('yearFilter'); if(g){ g.value=this.value; } try{ onYearChange(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
   const qfAct=document.getElementById('qfAction');
   if(qfAct) qfAct.onchange=function(){
     const sa=document.getElementById('qualAssocSel');
@@ -2856,7 +2856,10 @@ function renderQualTopFilters(){
       if(a && sa){ sa.value=String(a.assoc_id||a.assocId); onQualAssocChange(); }
     }
     if(sac){ sac.value=this.value; onQualActionChange(); }
+    try{ updateQualGlobalScore(); }catch(e){}
   };
+  // Initial average paint with current scope
+  try{ updateQualGlobalScore(); }catch(e){}
 }
 function paintStars(critId,val){
   const row=document.getElementById('rs-'+critId); if(!row) return;
