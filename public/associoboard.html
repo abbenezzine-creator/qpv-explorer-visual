@@ -1313,7 +1313,8 @@ function decorateDashAllCards(){
     }
     card.addEventListener('click', function(ev){
       if(ev.target.closest('button')) return;
-      showDashAllRecap(card);
+      var aid = card.getAttribute('data-action-id') || '';
+      try{ window.parent && window.parent.postMessage({type:'ab-view-action', actionId: aid}, '*'); }catch(_){ }
     });
   });
 }
