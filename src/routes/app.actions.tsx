@@ -95,6 +95,7 @@ function ActionsListPage() {
   const [fQpv, setFQpv] = useState<string>(ALL);
   const [fThematique, setFThematique] = useState<string>(ALL);
   const [viewing, setViewing] = useState<Action | null>(null);
+  const [viewOrigin, setViewOrigin] = useState<string | null>(null);
   const [fStatut, setFStatut] = useState<string>(ALL);
 
   const assocsQ = useQuery({ queryKey: ["associations"], queryFn: fetchAssociations });
@@ -106,12 +107,12 @@ function ActionsListPage() {
     if (!actionsQ.data) return;
     if (search.view) {
       const a = actionsQ.data.find((x) => x.id === search.view);
-      if (a) { setViewing(a); navigate({ search: {} as never, replace: true }); }
+      if (a) { setViewing(a); setViewOrigin(search.from ?? null); navigate({ search: {} as never, replace: true }); }
     } else if (search.edit) {
       const a = actionsQ.data.find((x) => x.id === search.edit);
       if (a) { setEditing(a); setDialogOpen(true); navigate({ search: {} as never, replace: true }); }
     }
-  }, [actionsQ.data, search.view, search.edit, navigate]);
+  }, [actionsQ.data, search.view, search.edit, search.from, navigate]);
 
   const associations: Association[] = assocsQ.data ?? [];
   const assocMap = useMemo(() => {
