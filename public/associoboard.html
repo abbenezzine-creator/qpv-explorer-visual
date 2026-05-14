@@ -7063,6 +7063,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       themes: meta.themes || [],
       assocs: meta.assocs || [],
       actions: meta.actions || [],
+      refs: meta.refs || [],
     };
     if(meta.selected){
       window.__dashFilters = {
@@ -7074,6 +7075,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     }
     populate();
     try{ if(document.getElementById('page-qualite')?.classList.contains('active') && typeof window.renderQualite==='function') window.renderQualite(); }catch(e){}
+    try{ if(typeof window.updateQualGlobalScore==='function') window.updateQualGlobalScore(); }catch(e){}
   };
   function syncTopbar(){
     var hash = (location.hash||'').replace('#page=','');
