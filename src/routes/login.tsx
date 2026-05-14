@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LogIn, ShieldCheck, KeyRound, Mail } from "lucide-react";
+import { refreshFromSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   beforeLoad: async () => {
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/login")({
 
 // Comptes "globaux" qui se connectent par alias plutôt que par enregistrement assoc.
 const STATIC_LOGINS: Record<string, { email: string; label: string }> = {
-  superadmin: { email: "abdelhakaboubaker@gmail.com", label: "Super Administrateur" },
+  superadmin: { email: "ab.benezzine@gmail.com", label: "Super Administrateur" },
   partenaire: { email: "partenaire@associoboard.app", label: "Partenaires (lecture seule)" },
 };
 
@@ -56,6 +57,7 @@ function LoginPage() {
         setErr("Identifiant ou mot de passe incorrect.");
         return;
       }
+      await refreshFromSession();
       navigate({ to: "/app", search: { page: "dashboard" } });
     } finally {
       setLoading(false);
