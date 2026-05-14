@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LogIn, ShieldCheck, KeyRound, Mail } from "lucide-react";
+import { LogIn, ShieldCheck, KeyRound, Mail, Eye, EyeOff } from "lucide-react";
 import { refreshFromSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
@@ -42,6 +42,7 @@ function LoginPage() {
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,11 +123,21 @@ function LoginPage() {
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Mot de passe
             </label>
-            <input
-              type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} autoComplete="current-password"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                type={showPwd ? "text" : "password"} value={pwd} onChange={(e) => setPwd(e.target.value)} autoComplete="current-password"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 pr-10 text-sm focus:border-primary focus:outline-none"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPwd((v) => !v)}
+                aria-label={showPwd ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground"
+              >
+                {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
           {err && (
             <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</div>
