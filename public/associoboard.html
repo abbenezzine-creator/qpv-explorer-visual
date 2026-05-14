@@ -1387,7 +1387,7 @@ function onDashAllYearChange(){
       }
     }catch(_){} }
     var aa = document.getElementById('dashAllActions');
-    if(aa && dashCache.allActions){ aa.innerHTML = dashCache.allActions; try{ filterDashAllActions(); }catch(_){ } }
+    if(aa && dashCache.allActions){ aa.innerHTML = dashCache.allActions; try{ decorateDashAllCards(); filterDashAllActions(); }catch(_){ } }
     window.__abDashCache = dashCache;
   }
   window.__abApplyDash = applyDash;
