@@ -5,6 +5,7 @@ import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchDashboardData, buildDashboardPayload, type DashboardFilters } from "@/lib/dashboard-bridge";
 import { EvalBeneficiaireModal } from "@/components/dashboard/EvalBeneficiaireModal";
+import { createSnapshot, restoreSnapshot, type Snapshot } from "@/lib/backup-bridge";
 
 export const Route = createFileRoute("/app/")({
   beforeLoad: async () => {
@@ -242,6 +243,26 @@ function AppIndexPage() {
           }
           if (openUrl) ref.current?.contentWindow?.postMessage({ type: "ab-document-url", url: openUrl }, "*");
         } catch (err) { console.error("ab-open-document", err); }
+      } else if (d.type === "ab-backup-create") {
+        const win = ref.current?.contentWindow;
+        try {
+          const snap = await createSnapshot();
+          win?.postMessage({ type: "ab-backup-created", snapshot: snap }, "*");
+        } catch (err) {
+          console.error("ab-backup-create", err);
+          win?.postMessage({ type: "ab-backup-created", error: String((err as Error)?.message ?? err) }, "*");
+        }
+      } else if (d.type === "ab-backup-restore") {
+        const win = ref.current?.contentWindow;
+        try {
+          const snap = (d as unknown as { snapshot: Snapshot }).snapshot;
+          const res = await restoreSnapshot(snap);
+          qc.invalidateQueries();
+          win?.postMessage({ type: "ab-backup-restored", success: true, counts: res.counts }, "*");
+        } catch (err) {
+          console.error("ab-backup-restore", err);
+          win?.postMessage({ type: "ab-backup-restored", success: false, error: String((err as Error)?.message ?? err) }, "*");
+        }
       }
     };
     window.addEventListener("message", onMsg);
