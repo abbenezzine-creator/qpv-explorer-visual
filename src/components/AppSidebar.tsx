@@ -196,7 +196,7 @@ export function AppSidebar() {
           {!collapsed && (
             <div className="flex flex-col leading-tight">
               <span className="text-sm font-semibold">AssocioBoard</span>
-              <span className="text-[11px] text-muted-foreground">Contrat de Ville</span>
+              
             </div>
           )}
         </div>

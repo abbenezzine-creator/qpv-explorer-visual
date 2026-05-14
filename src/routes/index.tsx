@@ -120,9 +120,6 @@ function Header() {
             <span className="text-[10px] font-bold leading-tight text-center">RÉP<br/>FR</span>
           </div>
           <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Préfecture du Loiret · Orléans Métropole
-            </div>
             <h1 className="text-2xl font-bold text-foreground">
               Diagnostic Territorial — Engagements Quartiers 2030
             </h1>
