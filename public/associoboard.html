@@ -2813,8 +2813,8 @@ function onQualAssocChange(){
   const aid=document.getElementById('qualAssocSel').value;
   const sel=document.getElementById('qualActionSel');
   const scoped=qualScopedActions();
-  const list=aid?scoped.filter(a=>a.assocId===parseInt(aid)):scoped;
-  sel.innerHTML='<option value="">— Action —</option>'+list.map(a=>`<option value="${a.id}">${a.titre}</option>`).join('');
+  const list=aid?scoped.filter(a=>String(a.assocId)===String(aid)):scoped;
+  sel.innerHTML='<option value="">— Action —</option>'+list.map(a=>`<option value="${a.id}">${(a.titre||'').replace(/</g,'&lt;')}</option>`).join('');
   updateEvalTabs();
   updateQualGlobalScore();
 }
