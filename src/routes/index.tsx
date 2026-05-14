@@ -412,7 +412,7 @@ function AxisPane({ axis, scope, year }: { axis: AxisKey; scope: QPVScope; year:
                 <span className="ml-1 font-semibold text-foreground">
                   {(() => {
                     const lv = scopedLatestValue(i, scope, year);
-                    return lv ? `${lv.value.toLocaleString("fr-FR")} ${i.unit} (${lv.year})` : "n.c.";
+                    return lv ? `${(i.unit === "hab." ? Math.round(lv.value) : lv.value).toLocaleString("fr-FR")} ${i.unit} (${lv.year})` : "n.c.";
                   })()}
                 </span>
               </div>
@@ -454,7 +454,7 @@ function IndicatorCard({
       )}
       <div className="mt-2 flex items-baseline gap-2">
         <div className="text-2xl font-bold text-foreground">
-          {lv ? `${lv.value.toLocaleString("fr-FR")}` : "n.c."}
+          {lv ? `${(ind.unit === "hab." ? Math.round(lv.value) : lv.value).toLocaleString("fr-FR")}` : "n.c."}
         </div>
         <span className="text-xs text-muted-foreground">{ind.unit}</span>
       </div>
@@ -468,7 +468,7 @@ function IndicatorCard({
                 : "bg-destructive/10 text-destructive",
             )}
           >
-            {delta > 0 ? "▲" : "▼"} {Math.abs(delta).toLocaleString("fr-FR")} {ind.unit}
+            {delta > 0 ? "▲" : "▼"} {(ind.unit === "hab." ? Math.round(Math.abs(delta)) : Math.abs(delta)).toLocaleString("fr-FR")} {ind.unit}
           </span>
           <span className="text-muted-foreground">depuis 2014</span>
         </div>
