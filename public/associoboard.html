@@ -7043,7 +7043,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       var el = document.getElementById(id); if(!el) return;
       el.style.display = hide ? 'none' : (id==='globalSousThemeSel' ? 'none' : '');
     });
-    if(hide){ ensureBar(); populate(); }
+    BAR_PAGES.forEach(ensureBar);
+    populate();
   }
   window.addEventListener('hashchange', syncTopbar);
   document.addEventListener('DOMContentLoaded', syncTopbar);
