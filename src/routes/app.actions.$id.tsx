@@ -19,6 +19,7 @@ import { ArrowLeft, Pencil, Plus } from "lucide-react";
 import { ActionFormDialog } from "@/components/actions/ActionFormDialog";
 
 export const Route = createFileRoute("/app/actions/$id")({
+  validateSearch: (s: Record<string, unknown>) => ({ from: typeof s.from === "string" ? s.from : undefined }),
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
@@ -29,6 +30,8 @@ export const Route = createFileRoute("/app/actions/$id")({
 
 function ActionDetailPage() {
   const { id } = useParams({ from: "/app/actions/$id" });
+  const { from } = Route.useSearch();
+  const fromDashboard = from === "dashboard";
   const user = getUser();
   const [editOpen, setEditOpen] = useState(false);
 
