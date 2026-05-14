@@ -412,7 +412,7 @@ function AxisPane({ axis, scope, year }: { axis: AxisKey; scope: QPVScope; year:
                 <span className="ml-1 font-semibold text-foreground">
                   {(() => {
                     const lv = scopedLatestValue(i, scope, year);
-                    return lv ? `${(i.unit === "hab." ? Math.round(lv.value) : lv.value).toLocaleString("fr-FR")} ${i.unit} (${lv.year})` : "n.c.";
+                    return lv ? `${Math.round(lv.value).toLocaleString("fr-FR")} ${i.unit} (${lv.year})` : "n.c.";
                   })()}
                 </span>
               </div>
@@ -454,7 +454,7 @@ function IndicatorCard({
       )}
       <div className="mt-2 flex items-baseline gap-2">
         <div className="text-2xl font-bold text-foreground">
-          {lv ? `${(ind.unit === "hab." ? Math.round(lv.value) : lv.value).toLocaleString("fr-FR")}` : "n.c."}
+          {lv ? `${Math.round(lv.value).toLocaleString("fr-FR")}` : "n.c."}
         </div>
         <span className="text-xs text-muted-foreground">{ind.unit}</span>
       </div>
@@ -468,7 +468,7 @@ function IndicatorCard({
                 : "bg-destructive/10 text-destructive",
             )}
           >
-            {delta > 0 ? "▲" : "▼"} {(ind.unit === "hab." ? Math.round(Math.abs(delta)) : Math.abs(delta)).toLocaleString("fr-FR")} {ind.unit}
+            {delta > 0 ? "▲" : "▼"} {Math.round(Math.abs(delta)).toLocaleString("fr-FR")} {ind.unit}
           </span>
           <span className="text-muted-foreground">depuis 2014</span>
         </div>
@@ -511,7 +511,7 @@ function TrajectoryChart({ indicator, highlightYear }: { indicator: Indicator; h
         <YAxis stroke="var(--muted-foreground)" />
         <Tooltip
           contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
-          formatter={(v: number) => `${v?.toLocaleString("fr-FR")} ${indicator.unit}`}
+          formatter={(v: number) => `${Math.round(v ?? 0).toLocaleString("fr-FR")} ${indicator.unit}`}
         />
         <Legend />
         <ReferenceLine x={2024} stroke="var(--muted-foreground)" strokeDasharray="4 4" label={{ value: "Signature CV", position: "insideTopLeft", fill: "var(--muted-foreground)", fontSize: 10 }} />
@@ -538,7 +538,7 @@ function ComparisonChart({ indicator, year }: { indicator: Indicator; year: numb
         <YAxis stroke="var(--muted-foreground)" />
         <Tooltip
           contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
-          formatter={(v: number) => `${v.toLocaleString("fr-FR")} ${indicator.unit}`}
+          formatter={(v: number) => `${Math.round(v).toLocaleString("fr-FR")} ${indicator.unit}`}
           labelFormatter={(l) => data.find((d) => d.name === l)?.fullName ?? l}
         />
         <Bar dataKey="value" radius={[6, 6, 0, 0]}>
