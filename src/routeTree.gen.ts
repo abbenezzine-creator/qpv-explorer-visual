@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as RgpdRouteImport } from './routes/rgpd'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
@@ -25,6 +26,11 @@ import { Route as AppActionsIdEvaluationRouteImport } from './routes/app.actions
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RgpdRoute = RgpdRouteImport.update({
+  id: '/rgpd',
+  path: '/rgpd',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rgpd': typeof RgpdRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rgpd': typeof RgpdRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rgpd': typeof RgpdRoute
   '/signup': typeof SignupRoute
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/reset-password'
+    | '/rgpd'
     | '/signup'
     | '/app/actions'
     | '/app/associations'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/reset-password'
+    | '/rgpd'
     | '/signup'
     | '/app/actions'
     | '/app/associations'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/reset-password'
+    | '/rgpd'
     | '/signup'
     | '/app/actions'
     | '/app/associations'
@@ -174,6 +186,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RgpdRoute: typeof RgpdRoute
   SignupRoute: typeof SignupRoute
 }
 
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rgpd': {
+      id: '/rgpd'
+      path: '/rgpd'
+      fullPath: '/rgpd'
+      preLoaderRoute: typeof RgpdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -313,6 +333,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RgpdRoute: RgpdRoute,
   SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
