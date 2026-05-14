@@ -14,6 +14,8 @@ import {
   DatabaseBackup,
   Plug,
   ClipboardList,
+  ShieldCheck,
+  ChevronDown,
 } from "lucide-react";
 
 import {
@@ -29,6 +31,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useEffect, useState } from "react";
 import { getUser, logout as authLogout, type AbUser } from "@/lib/auth";
 
@@ -63,7 +66,9 @@ const admin: NavItem[] = [
   { title: "Questionnaire thématique", to: "/app", search: { page: "questionnaire-thematique" }, icon: ListChecks },
 ];
 
-
+const legal: NavItem[] = [
+  { title: "Mentions légales", to: "/rgpd", icon: ShieldCheck },
+];
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -78,6 +83,8 @@ export function AppSidebar() {
     return search?.page === it.search.page;
   };
 
+  const groupContains = (items: NavItem[]) => items.some(isActive);
+
   const [user, setUserState] = useState<AbUser | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -91,6 +98,16 @@ export function AppSidebar() {
       window.removeEventListener("storage", sync);
     };
   }, []);
+
+  // Accordion behaviour: only one open group at a time.
+  const initialOpen =
+    (groupContains(territoire) && "territoire") ||
+    (groupContains(principal) && "principal") ||
+    (groupContains(evaluation) && "evaluation") ||
+    (groupContains(ressources) && "ressources") ||
+    (groupContains(admin) && "admin") ||
+    "principal";
+  const [openGroup, setOpenGroup] = useState<string>(initialOpen as string);
 
   const handleLogout = async () => {
     try {
@@ -110,41 +127,61 @@ export function AppSidebar() {
     viewer: "Lecteur",
   };
 
-  const renderGroup = (label: string, items: NavItem[], extra?: React.ReactNode) => (
-    <SidebarGroup>
-      <SidebarGroupLabel className="font-bold uppercase tracking-wider text-xs">{label}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        {extra}
-        <SidebarMenu>
-          {items.map((it) => {
-            const active = isActive(it);
-            return (
-            <SidebarMenuItem key={it.title}>
-              <SidebarMenuButton
-                asChild
-                isActive={active}
-                className={
-                  active
-                    ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary hover:bg-primary/15 hover:text-primary data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
-                    : ""
-                }
-              >
-                <Link
-                  to={it.to}
-                  search={it.search as never}
-                  className="flex items-center gap-2"
-                >
-                  <it.icon className={`h-4 w-4 ${active ? "text-primary" : ""}`} />
-                  {!collapsed && <span>{it.title}</span>}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+  const renderItems = (items: NavItem[]) => (
+    <SidebarMenu>
+      {items.map((it) => {
+        const active = isActive(it);
+        return (
+          <SidebarMenuItem key={it.title}>
+            <SidebarMenuButton
+              asChild
+              isActive={active}
+              className={
+                active
+                  ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary hover:bg-primary/15 hover:text-primary data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                  : ""
+              }
+            >
+              <Link to={it.to} search={it.search as never} className="flex items-center gap-2">
+                <it.icon className={`h-4 w-4 ${active ? "text-primary" : ""}`} />
+                {!collapsed && <span>{it.title}</span>}
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        );
+      })}
+    </SidebarMenu>
   );
+
+  const renderCollapsibleGroup = (key: string, label: string, items: NavItem[]) => {
+    if (collapsed) {
+      // In icon-collapsed mode, just render the items without accordion chrome.
+      return (
+        <SidebarGroup key={key}>
+          <SidebarGroupContent>{renderItems(items)}</SidebarGroupContent>
+        </SidebarGroup>
+      );
+    }
+    const open = openGroup === key;
+    return (
+      <SidebarGroup key={key}>
+        <Collapsible open={open} onOpenChange={(v) => setOpenGroup(v ? key : "")}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="flex w-full items-center justify-between px-2 py-1.5 text-xs font-bold uppercase tracking-wider text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+            >
+              <span>{label}</span>
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+            <SidebarGroupContent>{renderItems(items)}</SidebarGroupContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </SidebarGroup>
+    );
+  };
 
   const isSuperAdmin = user?.role === "superadmin";
 
@@ -164,11 +201,19 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {renderGroup("Territoire", territoire)}
-        {renderGroup("Principal", principal)}
-        {renderGroup("Évaluation", evaluation)}
-        {renderGroup("Ressource Documentaire", ressources)}
-        {isSuperAdmin && renderGroup("Administration", admin)}
+        {renderCollapsibleGroup("territoire", "Territoire", territoire)}
+        {renderCollapsibleGroup("principal", "Principal", principal)}
+        {renderCollapsibleGroup("evaluation", "Évaluation", evaluation)}
+        {renderCollapsibleGroup("ressources", "Ressource Documentaire", ressources)}
+        {isSuperAdmin && renderCollapsibleGroup("admin", "Administration", admin)}
+        <SidebarGroup>
+          {!collapsed && (
+            <SidebarGroupLabel className="font-bold uppercase tracking-wider text-xs">
+              Informations
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>{renderItems(legal)}</SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         {mounted && user && !collapsed && (
