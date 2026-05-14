@@ -621,12 +621,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <!-- QUALITE -->
     <div class="page" id="page-qualite">
       <div class="page-hdr"><div><div class="page-title">Référentiel Qualité</div><div class="page-sub">7 critères Qualiopi — évaluation par action et partenaire</div></div></div>
-      <div style="display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualAssocSel" onchange="onQualAssocChange()"><option value="">— Association —</option></select>
-        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualActionSel" onchange="onQualActionChange()"><option value="">— Action —</option></select>
-        <span style="font-size:12px;color:var(--muted-fore);margin-left:auto">Évaluateur :</span>
-        <select class="form-sel" style="width:auto;padding:6px 10px;font-size:13px" id="qualPartnerSel" onchange="loadEvalForEvaluator()"><option value="">Anonyme (par défaut)</option></select>
-        <button class="btn btn-outline btn-sm" onclick="addEvaluator()">+ Nouvel évaluateur</button>
+      <div style="display:none" aria-hidden="true">
+        <select id="qualAssocSel" onchange="onQualAssocChange()"><option value="">— Association —</option></select>
+        <select id="qualActionSel" onchange="onQualActionChange()"><option value="">— Action —</option></select>
+        <select id="qualPartnerSel" onchange="loadEvalForEvaluator()"><option value="">Anonyme (par défaut)</option></select>
       </div>
       <div class="eval-tabs" id="evalTabs"></div>
       <div class="ref-leg">
