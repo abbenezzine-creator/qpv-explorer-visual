@@ -2915,7 +2915,7 @@ function updateQualGlobalScore(){
   const scoped=qualScopedActions().map(a=>String(a.id));
   let actionIds;
   if(aid){ actionIds=[String(aid)]; }
-  else if(sid){ actionIds=qualScopedActions().filter(a=>a.assocId===parseInt(sid)).map(a=>String(a.id)); }
+  else if(sid){ actionIds=qualScopedActions().filter(a=>String(a.assocId)===String(sid)).map(a=>String(a.id)); }
   else { actionIds=scoped; }
   const idSet=new Set(actionIds);
   let sum=0,n=0; const evaluatedActions=new Set();
