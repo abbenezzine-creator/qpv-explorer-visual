@@ -2852,7 +2852,9 @@ function renderQualTopFilters(){
     const sa=document.getElementById('qualAssocSel');
     const sac=document.getElementById('qualActionSel');
     if(this.value){
-      const a=qualSourceActions().find(x=>String(x.id)===String(this.value));
+      const a=(window.__dashMeta?.actions||[]).find(x=>String(x.id)===String(this.value));
+      if(a && sa){ sa.value=String(a.assoc_id||a.assocId); onQualAssocChange(); }
+      this._handled=true;
       if(a && sa){ sa.value=String(a.assocId); onQualAssocChange(); }
     }
     if(sac){ sac.value=this.value; onQualActionChange(); }
