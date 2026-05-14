@@ -53,6 +53,7 @@ export const Route = createFileRoute("/app/actions")({
   validateSearch: (s: Record<string, unknown>) => ({
     view: typeof s.view === "string" && s.view ? s.view : undefined,
     edit: typeof s.edit === "string" && s.edit ? s.edit : undefined,
+    from: typeof s.from === "string" && s.from ? s.from : undefined,
   }),
   component: ActionsListPage,
 });
@@ -94,6 +95,7 @@ function ActionsListPage() {
   const [fQpv, setFQpv] = useState<string>(ALL);
   const [fThematique, setFThematique] = useState<string>(ALL);
   const [viewing, setViewing] = useState<Action | null>(null);
+  const [viewOrigin, setViewOrigin] = useState<string | null>(null);
   const [fStatut, setFStatut] = useState<string>(ALL);
 
   const assocsQ = useQuery({ queryKey: ["associations"], queryFn: fetchAssociations });
@@ -105,12 +107,12 @@ function ActionsListPage() {
     if (!actionsQ.data) return;
     if (search.view) {
       const a = actionsQ.data.find((x) => x.id === search.view);
-      if (a) { setViewing(a); navigate({ search: {} as never, replace: true }); }
+      if (a) { setViewing(a); setViewOrigin(search.from ?? null); navigate({ search: {} as never, replace: true }); }
     } else if (search.edit) {
       const a = actionsQ.data.find((x) => x.id === search.edit);
       if (a) { setEditing(a); setDialogOpen(true); navigate({ search: {} as never, replace: true }); }
     }
-  }, [actionsQ.data, search.view, search.edit, navigate]);
+  }, [actionsQ.data, search.view, search.edit, search.from, navigate]);
 
   const associations: Association[] = assocsQ.data ?? [];
   const assocMap = useMemo(() => {
@@ -408,7 +410,16 @@ function ActionsListPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
+      <Dialog open={!!viewing} onOpenChange={(o) => {
+        if (!o) {
+          const origin = viewOrigin;
+          setViewing(null);
+          setViewOrigin(null);
+          if (origin === "dashboard") {
+            navigate({ to: "/app/", search: { page: "dashboard" } as never });
+          }
+        }
+      }}>
         <DialogContent
           className="flex max-w-none sm:rounded-none p-0 gap-0 overflow-hidden top-0 left-0 translate-x-0 translate-y-0 border-0"
           style={{
@@ -420,8 +431,15 @@ function ActionsListPage() {
           {viewing && (
             <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
               <div className="flex shrink-0 items-center justify-between border-b border-border bg-card px-6 py-3">
-                <Button variant="ghost" size="sm" onClick={() => setViewing(null)}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Retour à la table
+                <Button variant="ghost" size="sm" onClick={() => {
+                  const origin = viewOrigin;
+                  setViewing(null);
+                  setViewOrigin(null);
+                  if (origin === "dashboard") {
+                    navigate({ to: "/app/", search: { page: "dashboard" } as never });
+                  }
+                }}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> {viewOrigin === "dashboard" ? "Retour au tableau de bord" : "Retour à la table"}
                 </Button>
                 <div className="flex items-center gap-2">
                   <span className={`rounded-full border px-2 py-0.5 text-xs ${STATUT_VARIANT[viewing.statut]}`}>
