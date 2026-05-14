@@ -2964,30 +2964,47 @@ function updateAxeScore(axId){
 function updateQualGlobalScore(){
   const scoreEl=document.getElementById('qualGlobalScore');
   const cntEl=document.getElementById('qualEvalCount');
-  // Determine scope from dropdowns: action > assoc > all
-  const aidSel=document.getElementById('qualActionSel');
-  const sidSel=document.getElementById('qualAssocSel');
-  const aid=aidSel?aidSel.value:'';
-  const sid=sidSel?sidSel.value:'';
-  const scoped=qualScopedActions().map(a=>String(a.id));
-  let actionIds;
-  if(aid){ actionIds=[String(aid)]; }
-  else if(sid){ actionIds=qualScopedActions().filter(a=>String(a.assocId)===String(sid)).map(a=>String(a.id)); }
-  else { actionIds=scoped; }
-  const idSet=new Set(actionIds);
-  let sum=0,n=0; const evaluatedActions=new Set();
-  Object.keys(QUAL_EVALS||{}).forEach(k=>{
-    const actId=k.split('_')[0];
-    if(!idSet.has(actId)) return;
-    const vals=Object.values(QUAL_EVALS[k]||{});
-    if(!vals.length) return;
-    vals.forEach(v=>{ sum+=v; n++; });
-    evaluatedActions.add(actId);
+  const meta=window.__dashMeta||{};
+  const refs=Array.isArray(meta.refs)?meta.refs:[];
+  // Scope : qfAction > qfAssoc (top filter bar) > qualActionSel > qualAssocSel > all
+  const qfA=document.getElementById('qfAssoc');
+  const qfAct=document.getElementById('qfAction');
+  const qfT=document.getElementById('qfTheme');
+  const qfY=document.getElementById('qfYear');
+  const aidSel=(qfA&&qfA.value)||document.getElementById('qualAssocSel')?.value||'';
+  const actSel=(qfAct&&qfAct.value)||document.getElementById('qualActionSel')?.value||'';
+  const themeSel=(qfT&&qfT.value)||'';
+  const yearSel=(qfY&&qfY.value)||'';
+  const allActs=Array.isArray(meta.actions)?meta.actions:[];
+  // Compute action scope from filters
+  let actionPool=allActs;
+  if(actSel) actionPool=actionPool.filter(a=>String(a.id)===String(actSel));
+  else {
+    if(aidSel) actionPool=actionPool.filter(a=>String(a.assoc_id||a.assocId)===String(aidSel));
+    if(themeSel) actionPool=actionPool.filter(a=>a.thematique===themeSel);
+    if(yearSel) actionPool=actionPool.filter(a=>String(a.annee)===yearSel);
+  }
+  const idSet=new Set(actionPool.map(a=>String(a.id)));
+  // For each ref in scope, derive a 0..100 score (prefer score_global, else mean(c1..c10)*20)
+  const evaluatedActions=new Set();
+  let sum=0,n=0;
+  refs.forEach(r=>{
+    if(!idSet.has(String(r.action_id))) return;
+    let val=null;
+    if(r.score_global!=null) val=Number(r.score_global);
+    else {
+      const cs=[r.c1,r.c2,r.c3,r.c4,r.c5,r.c6,r.c7,r.c8,r.c9,r.c10].filter(v=>v!=null);
+      if(cs.length) val=(cs.reduce((s,v)=>s+v,0)/cs.length)*20;
+    }
+    if(val==null||isNaN(val)) return;
+    sum+=val; n++;
+    evaluatedActions.add(String(r.action_id));
   });
   if(cntEl) cntEl.textContent=String(evaluatedActions.size);
   if(!n){ if(scoreEl) scoreEl.textContent='—'; return; }
-  if(scoreEl) scoreEl.textContent=Math.round(sum/n/5*100)+'%';
+  if(scoreEl) scoreEl.textContent=Math.round(sum/n)+'%';
 }
+window.updateQualGlobalScore=updateQualGlobalScore;
 // ========== HISTORIQUE QUALITÉ (versions persistées en localStorage) ==========
 const QUAL_HIST_KEY = 'ab_qual_history_v1';
 function _loadQualHistory(){ try{ return JSON.parse(localStorage.getItem(QUAL_HIST_KEY)||'[]'); }catch(e){ return []; } }
