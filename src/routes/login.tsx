@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LogIn, ShieldCheck, KeyRound, Mail } from "lucide-react";
+import { refreshFromSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   beforeLoad: async () => {
@@ -56,6 +57,7 @@ function LoginPage() {
         setErr("Identifiant ou mot de passe incorrect.");
         return;
       }
+      await refreshFromSession();
       navigate({ to: "/app", search: { page: "dashboard" } });
     } finally {
       setLoading(false);
