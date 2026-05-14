@@ -129,6 +129,14 @@ function AppIndexPage() {
         setEvalActionId(d.actionId);
       } else if (d.type === "ab-open-qualite" && typeof d.actionId === "string") {
         navigate({ search: (prev: { page?: string; qualiteAction?: string }) => ({ ...prev, page: "qualite", qualiteAction: d.actionId as string }) });
+      } else if (d.type === "ab-edit-action" && typeof d.actionId === "string") {
+        navigate({ to: "/app/actions", search: { edit: d.actionId } as never });
+      } else if (d.type === "ab-delete-action" && typeof d.actionId === "string") {
+        try {
+          const { error } = await supabase.from("actions").delete().eq("id", d.actionId);
+          if (error) { console.error("ab-delete-action", error); alert("Suppression impossible : " + error.message); return; }
+          qc.invalidateQueries({ queryKey: ["dashboard-data"] });
+        } catch (err) { console.error("ab-delete-action", err); }
       } else if (d.type === "ab-save-qualite" && typeof d.actionId === "string") {
         try {
           const { data: actRow } = await supabase.from("actions").select("assoc_id").eq("id", d.actionId).maybeSingle();

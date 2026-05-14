@@ -195,7 +195,7 @@ function actionCardHtml(a: Action, assocName: string, refsCount: number, evalsCo
   const scoreBadge = scoreAvg != null
     ? `<span class="badge" style="background:color-mix(in oklab, var(--accent-rose) 15%, transparent);color:var(--accent-rose);font-weight:700">★ ${scoreAvg}%</span>`
     : `<span class="badge badge-gray" style="opacity:.7">★ —</span>`;
-  return `<div class="action-card" style="position:relative" onclick="window.parent && window.parent.postMessage({type:'ab-open-action',actionId:'${a.id}'},'*')">
+  return `<div class="action-card" data-action-id="${a.id}" data-assoc-name="${escapeHtml(assocName)}" data-titre="${escapeHtml(a.titre)}" style="position:relative">
     <div class="ac-bar" style="background:linear-gradient(135deg,var(--primary),var(--accent-rose))"></div>
     <div class="ac-ref"><span>${escapeHtml(assocName.toUpperCase())}</span><span class="badge badge-${badge}">${escapeHtml(statutLbl)}</span></div>
     <div class="ac-title">${escapeHtml(a.titre)}</div>
