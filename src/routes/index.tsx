@@ -468,7 +468,7 @@ function IndicatorCard({
                 : "bg-destructive/10 text-destructive",
             )}
           >
-            {delta > 0 ? "▲" : "▼"} {(ind.unit === "hab." ? Math.round(Math.abs(delta)) : Math.abs(delta)).toLocaleString("fr-FR")} {ind.unit}
+            {delta > 0 ? "▲" : "▼"} {Math.round(Math.abs(delta)).toLocaleString("fr-FR")} {ind.unit}
           </span>
           <span className="text-muted-foreground">depuis 2014</span>
         </div>
