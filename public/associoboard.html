@@ -3861,57 +3861,76 @@ function lookupThemeForAction(a){
   return hit ? hit.theme : null;
 }
 
-// ========== BACKUP & RESTORE ==========
-function _backupSnapshot(){
-  return { v:1, ts:Date.now(), label:new Date().toLocaleString('fr-FR'),
-    ACCOUNTS:JSON.parse(JSON.stringify(ACCOUNTS)),
-    ASSOCS:JSON.parse(JSON.stringify(ASSOCS)),
-    PARTNERS:JSON.parse(JSON.stringify(PARTNERS)),
-    ACTIONS:JSON.parse(JSON.stringify(ACTIONS)),
-    DOCUMENTS:JSON.parse(JSON.stringify(DOCUMENTS)),
-    QUAL_EVALS:JSON.parse(JSON.stringify(QUAL_EVALS||{})),
-    nextId
-  };
+// ========== BACKUP & RESTORE (Lovable Cloud — toutes les tables) ==========
+function _backupsRead(){ try{ return JSON.parse(localStorage.getItem('ab_backups_v2')||'[]'); }catch(e){ return []; } }
+function _backupsWrite(arr){ localStorage.setItem('ab_backups_v2', JSON.stringify(arr.slice(-30))); }
+function _bkSummary(s){
+  if(!s||!s.tables) return '';
+  const t=s.tables;
+  return (t.associations||[]).length+' assoc · '
+       + (t.actions||[]).length+' actions · '
+       + (t.evaluations_beneficiaires||[]).length+' éval bénéf · '
+       + (t.documents||[]).length+' docs · '
+       + (t.referentiel_qualite||[]).length+' qualité';
 }
-function _backupsRead(){ try{ return JSON.parse(localStorage.getItem('ab_backups')||'[]'); }catch(e){ return []; } }
-function _backupsWrite(arr){ localStorage.setItem('ab_backups', JSON.stringify(arr.slice(-30))); }
-function createBackup(){
-  const snap=_backupSnapshot();
-  const arr=_backupsRead(); arr.push(snap); _backupsWrite(arr);
-  // Téléchargement automatique du fichier
+function _downloadSnap(snap){
   try{
     const blob=new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a');
-    a.href=url; a.download='associoboard-backup-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.json';
+    a.href=url; a.download='associoboard-backup-'+new Date(snap.ts||Date.now()).toISOString().slice(0,19).replace(/[:T]/g,'-')+'.json';
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  }catch(e){}
-  showToast('Sauvegarde créée et téléchargée'); renderBackupList();
+  }catch(e){ console.error(e); }
+}
+function _waitMsg(type, timeout){
+  return new Promise(function(resolve,reject){
+    const to=setTimeout(function(){ window.removeEventListener('message',h); reject(new Error('Délai dépassé')); }, timeout||60000);
+    function h(ev){ const d=ev.data; if(!d||d.type!==type) return; clearTimeout(to); window.removeEventListener('message',h); resolve(d); }
+    window.addEventListener('message',h);
+  });
+}
+async function createBackup(){
+  showToast('Sauvegarde en cours…');
+  try{
+    window.parent.postMessage({type:'ab-backup-create'},'*');
+    const res=await _waitMsg('ab-backup-created', 90000);
+    if(res.error){ showToast('Erreur : '+res.error); return; }
+    const snap=res.snapshot;
+    const arr=_backupsRead(); arr.push(snap); _backupsWrite(arr);
+    _downloadSnap(snap);
+    showToast('Sauvegarde créée et téléchargée'); renderBackupList();
+  }catch(e){ showToast('Erreur : '+e.message); }
 }
 function deleteBackup(ts){
   const arr=_backupsRead().filter(b=>b.ts!==ts); _backupsWrite(arr); renderBackupList(); showToast('Sauvegarde supprimée');
 }
-function restoreBackup(ts){
+async function restoreBackup(ts){
   const arr=_backupsRead(); const b=arr.find(x=>x.ts===ts); if(!b){ showToast('Sauvegarde introuvable'); return; }
-  if(!confirm('Restaurer la sauvegarde du '+b.label+' ? Les données actuelles seront remplacées.')) return;
-  // snapshot de sécurité avant restauration
-  const cur=_backupSnapshot(); cur.label='Avant restauration — '+cur.label; const all=_backupsRead(); all.push(cur); _backupsWrite(all);
-  ACCOUNTS=b.ACCOUNTS; ASSOCS=b.ASSOCS; PARTNERS=b.PARTNERS; ACTIONS=b.ACTIONS; DOCUMENTS=b.DOCUMENTS; QUAL_EVALS=b.QUAL_EVALS||{}; if(b.nextId) nextId=b.nextId;
-  renderSettings(); updateAllSelects(); refreshDemoSelect();
-  try{ renderDashboard(); }catch(e){} try{ renderAllActions(); }catch(e){} try{ renderDocuments(); }catch(e){}
-  showToast('Restauration effectuée');
+  if(!confirm('Restaurer la sauvegarde du '+b.label+' ?\n\nToutes les données actuelles (associations, actions, évaluations, documents, etc.) seront REMPLACÉES par celles de la sauvegarde dans Lovable Cloud.\n\nCette opération est irréversible.')) return;
+  showToast('Restauration en cours…');
+  try{
+    window.parent.postMessage({type:'ab-backup-restore', snapshot:b},'*');
+    const res=await _waitMsg('ab-backup-restored', 180000);
+    if(!res.success){ showToast('Erreur : '+(res.error||'inconnue')); return; }
+    showToast('Restauration effectuée');
+    renderBackupList();
+  }catch(e){ showToast('Erreur : '+e.message); }
 }
-function exportBackup(){
-  const snap=_backupSnapshot();
-  const blob=new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a');
-  a.href=url; a.download='associoboard-backup-'+new Date().toISOString().slice(0,10)+'.json';
-  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+async function exportBackup(){
+  showToast('Export en cours…');
+  try{
+    window.parent.postMessage({type:'ab-backup-create'},'*');
+    const res=await _waitMsg('ab-backup-created', 90000);
+    if(res.error){ showToast('Erreur : '+res.error); return; }
+    _downloadSnap(res.snapshot);
+    showToast('Export téléchargé');
+  }catch(e){ showToast('Erreur : '+e.message); }
 }
 function importBackupFile(){
   const f=document.getElementById('backupImportFile').files[0]; if(!f){ showToast('Sélectionnez un fichier'); return; }
   const r=new FileReader();
   r.onload=function(){ try{
-    const b=JSON.parse(r.result); if(!b||!b.ACCOUNTS){ showToast('Fichier invalide'); return; }
+    const b=JSON.parse(r.result);
+    if(!b||b.source!=='supabase'||!b.tables){ showToast('Fichier invalide (format v2 Lovable Cloud requis)'); return; }
     b.ts=Date.now(); b.label='Importé — '+new Date().toLocaleString('fr-FR');
     const arr=_backupsRead(); arr.push(b); _backupsWrite(arr); renderBackupList(); showToast('Sauvegarde importée');
   }catch(e){ showToast('Fichier invalide'); } };
@@ -3922,8 +3941,8 @@ function renderBackupList(){
   const arr=_backupsRead().slice().reverse();
   if(!arr.length){ el.innerHTML='<div style="font-size:12px;color:var(--muted-fore);padding:8px 0">Aucune sauvegarde dans l\'historique.</div>'; return; }
   el.innerHTML=arr.map(b=>`<div class="settings-row" style="border:1px solid var(--border);margin-bottom:6px">
-    <div><div class="settings-name">${b.label}</div><div class="settings-sub">${(b.ASSOCS||[]).length} assoc · ${(b.ACTIONS||[]).length} actions · ${(b.DOCUMENTS||[]).length} docs</div></div>
-    <div style="display:flex;gap:6px"><button class="btn btn-primary btn-sm" onclick="restoreBackup(${b.ts})">Restaurer</button><button class="btn btn-sm btn-danger" onclick="deleteBackup(${b.ts})">✕</button></div>
+    <div><div class="settings-name">${b.label}</div><div class="settings-sub">${_bkSummary(b)}</div></div>
+    <div style="display:flex;gap:6px"><button class="btn btn-flat-blue btn-sm" onclick="restoreBackup(${b.ts})">Restaurer</button><button class="btn btn-sm btn-danger" onclick="deleteBackup(${b.ts})">✕</button></div>
   </div>`).join('');
 }
 
