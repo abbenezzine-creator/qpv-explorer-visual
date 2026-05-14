@@ -16,7 +16,7 @@ export const Route = createFileRoute("/login")({
 
 // Comptes "globaux" qui se connectent par alias plutôt que par enregistrement assoc.
 const STATIC_LOGINS: Record<string, { email: string; label: string }> = {
-  superadmin: { email: "abdelhakaboubaker@gmail.com", label: "Super Administrateur" },
+  superadmin: { email: "ab.benezzine@gmail.com", label: "Super Administrateur" },
   partenaire: { email: "partenaire@associoboard.app", label: "Partenaires (lecture seule)" },
 };
 
