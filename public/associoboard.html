@@ -2994,8 +2994,20 @@ function updateQualGlobalScore(){
     evaluatedActions.add(String(r.action_id));
   });
   if(cntEl) cntEl.textContent=String(evaluatedActions.size);
-  if(!n){ if(scoreEl) scoreEl.textContent='—'; return; }
-  if(scoreEl) scoreEl.textContent=Math.round(sum/n)+'%';
+  if(scoreEl) scoreEl.textContent = n ? (Math.round(sum/n)+'%') : '—';
+  // Moyenne par axe (C1..C10) sur les refs en scope
+  try{
+    const scopedRefs=refs.filter(r=>idSet.has(String(r.action_id)));
+    (typeof QUALITE_AXES!=='undefined'?QUALITE_AXES:[]).forEach(ax=>{
+      const el=document.getElementById('sc-'+ax.id); if(!el) return;
+      const key=String(ax.id).toLowerCase(); // 'C1' -> 'c1'
+      const vals=scopedRefs.map(r=>r[key]).filter(v=>v!=null && !isNaN(Number(v))).map(Number);
+      if(!vals.length){ el.textContent='—'; return; }
+      const avg=vals.reduce((s,v)=>s+v,0)/vals.length;
+      // c1..c10 sont des notes 0..5 -> conversion en pourcentage
+      el.textContent=Math.round(avg/5*100)+'%';
+    });
+  }catch(e){}
 }
 window.updateQualGlobalScore=updateQualGlobalScore;
 // ========== HISTORIQUE QUALITÉ (versions persistées en localStorage) ==========
