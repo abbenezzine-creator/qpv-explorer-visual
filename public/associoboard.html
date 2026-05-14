@@ -1281,9 +1281,67 @@ function openDashAllActions(){
     }
     var box = document.getElementById('dashAllActions');
     if(box) box.innerHTML = c.allActions || '<p style="color:var(--muted-fore);font-size:12px;padding:18px;text-align:center">Chargement…</p>';
+    decorateDashAllCards();
     filterDashAllActions();
     openModal('dashAllActionsModal');
   }catch(e){ console.error('openDashAllActions', e); }
+}
+function decorateDashAllCards(){
+  var box = document.getElementById('dashAllActions'); if(!box) return;
+  var isAdmin = (typeof currentUser!=='undefined' && currentUser && currentUser.role === 'superadmin');
+  box.querySelectorAll('.action-card').forEach(function(card){
+    if(card.__abDecorated) return;
+    card.__abDecorated = true;
+    if(isAdmin && !card.querySelector('.action-card-actions')){
+      var aid = card.getAttribute('data-action-id') || '';
+      var titre = card.getAttribute('data-titre') || '';
+      var bar = document.createElement('div');
+      bar.className = 'action-card-actions';
+      bar.innerHTML = '<button type="button" class="btn-edit" title="Modifier">✎ Modifier</button>'+
+                      '<button type="button" class="btn-del" title="Supprimer">🗑 Supprimer</button>';
+      bar.querySelector('.btn-edit').addEventListener('click', function(ev){
+        ev.stopPropagation();
+        try{ window.parent && window.parent.postMessage({type:'ab-edit-action', actionId: aid}, '*'); }catch(_){ }
+      });
+      bar.querySelector('.btn-del').addEventListener('click', function(ev){
+        ev.stopPropagation();
+        if(!confirm('Supprimer l\'action « '+titre+' » ? Cette action est irréversible.')) return;
+        try{ window.parent && window.parent.postMessage({type:'ab-delete-action', actionId: aid}, '*'); }catch(_){ }
+      });
+      card.appendChild(bar);
+    }
+    card.addEventListener('click', function(ev){
+      if(ev.target.closest('button')) return;
+      showDashAllRecap(card);
+    });
+  });
+}
+function showDashAllRecap(card){
+  var recap = document.getElementById('dashAllRecap');
+  var body = document.getElementById('dashAllActions');
+  if(!recap || !body) return;
+  var clone = card.cloneNode(true);
+  clone.style.cursor = 'default';
+  clone.style.maxWidth = '780px';
+  clone.style.margin = '0 auto';
+  // Remove the floating action bar from the recap clone
+  var bar = clone.querySelector('.action-card-actions'); if(bar) bar.remove();
+  recap.innerHTML = '';
+  var back = document.createElement('button');
+  back.className = 'recap-back';
+  back.type = 'button';
+  back.innerHTML = '← Retour à la liste';
+  back.addEventListener('click', closeDashAllRecap);
+  recap.appendChild(back);
+  recap.appendChild(clone);
+  body.style.display = 'none';
+  recap.style.display = 'block';
+}
+function closeDashAllRecap(){
+  var recap = document.getElementById('dashAllRecap');
+  var body = document.getElementById('dashAllActions');
+  if(recap){ recap.style.display = 'none'; recap.innerHTML = ''; }
+  if(body){ body.style.display = ''; }
 }
 function filterDashAllActions(){
   var t = (document.getElementById('dashAllThemeSel') || {}).value || '';
