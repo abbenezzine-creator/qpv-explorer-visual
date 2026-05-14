@@ -50,6 +50,10 @@ export const Route = createFileRoute("/app/actions")({
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
   },
+  validateSearch: (s: Record<string, unknown>) => ({
+    view: typeof s.view === "string" && s.view ? s.view : undefined,
+    edit: typeof s.edit === "string" && s.edit ? s.edit : undefined,
+  }),
   component: ActionsListPage,
 });
 
