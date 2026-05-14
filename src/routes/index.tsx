@@ -454,7 +454,7 @@ function IndicatorCard({
       )}
       <div className="mt-2 flex items-baseline gap-2">
         <div className="text-2xl font-bold text-foreground">
-          {lv ? `${(ind.unit === "hab." ? Math.round(lv.value) : lv.value).toLocaleString("fr-FR")}` : "n.c."}
+          {lv ? `${Math.round(lv.value).toLocaleString("fr-FR")}` : "n.c."}
         </div>
         <span className="text-xs text-muted-foreground">{ind.unit}</span>
       </div>
