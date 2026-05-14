@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +50,10 @@ export const Route = createFileRoute("/app/actions")({
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
   },
+  validateSearch: (s: Record<string, unknown>) => ({
+    view: typeof s.view === "string" && s.view ? s.view : undefined,
+    edit: typeof s.edit === "string" && s.edit ? s.edit : undefined,
+  }),
   component: ActionsListPage,
 });
 
@@ -94,6 +98,19 @@ function ActionsListPage() {
 
   const assocsQ = useQuery({ queryKey: ["associations"], queryFn: fetchAssociations });
   const actionsQ = useQuery({ queryKey: ["actions"], queryFn: fetchActions });
+
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: "/app/actions" });
+  useEffect(() => {
+    if (!actionsQ.data) return;
+    if (search.view) {
+      const a = actionsQ.data.find((x) => x.id === search.view);
+      if (a) { setViewing(a); navigate({ search: {} as never, replace: true }); }
+    } else if (search.edit) {
+      const a = actionsQ.data.find((x) => x.id === search.edit);
+      if (a) { setEditing(a); setDialogOpen(true); navigate({ search: {} as never, replace: true }); }
+    }
+  }, [actionsQ.data, search.view, search.edit, navigate]);
 
   const associations: Association[] = assocsQ.data ?? [];
   const assocMap = useMemo(() => {

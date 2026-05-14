@@ -212,7 +212,8 @@ h1,h2,h3,h4,h5,h6{font-family:'Lexend',sans-serif;letter-spacing:-.02em}
 /* Fullscreen modal for "Toutes les actions par thématique" */
 #dashAllActionsModal{padding:0}
 #dashAllActionsModal>.modal{max-width:100vw!important;width:100vw;height:100vh;max-height:100vh;border-radius:0;border-left:0;border-right:0;border-top:0;border-bottom:0}
-#dashAllActionsModal .action-card-actions{display:flex;gap:6px;position:absolute;top:8px;right:8px;z-index:2}
+#dashAllActionsModal .action-card{padding-bottom:46px}
+#dashAllActionsModal .action-card-actions{display:flex;gap:6px;position:absolute;bottom:8px;right:8px;z-index:2}
 #dashAllActionsModal .action-card-actions button{font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-weight:600}
 #dashAllActionsModal .action-card-actions .btn-edit{color:var(--primary)}
 #dashAllActionsModal .action-card-actions .btn-del{color:oklch(0.58 0.22 25);border-color:color-mix(in oklab,oklch(0.58 0.22 25) 35%,var(--border))}
@@ -1312,7 +1313,8 @@ function decorateDashAllCards(){
     }
     card.addEventListener('click', function(ev){
       if(ev.target.closest('button')) return;
-      showDashAllRecap(card);
+      var aid = card.getAttribute('data-action-id') || '';
+      try{ window.parent && window.parent.postMessage({type:'ab-view-action', actionId: aid}, '*'); }catch(_){ }
     });
   });
 }

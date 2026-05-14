@@ -131,6 +131,8 @@ function AppIndexPage() {
         navigate({ search: (prev: { page?: string; qualiteAction?: string }) => ({ ...prev, page: "qualite", qualiteAction: d.actionId as string }) });
       } else if (d.type === "ab-edit-action" && typeof d.actionId === "string") {
         navigate({ to: "/app/actions", search: { edit: d.actionId } as never });
+      } else if (d.type === "ab-view-action" && typeof d.actionId === "string") {
+        navigate({ to: "/app/actions", search: { view: d.actionId } as never });
       } else if (d.type === "ab-delete-action" && typeof d.actionId === "string") {
         try {
           const { error } = await supabase.from("actions").delete().eq("id", d.actionId);
