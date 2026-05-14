@@ -380,7 +380,7 @@ function AssocDialog({
       email_contact: emailContact.trim() || null,
     };
     const finalLogin = (login.trim() || nom.trim());
-    const finalPwd = (password || `${nom.trim()}2025`);
+    const finalPwd = (password || defaultAccessPassword(nom));
     const payload = isSuper
       ? { ...base, login: finalLogin, password: finalPwd }
       : base;
@@ -513,6 +513,11 @@ function normalizeKey(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
 }
 
+function defaultAccessPassword(name: string): string {
+  const base = normalizeKey(name).toUpperCase().slice(0, 24) || "ASSOC";
+  return `${base}2025`;
+}
+
 const COLUMN_MAP: Record<string, keyof ImportRow> = {
   demandeur: "nom", nom: "nom", association: "nom", nomassociation: "nom",
   statut: "statut_contact", civilite: "statut_contact",
@@ -602,7 +607,7 @@ function ImportButton({ existing, onDone }: { existing: Row[]; onDone: () => voi
           code_postal: r.code_postal,
           ville: r.ville,
           login: r.nom,
-          password: `${r.nom}2025`,
+          password: defaultAccessPassword(r.nom),
         }));
         const { error } = await supabase.from("associations").insert(payload);
         if (error) throw error;
