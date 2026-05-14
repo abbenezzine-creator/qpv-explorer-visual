@@ -538,7 +538,7 @@ function ComparisonChart({ indicator, year }: { indicator: Indicator; year: numb
         <YAxis stroke="var(--muted-foreground)" />
         <Tooltip
           contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
-          formatter={(v: number) => `${v.toLocaleString("fr-FR")} ${indicator.unit}`}
+          formatter={(v: number) => `${Math.round(v).toLocaleString("fr-FR")} ${indicator.unit}`}
           labelFormatter={(l) => data.find((d) => d.name === l)?.fullName ?? l}
         />
         <Bar dataKey="value" radius={[6, 6, 0, 0]}>
