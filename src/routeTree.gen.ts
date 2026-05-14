@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppRessourcesRouteImport } from './routes/app.ressources'
 import { Route as AppEvaluationsRouteImport } from './routes/app.evaluations'
 import { Route as AppAssociationsRouteImport } from './routes/app.associations'
 import { Route as AppActionsRouteImport } from './routes/app.actions'
@@ -56,6 +57,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRessourcesRoute = AppRessourcesRouteImport.update({
+  id: '/ressources',
+  path: '/ressources',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEvaluationsRoute = AppEvaluationsRouteImport.update({
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
   '/app/evaluations': typeof AppEvaluationsRoute
+  '/app/ressources': typeof AppRessourcesRoute
   '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
   '/app/evaluations': typeof AppEvaluationsRoute
+  '/app/ressources': typeof AppRessourcesRoute
   '/app': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
   '/app/evaluations': typeof AppEvaluationsRoute
+  '/app/ressources': typeof AppRessourcesRoute
   '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/app/actions'
     | '/app/associations'
     | '/app/evaluations'
+    | '/app/ressources'
     | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/app/actions'
     | '/app/associations'
     | '/app/evaluations'
+    | '/app/ressources'
     | '/app'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/app/actions'
     | '/app/associations'
     | '/app/evaluations'
+    | '/app/ressources'
     | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
@@ -239,6 +251,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/ressources': {
+      id: '/app/ressources'
+      path: '/ressources'
+      fullPath: '/app/ressources'
+      preLoaderRoute: typeof AppRessourcesRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/evaluations': {
@@ -316,6 +335,7 @@ interface AppRouteChildren {
   AppActionsRoute: typeof AppActionsRouteWithChildren
   AppAssociationsRoute: typeof AppAssociationsRoute
   AppEvaluationsRoute: typeof AppEvaluationsRoute
+  AppRessourcesRoute: typeof AppRessourcesRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -323,6 +343,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppActionsRoute: AppActionsRouteWithChildren,
   AppAssociationsRoute: AppAssociationsRoute,
   AppEvaluationsRoute: AppEvaluationsRoute,
+  AppRessourcesRoute: AppRessourcesRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
