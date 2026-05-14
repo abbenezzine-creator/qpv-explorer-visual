@@ -5,6 +5,7 @@ import { getUser, refreshFromSession, type AbUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchDashboardData, buildDashboardPayload, type DashboardFilters } from "@/lib/dashboard-bridge";
 import { EvalBeneficiaireModal } from "@/components/dashboard/EvalBeneficiaireModal";
+import { createSnapshot, restoreSnapshot, type Snapshot } from "@/lib/backup-bridge";
 
 export const Route = createFileRoute("/app/")({
   beforeLoad: async () => {
