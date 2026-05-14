@@ -53,6 +53,7 @@ export const Route = createFileRoute("/app/actions")({
   validateSearch: (s: Record<string, unknown>) => ({
     view: typeof s.view === "string" && s.view ? s.view : undefined,
     edit: typeof s.edit === "string" && s.edit ? s.edit : undefined,
+    from: typeof s.from === "string" && s.from ? s.from : undefined,
   }),
   component: ActionsListPage,
 });
