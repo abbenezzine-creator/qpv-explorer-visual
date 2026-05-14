@@ -97,11 +97,73 @@ function ActionDetailPage() {
           <div><dt className="text-xs uppercase text-muted-foreground">Axe</dt><dd className="font-medium">{labelOf(AXIS_OPTIONS, action.axis_key)}</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">Date début</dt><dd className="font-medium">{action.date_debut ?? "—"}</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">Date fin</dt><dd className="font-medium">{action.date_fin ?? "—"}</dd></div>
-          <div><dt className="text-xs uppercase text-muted-foreground">Montant sollicité</dt><dd className="font-medium">{(action.budget_financeurs ?? []).reduce((s, l) => s + (Number(l.montant_sollicite ?? l.montant ?? 0) || 0), 0).toLocaleString("fr-FR")} €</dd></div>
-          <div><dt className="text-xs uppercase text-muted-foreground">Montant favorable</dt><dd className="font-medium">{(action.budget_financeurs ?? []).reduce((s, l) => s + (Number(l.montant_favorable ?? 0) || 0), 0).toLocaleString("fr-FR")} €</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">Bénéficiaires prévus</dt><dd className="font-medium">{action.nb_beneficiaires_prevu ?? "—"}</dd></div>
           <div><dt className="text-xs uppercase text-muted-foreground">Bénéficiaires réels</dt><dd className="font-medium">{action.nb_beneficiaires_reel ?? "—"}</dd></div>
         </dl>
+
+        {(() => {
+          const lines = action.budget_financeurs ?? [];
+          if (lines.length === 0) return null;
+          const byYear = new Map<string, typeof lines>();
+          for (const l of lines) {
+            const y = String(l.annee ?? "—");
+            if (!byYear.has(y)) byYear.set(y, [] as typeof lines);
+            byYear.get(y)!.push(l);
+          }
+          const years = Array.from(byYear.keys()).sort((a, b) => b.localeCompare(a));
+          const fmt = (n: number) => n.toLocaleString("fr-FR") + " €";
+          return (
+            <div className="mt-6">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Budgets par année</h2>
+              <div className="space-y-4">
+                {years.map((y) => {
+                  const rows = byYear.get(y)!;
+                  const tot = rows.reduce((acc, l) => ({
+                    n1: acc.n1 + (Number(l.montant_n1 ?? 0) || 0),
+                    sol: acc.sol + (Number(l.montant_sollicite ?? l.montant ?? 0) || 0),
+                    fav: acc.fav + (Number(l.montant_favorable ?? 0) || 0),
+                  }), { n1: 0, sol: 0, fav: 0 });
+                  return (
+                    <div key={y} className="rounded-md border border-border">
+                      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-2">
+                        <div className="font-semibold">Année {y}</div>
+                        <div className="flex gap-4 text-xs text-muted-foreground">
+                          <span>N-1 : <span className="font-medium text-foreground">{fmt(tot.n1)}</span></span>
+                          <span>Sollicité : <span className="font-medium text-foreground">{fmt(tot.sol)}</span></span>
+                          <span>Favorable : <span className="font-medium text-foreground">{fmt(tot.fav)}</span></span>
+                        </div>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="text-xs uppercase text-muted-foreground">
+                            <tr className="border-b border-border">
+                              <th className="px-3 py-2 text-left">Financeur</th>
+                              <th className="px-3 py-2 text-left">Type</th>
+                              <th className="px-3 py-2 text-right">Année N-1{rows.some(r => r.annee_n1) ? ` (${rows.find(r => r.annee_n1)?.annee_n1})` : ""}</th>
+                              <th className="px-3 py-2 text-right">Sollicité</th>
+                              <th className="px-3 py-2 text-right">Favorable</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((l, i) => (
+                              <tr key={i} className="border-b border-border last:border-0">
+                                <td className="px-3 py-2">{l.financeur || "—"}</td>
+                                <td className="px-3 py-2">{l.type || "—"}</td>
+                                <td className="px-3 py-2 text-right">{fmt(Number(l.montant_n1 ?? 0) || 0)}</td>
+                                <td className="px-3 py-2 text-right">{fmt(Number(l.montant_sollicite ?? l.montant ?? 0) || 0)}</td>
+                                <td className="px-3 py-2 text-right">{fmt(Number(l.montant_favorable ?? 0) || 0)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       <div className="mt-6">
