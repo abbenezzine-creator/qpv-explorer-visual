@@ -2803,10 +2803,13 @@ function renderQualite(){
 }
 function renderQualTopFilters(){
   const bar=document.getElementById('qualTopFilters'); if(!bar) return;
-  const all=qualSourceActions();
+  // Source stricte = table `actions` Supabase (via __dashMeta)
+  const meta=window.__dashMeta||{};
+  const rawActions=Array.isArray(meta.actions)?meta.actions:[];
+  const all=rawActions.map(a=>({id:a.id,assocId:a.assoc_id,titre:a.titre,theme:a.thematique||null,annee:a.annee||null}));
   const userAid=currentUser?.role==='association'?currentUser.assocId:null;
   const poolBase=userAid?all.filter(a=>String(a.assocId)===String(userAid)):all;
-  const assocsAll=qualSourceAssocs();
+  const assocsAll=Array.isArray(meta.assocs)?meta.assocs.map(a=>({id:a.id,nom:a.nom})):[];
   const assocIdsInPool=new Set(poolBase.map(a=>String(a.assocId)));
   const assocs=assocsAll.filter(a=>assocIdsInPool.has(String(a.id))).sort((a,b)=>(a.nom||'').localeCompare(b.nom||'','fr'));
   const themes=Array.from(new Set(poolBase.map(a=>a.theme).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'fr'));
