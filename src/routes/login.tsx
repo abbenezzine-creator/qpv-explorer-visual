@@ -169,6 +169,11 @@ function LoginPage() {
               </div>
             </div>
           )}
+          <div className="mt-4 text-center text-xs text-muted-foreground">
+            <a href="/rgpd" className="hover:text-foreground hover:underline">
+              Protection des données — RGPD
+            </a>
+          </div>
         </div>
       </div>
     </div>
