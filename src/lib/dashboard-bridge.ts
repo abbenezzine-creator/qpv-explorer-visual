@@ -511,6 +511,13 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
     .slice()
     .sort((a, b) => (a.titre ?? "").localeCompare(b.titre ?? "", "fr"))
     .map(a => ({ id: a.id, titre: a.titre, assoc_id: a.assoc_id, thematique: a.thematique, annee: a.annee ?? (a.date_debut ? Number(a.date_debut.slice(0, 4)) : null) }));
+  const refsMeta = data.refs.map(r => ({
+    action_id: r.action_id,
+    assoc_id: r.assoc_id,
+    score_global: r.score_global,
+    c1: r.c1, c2: r.c2, c3: r.c3, c4: r.c4, c5: r.c5,
+    c6: r.c6, c7: r.c7, c8: r.c8, c9: r.c9, c10: r.c10,
+  }));
   return {
     type: "ab-supabase-dashboard" as const,
     html: {
@@ -520,6 +527,6 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
       timeline: timelineHtml(data, filters),
       qualite: qualiteHtml(data, filters),
     },
-    meta: { years, themes, assocs, actions: actionsMeta, selected: { year: filters.year ?? null, assocId: filters.assocId ?? null, thematique: filters.thematique ?? null, actionId: filters.actionId ?? null } },
+    meta: { years, themes, assocs, actions: actionsMeta, refs: refsMeta, selected: { year: filters.year ?? null, assocId: filters.assocId ?? null, thematique: filters.thematique ?? null, actionId: filters.actionId ?? null } },
   };
 }
