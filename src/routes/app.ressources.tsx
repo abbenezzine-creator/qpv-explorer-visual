@@ -84,6 +84,7 @@ type DocRow = {
   type: string | null;
   visible_all: boolean;
   created_at: string;
+  cover_path: string | null;
 };
 
 function RessourcesPage() {
@@ -108,7 +109,7 @@ function RessourcesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("documents")
-        .select("id, titre, description, url, file_path, mime_type, file_size, thematique, type, visible_all, created_at")
+        .select("id, titre, description, url, file_path, mime_type, file_size, thematique, type, visible_all, created_at, cover_path")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as DocRow[];
@@ -314,7 +315,9 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
     >
       {/* Preview */}
       <div className="relative h-40 overflow-hidden bg-gradient-to-br from-muted to-muted/40">
-        {isLink ? (
+        {doc.cover_path ? (
+          <SignedImage path={doc.cover_path} alt={doc.titre} />
+        ) : isLink ? (
           <LinkPreview host={host ?? ""} />
         ) : isImg && doc.file_path ? (
           <SignedImage path={doc.file_path} alt={doc.titre} />
@@ -594,7 +597,19 @@ function EditResourceDialog({
   const [thematique, setThematique] = useState<string>(THEMATIQUES[0]);
   const [url, setUrl] = useState("");
   const [replaceFile, setReplaceFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [removeCover, setRemoveCover] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const coverPreviewQ = useQuery({
+    queryKey: ["signed-cover-edit", target?.cover_path],
+    enabled: !!target?.cover_path,
+    queryFn: async () => {
+      if (!target?.cover_path) return null;
+      const { data } = await supabase.storage.from("documents").createSignedUrl(target.cover_path, 3600);
+      return data?.signedUrl ?? null;
+    },
+  });
 
   useEffect(() => {
     if (target) {
@@ -603,13 +618,14 @@ function EditResourceDialog({
       setThematique(target.thematique && THEMATIQUES.includes(target.thematique as typeof THEMATIQUES[number]) ? target.thematique : "__all");
       setUrl(target.url ?? "");
       setReplaceFile(null);
+      setCoverFile(null);
+      setRemoveCover(false);
     }
   }, [target]);
 
   const submit = async () => {
     if (!target) return;
     if (!titre.trim()) { toast.error("Le titre est requis"); return; }
-    if (isLink && !url.trim()) { toast.error("L'URL est requise"); return; }
     setSaving(true);
     try {
       let file_path = target.file_path;
@@ -628,14 +644,32 @@ function EditResourceDialog({
         mime_type = replaceFile.type || null;
         file_size = replaceFile.size;
       }
+
+      let cover_path = target.cover_path;
+      if (coverFile) {
+        const safeName = coverFile.name.replace(/[^a-zA-Z0-9._-]+/g, "_");
+        const folder = target.file_path?.split("/")[0] ?? "shared";
+        const newCoverPath = `${folder}/cover_${Date.now()}_${safeName}`;
+        const { error: covErr } = await supabase.storage.from("documents").upload(newCoverPath, coverFile, { upsert: false });
+        if (covErr) throw covErr;
+        if (target.cover_path) {
+          await supabase.storage.from("documents").remove([target.cover_path]);
+        }
+        cover_path = newCoverPath;
+      } else if (removeCover && target.cover_path) {
+        await supabase.storage.from("documents").remove([target.cover_path]);
+        cover_path = null;
+      }
+
       const { error } = await supabase.from("documents").update({
         titre: titre.trim(),
         description: description.trim() || null,
         thematique: thematique === "__all" ? null : thematique,
-        url: isLink ? url.trim() : null,
+        url: url.trim() || null,
         file_path,
         mime_type,
         file_size,
+        cover_path,
       }).eq("id", target.id);
       if (error) throw error;
       toast.success("Ressource mise à jour");
@@ -650,7 +684,7 @@ function EditResourceDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Modifier la ressource</DialogTitle>
           <DialogDescription>Édition réservée au super administrateur.</DialogDescription>
@@ -675,12 +709,13 @@ function EditResourceDialog({
             </Select>
             <div className="mt-2"><ThemeBadge thematique={thematique === "__all" ? null : thematique} /></div>
           </div>
-          {isLink ? (
-            <div>
-              <Label htmlFor="e-url">URL *</Label>
-              <Input id="e-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} />
-            </div>
-          ) : (
+
+          <div>
+            <Label htmlFor="e-url">Lien (URL){isLink ? " *" : ""}</Label>
+            <Input id="e-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" />
+          </div>
+
+          {!isLink && (
             <div>
               <Label htmlFor="e-file">Remplacer le fichier (optionnel)</Label>
               <Input
@@ -694,6 +729,30 @@ function EditResourceDialog({
               )}
             </div>
           )}
+
+          <div>
+            <Label htmlFor="e-cover">Image de couverture (affichée sur la carte)</Label>
+            <Input
+              id="e-cover"
+              type="file"
+              accept="image/*"
+              onChange={(e) => { setCoverFile(e.target.files?.[0] ?? null); setRemoveCover(false); }}
+            />
+            {coverFile ? (
+              <p className="mt-1 text-xs text-muted-foreground">{coverFile.name} · {Math.round(coverFile.size / 1024)} Ko</p>
+            ) : target?.cover_path && !removeCover ? (
+              <div className="mt-2 flex items-center gap-3">
+                {coverPreviewQ.data && (
+                  <img src={coverPreviewQ.data} alt="couverture actuelle" className="h-16 w-24 rounded-md border border-border object-cover" />
+                )}
+                <Button type="button" variant="outline" size="sm" onClick={() => setRemoveCover(true)}>
+                  Retirer l'image
+                </Button>
+              </div>
+            ) : removeCover ? (
+              <p className="mt-1 text-xs text-muted-foreground">L'image sera retirée à l'enregistrement.</p>
+            ) : null}
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={saving}>Annuler</Button>
