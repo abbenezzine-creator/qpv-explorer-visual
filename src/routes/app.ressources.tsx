@@ -83,9 +83,21 @@ type DocRow = {
   thematique: string | null;
   type: string | null;
   visible_all: boolean;
+  visible_assoc_ids: string[] | null;
   created_at: string;
   cover_path: string | null;
 };
+
+type Visibility = "all" | "by_theme";
+
+async function assocIdsForTheme(theme: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("actions")
+    .select("assoc_id")
+    .eq("thematique", theme);
+  if (error) throw error;
+  return Array.from(new Set((data ?? []).map((r) => r.assoc_id).filter(Boolean) as string[]));
+}
 
 function RessourcesPage() {
   const [mounted, setMounted] = useState(false);
@@ -109,7 +121,7 @@ function RessourcesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("documents")
-        .select("id, titre, description, url, file_path, mime_type, file_size, thematique, type, visible_all, created_at, cover_path")
+        .select("id, titre, description, url, file_path, mime_type, file_size, thematique, type, visible_all, visible_assoc_ids, created_at, cover_path")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as DocRow[];
@@ -316,7 +328,7 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
       {/* Preview */}
       <div className="relative h-40 overflow-hidden bg-gradient-to-br from-muted to-muted/40">
         {doc.cover_path ? (
-          <SignedImage path={doc.cover_path} alt={doc.titre} />
+          <SignedImage path={doc.cover_path} alt={doc.titre} fit="contain" />
         ) : isLink ? (
           <LinkPreview host={host ?? ""} />
         ) : isImg && doc.file_path ? (
@@ -409,7 +421,7 @@ function LinkPreview({ host }: { host: string }) {
   );
 }
 
-function SignedImage({ path, alt }: { path: string; alt: string }) {
+function SignedImage({ path, alt, fit = "cover" }: { path: string; alt: string; fit?: "cover" | "contain" }) {
   const q = useQuery({
     queryKey: ["signed-img", path],
     queryFn: async () => {
@@ -419,7 +431,14 @@ function SignedImage({ path, alt }: { path: string; alt: string }) {
     staleTime: 50 * 60 * 1000,
   });
   if (!q.data) return <div className="flex h-full items-center justify-center"><FileImage className="h-10 w-10 text-muted-foreground/50" /></div>;
-  return <img src={q.data} alt={alt} className="h-full w-full object-cover" loading="lazy" />;
+  if (fit === "contain") {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/60 to-muted/20 p-2">
+        <img src={q.data} alt={alt} className="max-h-full max-w-full object-contain" loading="lazy" />
+      </div>
+    );
+  }
+  return <img src={q.data} alt={alt} className="h-full w-full object-cover object-center" loading="lazy" />;
 }
 
 /* ---------------- Create dialog ---------------- */
@@ -434,12 +453,13 @@ function CreateResourceDialog({
   const [thematique, setThematique] = useState<string>(THEMATIQUES[0]);
   const [url, setUrl] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [visibility, setVisibility] = useState<Visibility>("all");
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   const reset = () => {
     setKind("file"); setTitre(""); setDescription(""); setThematique(THEMATIQUES[0]);
-    setUrl(""); setFiles([]); setProgress(null);
+    setUrl(""); setFiles([]); setVisibility("all"); setProgress(null);
   };
 
   const submit = async () => {
@@ -456,6 +476,19 @@ function CreateResourceDialog({
       const folder = user?.assocId ?? "shared";
       const themaToSave = thematique === "__all" ? null : thematique;
 
+      // Compute visibility payload
+      let visible_all = true;
+      let visible_assoc_ids: string[] = [];
+      if (visibility === "by_theme") {
+        if (!themaToSave) {
+          toast.error("Choisissez une thématique pour cibler les associations.");
+          setSaving(false);
+          return;
+        }
+        visible_assoc_ids = await assocIdsForTheme(themaToSave);
+        visible_all = false;
+      }
+
       if (kind === "link") {
         const { error } = await supabase.from("documents").insert({
           titre: titre.trim(),
@@ -467,7 +500,8 @@ function CreateResourceDialog({
           mime_type: null,
           file_size: null,
           assoc_id: user?.assocId ?? null,
-          visible_all: true,
+          visible_all,
+          visible_assoc_ids,
         });
         if (error) throw error;
         toast.success("Lien ajouté");
@@ -490,7 +524,8 @@ function CreateResourceDialog({
             mime_type: file.type || null,
             file_size: file.size,
             assoc_id: user?.assocId ?? null,
-            visible_all: true,
+            visible_all,
+            visible_assoc_ids,
           });
           if (error) throw error;
           i++;
@@ -543,6 +578,21 @@ function CreateResourceDialog({
               </SelectContent>
             </Select>
             <div className="mt-2"><ThemeBadge thematique={thematique === "__all" ? null : thematique} /></div>
+          </div>
+          <div>
+            <Label>Visibilité</Label>
+            <Select value={visibility} onValueChange={(v) => setVisibility(v as Visibility)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les associations</SelectItem>
+                <SelectItem value="by_theme" disabled={thematique === "__all"}>
+                  Associations dont les actions correspondent à la thématique
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            {visibility === "by_theme" && thematique === "__all" && (
+              <p className="mt-1 text-xs text-amber-600">Sélectionnez une thématique pour activer ce ciblage.</p>
+            )}
           </div>
           {kind === "link" ? (
             <div>
@@ -599,6 +649,7 @@ function EditResourceDialog({
   const [replaceFile, setReplaceFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [removeCover, setRemoveCover] = useState(false);
+  const [visibility, setVisibility] = useState<Visibility>("all");
   const [saving, setSaving] = useState(false);
 
   const coverPreviewQ = useQuery({
@@ -620,6 +671,7 @@ function EditResourceDialog({
       setReplaceFile(null);
       setCoverFile(null);
       setRemoveCover(false);
+      setVisibility(target.visible_all ? "all" : "by_theme");
     }
   }, [target]);
 
@@ -661,15 +713,30 @@ function EditResourceDialog({
         cover_path = null;
       }
 
+      const themaToSave = thematique === "__all" ? null : thematique;
+      let visible_all = true;
+      let visible_assoc_ids: string[] = [];
+      if (visibility === "by_theme") {
+        if (!themaToSave) {
+          toast.error("Choisissez une thématique pour cibler les associations.");
+          setSaving(false);
+          return;
+        }
+        visible_assoc_ids = await assocIdsForTheme(themaToSave);
+        visible_all = false;
+      }
+
       const { error } = await supabase.from("documents").update({
         titre: titre.trim(),
         description: description.trim() || null,
-        thematique: thematique === "__all" ? null : thematique,
+        thematique: themaToSave,
         url: url.trim() || null,
         file_path,
         mime_type,
         file_size,
         cover_path,
+        visible_all,
+        visible_assoc_ids,
       }).eq("id", target.id);
       if (error) throw error;
       toast.success("Ressource mise à jour");
@@ -708,6 +775,22 @@ function EditResourceDialog({
               </SelectContent>
             </Select>
             <div className="mt-2"><ThemeBadge thematique={thematique === "__all" ? null : thematique} /></div>
+          </div>
+
+          <div>
+            <Label>Visibilité</Label>
+            <Select value={visibility} onValueChange={(v) => setVisibility(v as Visibility)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les associations</SelectItem>
+                <SelectItem value="by_theme" disabled={thematique === "__all"}>
+                  Associations dont les actions correspondent à la thématique
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            {visibility === "by_theme" && thematique === "__all" && (
+              <p className="mt-1 text-xs text-amber-600">Sélectionnez une thématique pour activer ce ciblage.</p>
+            )}
           </div>
 
           <div>
