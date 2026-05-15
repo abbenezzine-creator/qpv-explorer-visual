@@ -64,6 +64,7 @@ const ressources: NavItem[] = [
 
 const admin: NavItem[] = [
   { title: "Paramètres", to: "/app", search: { page: "parametres" }, icon: Settings },
+  { title: "Thématiques (couleurs & icônes)", to: "/app/parametres-themes", icon: Palette },
   { title: "Stockage", to: "/app/stockage", icon: HardDrive },
   { title: "Sauvegarde & restauration", to: "/app", search: { page: "sauvegarde" }, icon: DatabaseBackup },
   { title: "Connexion", to: "/app", search: { page: "connexion" }, icon: Plug },
