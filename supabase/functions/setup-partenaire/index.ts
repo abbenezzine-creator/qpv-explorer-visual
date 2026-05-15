@@ -41,9 +41,33 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find existing user by email
-    const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    let partUser = list?.users.find((u) => (u.email ?? "").toLowerCase() === PARTENAIRE_EMAIL);
+    // Optional overrides from request body
+    let bodyEmail: string | undefined;
+    let bodyPassword: string | undefined;
+    try {
+      if (req.headers.get("content-type")?.includes("application/json")) {
+        const b = await req.json();
+        if (typeof b?.email === "string" && b.email.trim()) bodyEmail = b.email.trim().toLowerCase();
+        if (typeof b?.password === "string" && b.password.length >= 6) bodyPassword = b.password;
+      }
+    } catch { /* noop */ }
+
+    // Find existing partenaire by role (so we can update its email even if changed)
+    const { data: roleRows } = await admin.from("user_roles").select("user_id").eq("role", "partenaire").limit(1);
+    let partUser: { id: string; email?: string | null } | null = null;
+    if (roleRows && roleRows.length > 0) {
+      const { data: u } = await admin.auth.admin.getUserById(roleRows[0].user_id);
+      if (u?.user) partUser = { id: u.user.id, email: u.user.email };
+    }
+    if (!partUser) {
+      // Fallback: lookup by default email
+      const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const found = list?.users.find((u) => (u.email ?? "").toLowerCase() === DEFAULT_PARTENAIRE_EMAIL);
+      if (found) partUser = { id: found.id, email: found.email };
+    }
+
+    const targetEmail = bodyEmail ?? partUser?.email ?? DEFAULT_PARTENAIRE_EMAIL;
+    const targetPassword = bodyPassword ?? DEFAULT_PARTENAIRE_PASSWORD;
     let created = false;
 
     if (!partUser) {
