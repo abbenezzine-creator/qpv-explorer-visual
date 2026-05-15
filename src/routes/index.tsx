@@ -3,7 +3,7 @@ import * as React from "react";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine,
+  Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine, ReferenceArea,
   ResponsiveContainer, Tooltip, XAxis, YAxis, Cell,
   PieChart, Pie, RadialBarChart, RadialBar, PolarAngleAxis,
 } from "recharts";
