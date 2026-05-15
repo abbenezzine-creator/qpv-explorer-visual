@@ -24,7 +24,7 @@ export const Route = createFileRoute("/app/evaluations")({
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
     const { getUser } = await import("@/lib/auth");
-    if (getUser()?.role === "partenaire") {
+    if (getUser()?.role !== "superadmin") {
       throw redirect({ to: "/app", search: { page: "impacts-beneficiaires" } });
     }
   },
