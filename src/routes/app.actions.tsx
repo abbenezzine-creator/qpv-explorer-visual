@@ -63,7 +63,7 @@ const ALL = "__all__";
 const QPV_ORLEANS = "__qpv_orleans__";
 const ORLEANS_QPV_KEYS = ["argonne", "lasource", "dauphine", "blossieres"];
 
-import { themeHex } from "@/components/ThemeBadge";
+
 function thematiqueColor(t: string | null | undefined): string {
   return t ? themeHex(t) : "transparent";
 }
