@@ -339,11 +339,9 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
         </div>
 
         {/* Theme badge — always visible overlay */}
-        {doc.thematique && (
-          <div className="absolute bottom-3 left-3">
-            <ThemeBadge thematique={doc.thematique} />
-          </div>
-        )}
+        <div className="absolute bottom-3 left-3">
+          <ThemeBadge thematique={doc.thematique} />
+        </div>
 
         {(canEdit || canDelete) && (
           <div className="absolute right-3 top-3 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
