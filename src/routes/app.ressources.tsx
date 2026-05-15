@@ -649,6 +649,7 @@ function EditResourceDialog({
   const [replaceFile, setReplaceFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [removeCover, setRemoveCover] = useState(false);
+  const [visibility, setVisibility] = useState<Visibility>("all");
   const [saving, setSaving] = useState(false);
 
   const coverPreviewQ = useQuery({
