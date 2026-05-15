@@ -21,7 +21,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText, Link2, Plus, Trash2, ExternalLink, Search, FileImage, FileType2, File as FileIcon,
-  GraduationCap, Briefcase, HeartPulse, Users, Scale, Leaf, ShieldCheck, Palette, Tag, Pencil,
+  GraduationCap, Briefcase, HeartPulse, Users, Scale, Leaf, ShieldCheck, Palette, Tag, Pencil, Layers,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
