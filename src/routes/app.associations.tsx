@@ -22,6 +22,9 @@ export const Route = createFileRoute("/app/associations")({
     if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
+    if (getUser()?.role === "partenaire") {
+      throw redirect({ to: "/app", search: { page: "dashboard" } });
+    }
   },
   component: AssociationsPage,
 });
