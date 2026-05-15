@@ -246,6 +246,7 @@ export type Database = {
       documents: {
         Row: {
           assoc_id: string | null
+          cover_path: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -263,6 +264,7 @@ export type Database = {
         }
         Insert: {
           assoc_id?: string | null
+          cover_path?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -280,6 +282,7 @@ export type Database = {
         }
         Update: {
           assoc_id?: string | null
+          cover_path?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
