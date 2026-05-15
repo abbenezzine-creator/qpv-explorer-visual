@@ -504,15 +504,18 @@ function TrajectoryChart({ indicator, highlightYear }: { indicator: Indicator; h
   });
   const colors = ["var(--axis-emancipation)", "var(--axis-emploi)", "var(--axis-transition)", "var(--axis-tranquillite)"];
 
-  // Détecte les plages d'années sans aucune donnée (tous les QPV à null) → bandes "tendance"
+  // Bandes "Tendance" : années sans données réelles (futures) OU plages entièrement nulles
+  const currentYear = new Date().getFullYear();
   const emptyBands: { from: number; to: number }[] = [];
   let runStart: number | null = null;
   for (let i = 0; i < YEARS.length; i++) {
     const y = YEARS[i];
     const allNull = QPVS.every((q) => indicator.series[q.key][y] == null);
-    if (allNull && runStart === null) runStart = y;
-    if ((!allNull || i === YEARS.length - 1) && runStart !== null) {
-      const end = allNull ? y : YEARS[i - 1];
+    const isFuture = y >= currentYear;
+    const noData = allNull || isFuture;
+    if (noData && runStart === null) runStart = y;
+    if ((!noData || i === YEARS.length - 1) && runStart !== null) {
+      const end = noData ? y : YEARS[i - 1];
       emptyBands.push({ from: runStart, to: end });
       runStart = null;
     }
