@@ -420,7 +420,7 @@ function ActionsListPage() {
         >
           {viewing && (
             <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
-              <div className="flex shrink-0 items-center justify-between border-b border-border bg-card px-6 py-3">
+              <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-card px-3 py-3 sm:px-6">
                 <Button variant="ghost" size="sm" onClick={() => {
                   const origin = viewOrigin;
                   setViewing(null);
