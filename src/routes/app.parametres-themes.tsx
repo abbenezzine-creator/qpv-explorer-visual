@@ -88,6 +88,10 @@ function ParametresThemesPage() {
     setDraft(d);
   }, [baseRows]);
 
+  if (!mounted) {
+    return <div className="p-6"><div className="text-muted-foreground text-sm">Chargement…</div></div>;
+  }
+
   if (!isSuperAdmin) {
     return (
       <div className="p-6">
@@ -100,6 +104,7 @@ function ParametresThemesPage() {
       </div>
     );
   }
+
 
   const save = async (row: Row) => {
     const v = draft[row.thematique];
