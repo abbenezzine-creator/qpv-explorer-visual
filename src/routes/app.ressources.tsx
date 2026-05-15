@@ -85,6 +85,7 @@ function RessourcesPage() {
   const user = getUser();
   // "Modifier/supprimer" réservé au superadmin ; ajout autorisé pour admin_asso/agent.
   const canDelete = mounted && user?.role === "superadmin";
+  const canEdit = mounted && user?.role === "superadmin";
   const canCreate = mounted && (user?.role === "superadmin" || user?.role === "admin_asso" || user?.role === "agent");
   const qc = useQueryClient();
 
@@ -92,6 +93,7 @@ function RessourcesPage() {
   const [filterTheme, setFilterTheme] = useState<string>("__all");
   const [filterKind, setFilterKind] = useState<"all" | "file" | "link">("all");
   const [openCreate, setOpenCreate] = useState(false);
+  const [editTarget, setEditTarget] = useState<DocRow | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<DocRow | null>(null);
 
   const docsQ = useQuery({
