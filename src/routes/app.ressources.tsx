@@ -84,6 +84,7 @@ type DocRow = {
   type: string | null;
   visible_all: boolean;
   created_at: string;
+  cover_path: string | null;
 };
 
 function RessourcesPage() {
