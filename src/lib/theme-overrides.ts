@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import {
   GraduationCap, BookOpen, ShieldCheck, Plane, Scale, Briefcase, Heart, Sprout,
-  Users, HeartPulse, Leaf, Palette, Tag, Building2, Map, Hammer, Bike,
+  Users, HeartPulse, Leaf, Palette, Tag, Building2, Map as MapIcon, Hammer, Bike,
   Music, Camera, Globe, Star, Sun, Trees, Bus, Car, Home, Utensils,
   Baby, Gamepad2, Trophy, Flame, Lightbulb, Rocket, HandHeart, Smile,
   Megaphone, MessagesSquare, Wrench, Calendar, Flag, Sparkles, Activity,
