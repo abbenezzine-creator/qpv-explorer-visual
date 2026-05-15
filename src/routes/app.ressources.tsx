@@ -316,7 +316,7 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
       {/* Preview */}
       <div className="relative h-40 overflow-hidden bg-gradient-to-br from-muted to-muted/40">
         {doc.cover_path ? (
-          <SignedImage path={doc.cover_path} alt={doc.titre} />
+          <SignedImage path={doc.cover_path} alt={doc.titre} fit="contain" />
         ) : isLink ? (
           <LinkPreview host={host ?? ""} />
         ) : isImg && doc.file_path ? (
