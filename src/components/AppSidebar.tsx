@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   ChevronDown,
   HardDrive,
+  Palette,
 } from "lucide-react";
 
 import {

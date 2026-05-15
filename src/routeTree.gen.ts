@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppStockageRouteImport } from './routes/app.stockage'
 import { Route as AppRessourcesRouteImport } from './routes/app.ressources'
+import { Route as AppParametresThemesRouteImport } from './routes/app.parametres-themes'
 import { Route as AppEvaluationsRouteImport } from './routes/app.evaluations'
 import { Route as AppAssociationsRouteImport } from './routes/app.associations'
 import { Route as AppActionsRouteImport } from './routes/app.actions'
@@ -70,6 +71,11 @@ const AppRessourcesRoute = AppRessourcesRouteImport.update({
   path: '/ressources',
   getParentRoute: () => AppRoute,
 } as any)
+const AppParametresThemesRoute = AppParametresThemesRouteImport.update({
+  id: '/parametres-themes',
+  path: '/parametres-themes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppEvaluationsRoute = AppEvaluationsRouteImport.update({
   id: '/evaluations',
   path: '/evaluations',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
   '/app/evaluations': typeof AppEvaluationsRoute
+  '/app/parametres-themes': typeof AppParametresThemesRoute
   '/app/ressources': typeof AppRessourcesRoute
   '/app/stockage': typeof AppStockageRoute
   '/app/': typeof AppIndexRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
   '/app/evaluations': typeof AppEvaluationsRoute
+  '/app/parametres-themes': typeof AppParametresThemesRoute
   '/app/ressources': typeof AppRessourcesRoute
   '/app/stockage': typeof AppStockageRoute
   '/app': typeof AppIndexRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/app/actions': typeof AppActionsRouteWithChildren
   '/app/associations': typeof AppAssociationsRoute
   '/app/evaluations': typeof AppEvaluationsRoute
+  '/app/parametres-themes': typeof AppParametresThemesRoute
   '/app/ressources': typeof AppRessourcesRoute
   '/app/stockage': typeof AppStockageRoute
   '/app/': typeof AppIndexRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/app/actions'
     | '/app/associations'
     | '/app/evaluations'
+    | '/app/parametres-themes'
     | '/app/ressources'
     | '/app/stockage'
     | '/app/'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/app/actions'
     | '/app/associations'
     | '/app/evaluations'
+    | '/app/parametres-themes'
     | '/app/ressources'
     | '/app/stockage'
     | '/app'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/app/actions'
     | '/app/associations'
     | '/app/evaluations'
+    | '/app/parametres-themes'
     | '/app/ressources'
     | '/app/stockage'
     | '/app/'
@@ -279,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRessourcesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/parametres-themes': {
+      id: '/app/parametres-themes'
+      path: '/parametres-themes'
+      fullPath: '/app/parametres-themes'
+      preLoaderRoute: typeof AppParametresThemesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/evaluations': {
       id: '/app/evaluations'
       path: '/evaluations'
@@ -354,6 +373,7 @@ interface AppRouteChildren {
   AppActionsRoute: typeof AppActionsRouteWithChildren
   AppAssociationsRoute: typeof AppAssociationsRoute
   AppEvaluationsRoute: typeof AppEvaluationsRoute
+  AppParametresThemesRoute: typeof AppParametresThemesRoute
   AppRessourcesRoute: typeof AppRessourcesRoute
   AppStockageRoute: typeof AppStockageRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -363,6 +383,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppActionsRoute: AppActionsRouteWithChildren,
   AppAssociationsRoute: AppAssociationsRoute,
   AppEvaluationsRoute: AppEvaluationsRoute,
+  AppParametresThemesRoute: AppParametresThemesRoute,
   AppRessourcesRoute: AppRessourcesRoute,
   AppStockageRoute: AppStockageRoute,
   AppIndexRoute: AppIndexRoute,
