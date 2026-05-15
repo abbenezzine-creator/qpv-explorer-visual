@@ -121,7 +121,7 @@ function RessourcesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("documents")
-        .select("id, titre, description, url, file_path, mime_type, file_size, thematique, type, visible_all, created_at, cover_path")
+        .select("id, titre, description, url, file_path, mime_type, file_size, thematique, type, visible_all, visible_assoc_ids, created_at, cover_path")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as DocRow[];
