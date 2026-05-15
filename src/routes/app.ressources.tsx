@@ -87,6 +87,17 @@ type DocRow = {
   cover_path: string | null;
 };
 
+type Visibility = "all" | "by_theme";
+
+async function assocIdsForTheme(theme: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("actions")
+    .select("assoc_id")
+    .eq("thematique", theme);
+  if (error) throw error;
+  return Array.from(new Set((data ?? []).map((r) => r.assoc_id).filter(Boolean) as string[]));
+}
+
 function RessourcesPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
