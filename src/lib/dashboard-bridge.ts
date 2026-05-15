@@ -1,7 +1,7 @@
 // Dashboard data bridge — builds HTML payloads injected into the iframe (#dashStats, #dashActions, #dashTL).
 // The HTML markup mirrors the classes already in public/associoboard.html so styling stays identical.
 import { supabase } from "@/integrations/supabase/client";
-import { themeHex, themeBadgeHtml } from "@/components/ThemeBadge";
+import { themeBadgeHtml } from "@/components/ThemeBadge";
 
 type Action = {
   id: string;
