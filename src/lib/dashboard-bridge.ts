@@ -258,10 +258,14 @@ function allActionsByThemeHtml(data: DashboardData, filters: DashboardFilters): 
     groups.get(k)!.push(a);
   }
   const ordered = Array.from(groups.entries()).sort((a, b) => a[0].localeCompare(b[0], "fr"));
-  return ordered.map(([theme, list]) => `
-    <div class="theme-block" data-theme="${escapeHtml(theme)}" style="margin-bottom:18px">
+  return ordered.map(([theme, list]) => {
+    const themed = theme !== "Sans thématique";
+    const headColor = themed ? themeHex(theme) : "var(--primary)";
+    const headBadge = themed ? themeBadgeHtml(theme) : `<span style="font-family:'Lexend',sans-serif;font-weight:700;font-size:13px;color:var(--primary);text-transform:uppercase;letter-spacing:.5px">${escapeHtml(theme)}</span>`;
+    return `
+    <div class="theme-block" data-theme="${escapeHtml(theme)}" style="margin-bottom:18px;border-left:3px solid ${headColor};padding-left:10px">
       <div style="display:flex;align-items:center;gap:8px;margin:6px 0 10px;padding-bottom:6px;border-bottom:1px dashed var(--border)">
-        <span style="font-family:'Lexend',sans-serif;font-weight:700;font-size:13px;color:var(--primary);text-transform:uppercase;letter-spacing:.5px">${escapeHtml(theme)}</span>
+        ${headBadge}
         <span style="font-size:11px;color:var(--muted-fore)">${list.length} action${list.length > 1 ? "s" : ""}</span>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
