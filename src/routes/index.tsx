@@ -503,6 +503,21 @@ function TrajectoryChart({ indicator, highlightYear }: { indicator: Indicator; h
     return row;
   });
   const colors = ["var(--axis-emancipation)", "var(--axis-emploi)", "var(--axis-transition)", "var(--axis-tranquillite)"];
+
+  // Détecte les plages d'années sans aucune donnée (tous les QPV à null) → bandes "tendance"
+  const emptyBands: { from: number; to: number }[] = [];
+  let runStart: number | null = null;
+  for (let i = 0; i < YEARS.length; i++) {
+    const y = YEARS[i];
+    const allNull = QPVS.every((q) => indicator.series[q.key][y] == null);
+    if (allNull && runStart === null) runStart = y;
+    if ((!allNull || i === YEARS.length - 1) && runStart !== null) {
+      const end = allNull ? y : YEARS[i - 1];
+      emptyBands.push({ from: runStart, to: end });
+      runStart = null;
+    }
+  }
+
   return (
     <ResponsiveContainer width="100%" height={320}>
       <LineChart data={data}>
@@ -514,6 +529,18 @@ function TrajectoryChart({ indicator, highlightYear }: { indicator: Indicator; h
           formatter={(v: number) => `${Math.round(v ?? 0).toLocaleString("fr-FR")} ${indicator.unit}`}
         />
         <Legend />
+        {emptyBands.map((b, idx) => (
+          <ReferenceArea
+            key={`band-${idx}`}
+            x1={b.from}
+            x2={b.to}
+            fill="#f9c5d1"
+            fillOpacity={0.35}
+            stroke="#f4a8bc"
+            strokeOpacity={0.5}
+            label={{ value: "Tendance", position: "insideTop", fill: "#b03a5b", fontSize: 10, fontWeight: 600 }}
+          />
+        ))}
         <ReferenceLine x={2024} stroke="var(--muted-foreground)" strokeDasharray="4 4" label={{ value: "Signature CV", position: "insideTopLeft", fill: "var(--muted-foreground)", fontSize: 10 }} />
         <ReferenceLine x={highlightYear} stroke="var(--primary)" strokeWidth={2} />
         {QPVS.map((q, i) => (
