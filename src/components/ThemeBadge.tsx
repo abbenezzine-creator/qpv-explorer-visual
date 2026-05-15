@@ -188,7 +188,7 @@ export function ThemeBadge({
   const s = isAll ? ALL_STYLE : themeStyle(thematique);
   const Icon = s.icon;
   const sizing = size === "md" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[11px]";
-  const iconSize = size === "md" ? "h-4 w-4" : "h-3.5 w-3.5";
+  const iconSize = size === "md" ? "h-5 w-5" : "h-4 w-4";
   if (ov) {
     return (
       <span
