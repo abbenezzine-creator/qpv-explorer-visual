@@ -1,14 +1,25 @@
 import {
   GraduationCap, Briefcase, HeartPulse, Users, Scale, Leaf,
-  ShieldCheck, Palette, Tag, Layers,
+  ShieldCheck, Palette, Tag, Layers, BookOpen, Plane, Heart, Sprout,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export type ThemeStyle = { icon: LucideIcon; bg: string; fg: string; ring: string };
 
 export const THEME_STYLES: Record<string, ThemeStyle> = {
-  "Education / Parentalité": { icon: GraduationCap, bg: "bg-violet-100",  fg: "text-violet-700",  ring: "ring-violet-200" },
-  "Emploi & Développement":  { icon: Briefcase,     bg: "bg-amber-100",   fg: "text-amber-700",   ring: "ring-amber-200" },
+  // New thematique mapping
+  "Education - Sport - Jeunesse":                       { icon: GraduationCap, bg: "bg-sky-100",     fg: "text-sky-700",     ring: "ring-sky-200" },
+  "Cité éducative":                                     { icon: BookOpen,      bg: "bg-pink-100",    fg: "text-pink-700",    ring: "ring-pink-200" },
+  "Cadre de vie - Tranquillité et sûreté publique":     { icon: ShieldCheck,   bg: "bg-violet-100",  fg: "text-violet-700",  ring: "ring-violet-200" },
+  "Quartier d'été - VVV":                               { icon: Plane,         bg: "bg-fuchsia-100", fg: "text-fuchsia-700", ring: "ring-fuchsia-200" },
+  "Accès aux droit - Lutte contre les discrimination":  { icon: Scale,         bg: "bg-blue-100",    fg: "text-blue-700",    ring: "ring-blue-200" },
+  "Emploi - Développement économique":                  { icon: Briefcase,     bg: "bg-orange-100",  fg: "text-orange-700",  ring: "ring-orange-200" },
+  "Solidarité - égalité des chances":                   { icon: Heart,         bg: "bg-emerald-100", fg: "text-emerald-700", ring: "ring-emerald-200" },
+  "Transition":                                         { icon: Sprout,        bg: "bg-green-100",   fg: "text-green-700",   ring: "ring-green-200" },
+
+  // Legacy keys (kept for existing data)
+  "Education / Parentalité": { icon: GraduationCap, bg: "bg-sky-100",     fg: "text-sky-700",     ring: "ring-sky-200" },
+  "Emploi & Développement":  { icon: Briefcase,     bg: "bg-orange-100",  fg: "text-orange-700",  ring: "ring-orange-200" },
   "Santé":                   { icon: HeartPulse,    bg: "bg-rose-100",    fg: "text-rose-700",    ring: "ring-rose-200" },
   "Cohésion sociale":        { icon: Users,         bg: "bg-sky-100",     fg: "text-sky-700",     ring: "ring-sky-200" },
   "Citoyenneté":             { icon: Scale,         bg: "bg-indigo-100",  fg: "text-indigo-700",  ring: "ring-indigo-200" },
