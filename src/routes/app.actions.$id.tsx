@@ -47,7 +47,7 @@ function ActionDetailPage() {
   if (!action) return <div className="p-6">Action introuvable. <Link to="/app/actions" className="text-primary">Retour</Link></div>;
 
   return (
-    <div className="h-full min-h-0 overflow-y-auto overflow-x-auto p-6 pb-20" style={{ scrollbarGutter: "stable" }}>
+    <div className="h-full min-h-0 overflow-y-auto overflow-x-auto p-3 pb-20 sm:p-6" style={{ scrollbarGutter: "stable" }}>
       <div className="mb-4 flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
           {fromDashboard ? (
