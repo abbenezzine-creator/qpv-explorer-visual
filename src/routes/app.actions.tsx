@@ -161,11 +161,11 @@ function ActionsListPage() {
   const canCreate = canCreateAny(user);
 
   return (
-    <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="p-3 sm:p-6">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Actions</h1>
-          <p className="text-sm text-muted-foreground">Pilotage des actions par association</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Actions</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Pilotage des actions par association</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {user?.role === "superadmin" && (
