@@ -702,18 +702,24 @@ function ImportButton({ existing, onDone }: { existing: Row[]; onDone: () => voi
 function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onToggle: () => void; onCopy: (s: string) => void }) {
   const [busy, setBusy] = useState(false);
   const [info, setInfo] = useState<{ email: string; password: string } | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editEmail, setEditEmail] = useState("");
+  const [editPwd, setEditPwd] = useState("");
+  const [showEditPwd, setShowEditPwd] = useState(false);
 
-  const provision = async () => {
+  const provision = async (body?: { email?: string; password?: string }) => {
     setBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke("setup-partenaire");
+      const { data, error } = await supabase.functions.invoke("setup-partenaire", body ? { body } : undefined);
       if (error) throw error;
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
       const d = data as { email: string; password: string; created: boolean };
       setInfo({ email: d.email, password: d.password });
-      toast.success(d.created ? "Compte Partenaire créé" : "Compte Partenaire actualisé");
+      toast.success(body ? "Identifiants mis à jour" : (d.created ? "Compte Partenaire créé" : "Compte Partenaire actualisé"));
+      return true;
     } catch (e) {
       toast.error("Erreur : " + (e instanceof Error ? e.message : String(e)));
+      return false;
     } finally {
       setBusy(false);
     }
@@ -722,32 +728,86 @@ function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onTogg
   const email = info?.email ?? "partenaire@associoboard.app";
   const pwd = info?.password ?? "Partenaire2025";
 
+  const openEdit = () => {
+    setEditEmail(email);
+    setEditPwd(pwd);
+    setShowEditPwd(false);
+    setEditOpen(true);
+  };
+
+  const saveEdit = async () => {
+    const e = editEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return toast.error("Email invalide");
+    if (editPwd.length < 6) return toast.error("Mot de passe : 6 caractères minimum");
+    const ok = await provision({ email: e, password: editPwd });
+    if (ok) setEditOpen(false);
+  };
+
   return (
-    <tr className="border-t bg-sky-50/40 dark:bg-sky-950/20">
-      <td className="px-2 py-2"></td>
-      <td className="px-3 py-2 font-medium">Partenaire</td>
-      <td className="px-3 py-2 text-xs text-muted-foreground" colSpan={4}>Compte global · lecture seule</td>
-      <td className="px-3 py-2 font-mono text-xs">
-        <span className="inline-flex items-center gap-1">
-          {email}
-          <button onClick={() => onCopy(email)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
-        </span>
-      </td>
-      <td className="px-3 py-2 font-mono text-xs">
-        <span className="inline-flex items-center gap-1">
-          {visible ? pwd : "••••••••"}
-          <button onClick={onToggle} title={visible ? "Masquer" : "Afficher"}>
-            {visible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-          </button>
-          <button onClick={() => onCopy(pwd)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
-        </span>
-      </td>
-      <td className="px-3 py-2"></td>
-      <td className="px-3 py-2 text-right">
-        <Button size="sm" variant="outline" onClick={provision} disabled={busy}>
-          {busy ? "…" : info ? "Réinitialiser" : "Activer"}
-        </Button>
-      </td>
-    </tr>
+    <>
+      <tr className="border-t bg-sky-50/40 dark:bg-sky-950/20">
+        <td className="px-2 py-2"></td>
+        <td className="px-3 py-2 font-medium">Partenaire</td>
+        <td className="px-3 py-2 text-xs text-muted-foreground" colSpan={4}>Compte global · lecture seule</td>
+        <td className="px-3 py-2 font-mono text-xs">
+          <span className="inline-flex items-center gap-1">
+            {email}
+            <button onClick={() => onCopy(email)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
+          </span>
+        </td>
+        <td className="px-3 py-2 font-mono text-xs">
+          <span className="inline-flex items-center gap-1">
+            {visible ? pwd : "••••••••"}
+            <button onClick={onToggle} title={visible ? "Masquer" : "Afficher"}>
+              {visible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+            </button>
+            <button onClick={() => onCopy(pwd)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
+          </span>
+        </td>
+        <td className="px-3 py-2"></td>
+        <td className="px-3 py-2">
+          <div className="flex justify-end gap-1">
+            <Button size="sm" variant="outline" onClick={openEdit} disabled={busy} title="Modifier identifiant et mot de passe">
+              <Pencil className="h-3.5 w-3.5 mr-1" /> Modifier
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => provision()} disabled={busy}>
+              {busy ? "…" : info ? "Réinitialiser" : "Activer"}
+            </Button>
+          </div>
+        </td>
+      </tr>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le compte Partenaire</DialogTitle>
+            <DialogDescription>Identifiant (email) et mot de passe utilisés par le compte global Partenaire.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Identifiant (email)</Label>
+              <Input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+            </div>
+            <div>
+              <Label>Mot de passe</Label>
+              <div className="flex gap-2">
+                <Input
+                  type={showEditPwd ? "text" : "password"}
+                  value={editPwd}
+                  onChange={(e) => setEditPwd(e.target.value)}
+                />
+                <Button type="button" variant="outline" size="icon" onClick={() => setShowEditPwd(v => !v)}>
+                  {showEditPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)} disabled={busy}>Annuler</Button>
+            <Button onClick={saveEdit} disabled={busy}>{busy ? "Enregistrement…" : "Enregistrer"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

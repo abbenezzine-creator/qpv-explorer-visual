@@ -8,8 +8,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const PARTENAIRE_EMAIL = "partenaire@associoboard.app";
-const PARTENAIRE_PASSWORD = "Partenaire2025";
+const DEFAULT_PARTENAIRE_EMAIL = "partenaire@associoboard.app";
+const DEFAULT_PARTENAIRE_PASSWORD = "Partenaire2025";
 const PARTENAIRE_NOM = "Partenaire";
 
 Deno.serve(async (req) => {
@@ -41,15 +41,39 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find existing user by email
-    const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    let partUser = list?.users.find((u) => (u.email ?? "").toLowerCase() === PARTENAIRE_EMAIL);
+    // Optional overrides from request body
+    let bodyEmail: string | undefined;
+    let bodyPassword: string | undefined;
+    try {
+      if (req.headers.get("content-type")?.includes("application/json")) {
+        const b = await req.json();
+        if (typeof b?.email === "string" && b.email.trim()) bodyEmail = b.email.trim().toLowerCase();
+        if (typeof b?.password === "string" && b.password.length >= 6) bodyPassword = b.password;
+      }
+    } catch { /* noop */ }
+
+    // Find existing partenaire by role (so we can update its email even if changed)
+    const { data: roleRows } = await admin.from("user_roles").select("user_id").eq("role", "partenaire").limit(1);
+    let partUser: { id: string; email?: string | null } | null = null;
+    if (roleRows && roleRows.length > 0) {
+      const { data: u } = await admin.auth.admin.getUserById(roleRows[0].user_id);
+      if (u?.user) partUser = { id: u.user.id, email: u.user.email };
+    }
+    if (!partUser) {
+      // Fallback: lookup by default email
+      const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const found = list?.users.find((u) => (u.email ?? "").toLowerCase() === DEFAULT_PARTENAIRE_EMAIL);
+      if (found) partUser = { id: found.id, email: found.email };
+    }
+
+    const targetEmail = bodyEmail ?? partUser?.email ?? DEFAULT_PARTENAIRE_EMAIL;
+    const targetPassword = bodyPassword ?? DEFAULT_PARTENAIRE_PASSWORD;
     let created = false;
 
     if (!partUser) {
       const { data: createData, error: createErr } = await admin.auth.admin.createUser({
-        email: PARTENAIRE_EMAIL,
-        password: PARTENAIRE_PASSWORD,
+        email: targetEmail,
+        password: targetPassword,
         email_confirm: true,
         user_metadata: { nom: PARTENAIRE_NOM },
       });
@@ -58,17 +82,26 @@ Deno.serve(async (req) => {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      partUser = createData.user;
+      partUser = { id: createData.user.id, email: createData.user.email };
       created = true;
     } else {
-      // Reset password to known value
-      await admin.auth.admin.updateUserById(partUser.id, { password: PARTENAIRE_PASSWORD });
+      const updates: { password: string; email?: string; email_confirm?: boolean } = { password: targetPassword };
+      if (bodyEmail && bodyEmail !== (partUser.email ?? "").toLowerCase()) {
+        updates.email = bodyEmail;
+        updates.email_confirm = true;
+      }
+      const { error: updErr } = await admin.auth.admin.updateUserById(partUser.id, updates);
+      if (updErr) {
+        return new Response(JSON.stringify({ error: updErr.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Ensure profile
     await admin.from("profiles").upsert({
       id: partUser.id,
-      email: PARTENAIRE_EMAIL,
+      email: targetEmail,
       nom: PARTENAIRE_NOM,
     });
 
@@ -88,8 +121,8 @@ Deno.serve(async (req) => {
       JSON.stringify({
         ok: true,
         created,
-        email: PARTENAIRE_EMAIL,
-        password: PARTENAIRE_PASSWORD,
+        email: targetEmail,
+        password: targetPassword,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
