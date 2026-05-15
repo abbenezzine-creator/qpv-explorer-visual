@@ -608,6 +608,16 @@ export type Database = {
     }
     Functions: {
       action_assoc_id: { Args: { _action_id: string }; Returns: string }
+      get_storage_stats: {
+        Args: never
+        Returns: {
+          index_bytes: number
+          row_count: number
+          table_bytes: number
+          table_name: string
+          total_bytes: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
