@@ -277,7 +277,8 @@ function allActionsByThemeHtml(data: DashboardData, filters: DashboardFilters): 
           actionScoreFromRefs(refsListByAction.get(a.id) ?? []),
         )).join("")}
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
 function timelineHtml(data: DashboardData, filters: DashboardFilters): string {
