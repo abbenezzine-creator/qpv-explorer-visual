@@ -33,8 +33,14 @@ export const TYPE_ACTION_OPTIONS = [
 ] as const;
 
 export const THEMATIQUE_OPTIONS = [
-  "Education / Parentalité","Emploi & Développement","Santé","Cohésion sociale","Citoyenneté",
-  "Transition écologique","Accès aux droits","Prévention","Culture",
+  "Education - Sport - Jeunesse",
+  "Cité éducative",
+  "Cadre de vie - Tranquillité et sûreté publique",
+  "Quartier d'été - VVV",
+  "Accès aux droit - Lutte contre les discrimination",
+  "Emploi - Développement économique",
+  "Solidarité - égalité des chances",
+  "Transition",
 ] as const;
 
 export const JOURS_OPTIONS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"] as const;
