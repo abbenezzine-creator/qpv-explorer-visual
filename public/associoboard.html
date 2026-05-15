@@ -6127,7 +6127,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
           <div class="page-sub" id="impactsBenefSub">Synthèse des évaluations bénéficiaires</div>
         </div>
       </div>
-      <div id="impactsBenefFilters" style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+      <div id="impactsBenefFilters" style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px"></div>
       <div id="impactsBenefBody"></div>`;
     document.getElementById('mainArea')?.appendChild(p) || document.body.appendChild(p);
     return p;
