@@ -51,16 +51,23 @@ const THEME_STYLES: Record<string, ThemeStyle> = {
   "Culture":                 { icon: Palette,       bg: "bg-fuchsia-100",fg: "text-fuchsia-700",ring: "ring-fuchsia-200" },
 };
 const DEFAULT_STYLE: ThemeStyle = { icon: Tag, bg: "bg-muted", fg: "text-foreground", ring: "ring-border" };
+const ALL_STYLE: ThemeStyle = {
+  icon: Layers,
+  bg: "bg-gradient-to-r from-primary/15 via-fuchsia-100 to-violet-100",
+  fg: "text-primary",
+  ring: "ring-primary/30",
+};
 const themeStyle = (t: string | null): ThemeStyle => (t && THEME_STYLES[t]) || DEFAULT_STYLE;
 
 function ThemeBadge({ thematique }: { thematique: string | null }) {
-  if (!thematique) return null;
-  const s = themeStyle(thematique);
+  const isAll = thematique === "__all" || thematique === null || thematique === "";
+  const label = isAll ? "Toutes les thématiques" : thematique!;
+  const s = isAll ? ALL_STYLE : themeStyle(thematique);
   const Icon = s.icon;
   return (
     <span className={`inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${s.bg} ${s.fg} ${s.ring}`}>
       <Icon className="h-3.5 w-3.5" />
-      {thematique}
+      {label}
     </span>
   );
 }
