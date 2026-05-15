@@ -18,6 +18,7 @@ function AppLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    loadThemeOverrides().catch(() => {});
     const onMsg = (e: MessageEvent) => {
       const d = e.data as { type?: string; to?: string } | undefined;
       if (d?.type === "ab-navigate" && typeof d.to === "string" && d.to.startsWith("/")) {
