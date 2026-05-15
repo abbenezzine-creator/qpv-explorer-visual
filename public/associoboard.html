@@ -2832,12 +2832,17 @@ function renderQualTopFilters(){
     `<div><label style="${lblSty}">Année</label>`+
       `<select id="qfYear" style="${sty}">`+opt('','Toutes années',yearSel)+
       years.map(y=>opt(y,y,yearSel)).join('')+`</select></div>`;
+  // Reset l'action sélectionnée à chaque changement de Assoc/Thème/Année (alignement avec Impacts bénéficiaires)
+  function _resetQualAction(){
+    const sac=document.getElementById('qualActionSel'); if(sac) sac.value='';
+    try{ onQualActionChange(); }catch(e){}
+  }
   const qfA=document.getElementById('qfAssoc');
-  if(qfA) qfA.onchange=function(){ try{ switchAssociation(this.value); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
+  if(qfA) qfA.onchange=function(){ _resetQualAction(); try{ switchAssociation(this.value); }catch(e){} try{ renderQualTopFilters(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
   const qfT=document.getElementById('qfTheme');
-  if(qfT) qfT.onchange=function(){ const g=document.getElementById('globalThemeSel'); if(g){ g.value=this.value; } try{ onGlobalThemeChange(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
+  if(qfT) qfT.onchange=function(){ _resetQualAction(); const g=document.getElementById('globalThemeSel'); if(g){ g.value=this.value; } try{ onGlobalThemeChange(); }catch(e){} try{ renderQualTopFilters(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
   const qfY=document.getElementById('qfYear');
-  if(qfY) qfY.onchange=function(){ const g=document.getElementById('yearFilter'); if(g){ g.value=this.value; } try{ onYearChange(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
+  if(qfY) qfY.onchange=function(){ _resetQualAction(); const g=document.getElementById('yearFilter'); if(g){ g.value=this.value; } try{ onYearChange(); }catch(e){} try{ renderQualTopFilters(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
   const qfAct=document.getElementById('qfAction');
   if(qfAct) qfAct.onchange=function(){
     const sa=document.getElementById('qualAssocSel');
