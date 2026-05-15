@@ -21,7 +21,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText, Link2, Plus, Trash2, ExternalLink, Search, FileImage, FileType2, File as FileIcon,
-  GraduationCap, Briefcase, HeartPulse, Users, Scale, Leaf, ShieldCheck, Palette, Tag,
+  GraduationCap, Briefcase, HeartPulse, Users, Scale, Leaf, ShieldCheck, Palette, Tag, Pencil,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -85,6 +85,7 @@ function RessourcesPage() {
   const user = getUser();
   // "Modifier/supprimer" réservé au superadmin ; ajout autorisé pour admin_asso/agent.
   const canDelete = mounted && user?.role === "superadmin";
+  const canEdit = mounted && user?.role === "superadmin";
   const canCreate = mounted && (user?.role === "superadmin" || user?.role === "admin_asso" || user?.role === "agent");
   const qc = useQueryClient();
 
@@ -92,6 +93,7 @@ function RessourcesPage() {
   const [filterTheme, setFilterTheme] = useState<string>("__all");
   const [filterKind, setFilterKind] = useState<"all" | "file" | "link">("all");
   const [openCreate, setOpenCreate] = useState(false);
+  const [editTarget, setEditTarget] = useState<DocRow | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<DocRow | null>(null);
 
   const docsQ = useQuery({
@@ -209,7 +211,9 @@ function RessourcesPage() {
                 key={d.id}
                 doc={d}
                 canDelete={canDelete}
+                canEdit={canEdit}
                 onDelete={() => setConfirmDelete(d)}
+                onEdit={() => setEditTarget(d)}
               />
             ))}
           </div>
@@ -220,6 +224,12 @@ function RessourcesPage() {
         open={openCreate}
         onOpenChange={setOpenCreate}
         onCreated={() => qc.invalidateQueries({ queryKey: ["ressources"] })}
+      />
+
+      <EditResourceDialog
+        target={editTarget}
+        onClose={() => setEditTarget(null)}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["ressources"] })}
       />
 
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
@@ -264,7 +274,7 @@ function CounterCard({ icon, label, value, tone }: { icon: React.ReactNode; labe
 
 /* ---------------- Card ---------------- */
 
-function ResourceCard({ doc, canDelete, onDelete }: { doc: DocRow; canDelete: boolean; onDelete: () => void }) {
+function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocRow; canDelete: boolean; canEdit: boolean; onDelete: () => void; onEdit: () => void }) {
   const isLink = !!doc.url && !doc.file_path;
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
@@ -321,15 +331,29 @@ function ResourceCard({ doc, canDelete, onDelete }: { doc: DocRow; canDelete: bo
             : <><FileText className="h-3 w-3" /> Fichier</>}
         </div>
 
-        {canDelete && (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-background/90 p-1.5 text-muted-foreground opacity-0 shadow-sm backdrop-blur transition hover:text-destructive group-hover:opacity-100"
-            aria-label="Supprimer"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+        {(canEdit || canDelete) && (
+          <div className="absolute right-3 top-3 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
+            {canEdit && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="inline-flex items-center justify-center rounded-full bg-background/90 p-1.5 text-muted-foreground shadow-sm backdrop-blur transition hover:text-primary"
+                aria-label="Modifier"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                className="inline-flex items-center justify-center rounded-full bg-background/90 p-1.5 text-muted-foreground shadow-sm backdrop-blur transition hover:text-destructive"
+                aria-label="Supprimer"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -539,6 +563,127 @@ function CreateResourceDialog({
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Annuler</Button>
           <Button onClick={submit} disabled={saving}>{saving ? "Enregistrement…" : "Ajouter"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ---------------- Edit dialog (superadmin) ---------------- */
+
+function EditResourceDialog({
+  target, onClose, onSaved,
+}: { target: DocRow | null; onClose: () => void; onSaved: () => void }) {
+  const open = !!target;
+  const isLink = !!target?.url && !target?.file_path;
+  const [titre, setTitre] = useState("");
+  const [description, setDescription] = useState("");
+  const [thematique, setThematique] = useState<string>(THEMATIQUES[0]);
+  const [url, setUrl] = useState("");
+  const [replaceFile, setReplaceFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (target) {
+      setTitre(target.titre ?? "");
+      setDescription(target.description ?? "");
+      setThematique(target.thematique && THEMATIQUES.includes(target.thematique as typeof THEMATIQUES[number]) ? target.thematique : THEMATIQUES[0]);
+      setUrl(target.url ?? "");
+      setReplaceFile(null);
+    }
+  }, [target]);
+
+  const submit = async () => {
+    if (!target) return;
+    if (!titre.trim()) { toast.error("Le titre est requis"); return; }
+    if (isLink && !url.trim()) { toast.error("L'URL est requise"); return; }
+    setSaving(true);
+    try {
+      let file_path = target.file_path;
+      let mime_type = target.mime_type;
+      let file_size = target.file_size;
+      if (!isLink && replaceFile) {
+        const safeName = replaceFile.name.replace(/[^a-zA-Z0-9._-]+/g, "_");
+        const folder = target.file_path?.split("/")[0] ?? "shared";
+        const newPath = `${folder}/${Date.now()}_${safeName}`;
+        const { error: upErr } = await supabase.storage.from("documents").upload(newPath, replaceFile, { upsert: false });
+        if (upErr) throw upErr;
+        if (target.file_path) {
+          await supabase.storage.from("documents").remove([target.file_path]);
+        }
+        file_path = newPath;
+        mime_type = replaceFile.type || null;
+        file_size = replaceFile.size;
+      }
+      const { error } = await supabase.from("documents").update({
+        titre: titre.trim(),
+        description: description.trim() || null,
+        thematique,
+        url: isLink ? url.trim() : null,
+        file_path,
+        mime_type,
+        file_size,
+      }).eq("id", target.id);
+      if (error) throw error;
+      toast.success("Ressource mise à jour");
+      onClose();
+      onSaved();
+    } catch (e) {
+      toast.error("Échec : " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Modifier la ressource</DialogTitle>
+          <DialogDescription>Édition réservée au super administrateur.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="e-titre">Titre *</Label>
+            <Input id="e-titre" value={titre} onChange={(e) => setTitre(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="e-desc">Description</Label>
+            <Textarea id="e-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+          <div>
+            <Label>Thématique</Label>
+            <Select value={thematique} onValueChange={setThematique}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {THEMATIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <div className="mt-2"><ThemeBadge thematique={thematique} /></div>
+          </div>
+          {isLink ? (
+            <div>
+              <Label htmlFor="e-url">URL *</Label>
+              <Input id="e-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} />
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="e-file">Remplacer le fichier (optionnel)</Label>
+              <Input
+                id="e-file"
+                type="file"
+                accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                onChange={(e) => setReplaceFile(e.target.files?.[0] ?? null)}
+              />
+              {replaceFile && (
+                <p className="mt-1 text-xs text-muted-foreground">{replaceFile.name} · {Math.round(replaceFile.size / 1024)} Ko</p>
+              )}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={saving}>Annuler</Button>
+          <Button onClick={submit} disabled={saving}>{saving ? "Enregistrement…" : "Enregistrer"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
