@@ -73,8 +73,18 @@ export function themeHex(t: string | null | undefined): string {
 
 /** Soft tints (~bg-100 / text-700) for HTML pill rendering outside React. */
 const THEME_TINTS: Record<string, { bg: string; fg: string; ring: string }> = {
-  "Education / Parentalité": { bg: "#ede9fe", fg: "#6d28d9", ring: "#ddd6fe" },
-  "Emploi & Développement":  { bg: "#fef3c7", fg: "#b45309", ring: "#fde68a" },
+  // New
+  "Education - Sport - Jeunesse":                       { bg: "#e0f2fe", fg: "#0369a1", ring: "#bae6fd" },
+  "Cité éducative":                                     { bg: "#fce7f3", fg: "#be185d", ring: "#fbcfe8" },
+  "Cadre de vie - Tranquillité et sûreté publique":     { bg: "#ede9fe", fg: "#6d28d9", ring: "#ddd6fe" },
+  "Quartier d'été - VVV":                               { bg: "#fae8ff", fg: "#a21caf", ring: "#f5d0fe" },
+  "Accès aux droit - Lutte contre les discrimination":  { bg: "#dbeafe", fg: "#1d4ed8", ring: "#bfdbfe" },
+  "Emploi - Développement économique":                  { bg: "#ffedd5", fg: "#c2410c", ring: "#fed7aa" },
+  "Solidarité - égalité des chances":                   { bg: "#d1fae5", fg: "#047857", ring: "#a7f3d0" },
+  "Transition":                                         { bg: "#dcfce7", fg: "#15803d", ring: "#bbf7d0" },
+  // Legacy
+  "Education / Parentalité": { bg: "#e0f2fe", fg: "#0369a1", ring: "#bae6fd" },
+  "Emploi & Développement":  { bg: "#ffedd5", fg: "#c2410c", ring: "#fed7aa" },
   "Santé":                   { bg: "#ffe4e6", fg: "#be123c", ring: "#fecdd3" },
   "Cohésion sociale":        { bg: "#e0f2fe", fg: "#0369a1", ring: "#bae6fd" },
   "Citoyenneté":             { bg: "#e0e7ff", fg: "#4338ca", ring: "#c7d2fe" },
