@@ -529,10 +529,11 @@ function CreateResourceDialog({
             <Select value={thematique} onValueChange={setThematique}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="__all">Toutes les thématiques</SelectItem>
                 {THEMATIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="mt-2"><ThemeBadge thematique={thematique} /></div>
+            <div className="mt-2"><ThemeBadge thematique={thematique === "__all" ? null : thematique} /></div>
           </div>
           {kind === "link" ? (
             <div>
