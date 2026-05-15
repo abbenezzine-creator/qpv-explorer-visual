@@ -156,8 +156,16 @@ const DEFAULT_ICON_SVG = '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-
 /** Renders a small themed badge as raw HTML — for use inside the dashboard iframe. */
 export function themeBadgeHtml(t: string | null | undefined): string {
   if (!t) return "";
-  const tint = THEME_TINTS[t] ?? DEFAULT_TINT;
-  const icon = THEME_ICON_SVG[t] ?? DEFAULT_ICON_SVG;
+  const ov = getThemeOverride(t);
+  let tint: { bg: string; fg: string; ring: string };
+  let icon: string;
+  if (ov) {
+    tint = { bg: hexToRgba(ov.color_hex, 0.14), fg: ov.color_hex, ring: hexToRgba(ov.color_hex, 0.35) };
+    icon = iconInnerSvg(ov.icon_name) || DEFAULT_ICON_SVG;
+  } else {
+    tint = THEME_TINTS[t] ?? DEFAULT_TINT;
+    icon = THEME_ICON_SVG[t] ?? DEFAULT_ICON_SVG;
+  }
   const safe = String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
   return `<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;background:${tint.bg};color:${tint.fg};box-shadow:inset 0 0 0 1px ${tint.ring};font-size:11px;font-weight:600;line-height:1.4">`
     + `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>`
