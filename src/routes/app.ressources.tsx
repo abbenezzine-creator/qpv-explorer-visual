@@ -378,7 +378,7 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
           </span>
         </div>
 
-        {/* Actions: cliquez ici (lien) / ouvrir + télécharger (fichier) */}
+        {/* Actions: cliquez ici (lien URL) OU télécharger (fichier) */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {isLink ? (
             <button
@@ -388,26 +388,15 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
             >
               <ExternalLink className="h-3 w-3" /> Cliquez ici
             </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); open(); }}
-                className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20"
-              >
-                <ExternalLink className="h-3 w-3" /> Cliquez ici
-              </button>
-              {doc.file_path && (
-                <button
-                  type="button"
-                  onClick={download}
-                  className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
-                >
-                  <FileText className="h-3 w-3" /> Télécharger
-                </button>
-              )}
-            </>
-          )}
+          ) : doc.file_path ? (
+            <button
+              type="button"
+              onClick={download}
+              className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20"
+            >
+              <FileText className="h-3 w-3" /> Télécharger
+            </button>
+          ) : null}
         </div>
       </div>
     </article>
