@@ -1,6 +1,7 @@
 import { createFileRoute, redirect, useNavigate, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { loadThemeOverrides } from "@/lib/theme-overrides";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async () => {
