@@ -298,7 +298,7 @@ function ActionsListPage() {
                   </td>
                   <td className="px-3 py-2 text-right whitespace-nowrap">{sollicite ? `${sollicite.toLocaleString("fr-FR")} €` : "—"}</td>
                   <td className="px-3 py-2">{labelOf(QPV_OPTIONS, a.qpv_key)}</td>
-                  <td className="px-3 py-2">{a.thematique ?? "—"}</td>
+                  <td className="px-3 py-2">{a.thematique ? <ThemeBadge thematique={a.thematique} /> : "—"}</td>
                   <td className="px-3 py-2">
                     <span className={`inline-block rounded-full border px-2 py-0.5 text-xs ${STATUT_VARIANT[a.statut]}`}>
                       {labelOf(STATUT_OPTIONS, a.statut)}
