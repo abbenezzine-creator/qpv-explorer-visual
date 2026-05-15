@@ -464,7 +464,7 @@ function ActionsListPage() {
                     <div><dt className="text-xs uppercase text-muted-foreground">Réf. administrative</dt><dd className="font-medium">{viewing.reference_administrative ?? "—"}</dd></div>
                     <div><dt className="text-xs uppercase text-muted-foreground">Commune</dt><dd className="font-medium">{viewing.commune ?? "—"}</dd></div>
                     <div><dt className="text-xs uppercase text-muted-foreground">QPV</dt><dd className="font-medium">{labelOf(QPV_OPTIONS, viewing.qpv_key)}</dd></div>
-                    <div><dt className="text-xs uppercase text-muted-foreground">Thématique</dt><dd className="font-medium">{viewing.thematique ?? "—"}</dd></div>
+                    <div><dt className="text-xs uppercase text-muted-foreground">Thématique</dt><dd className="mt-1">{viewing.thematique ? <ThemeBadge thematique={viewing.thematique} /> : <span className="font-medium">—</span>}</dd></div>
                     <div><dt className="text-xs uppercase text-muted-foreground">Type</dt><dd className="font-medium">{viewing.type_action ?? "—"}</dd></div>
                     <div><dt className="text-xs uppercase text-muted-foreground">Date début</dt><dd className="font-medium">{frDate(actionStartDate(viewing))}</dd></div>
                     <div><dt className="text-xs uppercase text-muted-foreground">Date fin</dt><dd className="font-medium">{frDate(actionEndDate(viewing))}</dd></div>
