@@ -23,6 +23,10 @@ export const Route = createFileRoute("/app/evaluations")({
     if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
+    const { getUser } = await import("@/lib/auth");
+    if (getUser()?.role === "partenaire") {
+      throw redirect({ to: "/app", search: { page: "impacts-beneficiaires" } });
+    }
   },
   component: EvaluationsPage,
 });
