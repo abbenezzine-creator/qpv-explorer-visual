@@ -82,6 +82,8 @@ const DEFAULT_HEX = "#94a3b8"; // slate-400
 
 export function themeHex(t: string | null | undefined): string {
   if (!t) return DEFAULT_HEX;
+  const ov = getThemeOverride(t);
+  if (ov) return ov.color_hex;
   return THEME_HEX[t] ?? DEFAULT_HEX;
 }
 
