@@ -72,8 +72,8 @@ Deno.serve(async (req) => {
 
     if (!partUser) {
       const { data: createData, error: createErr } = await admin.auth.admin.createUser({
-        email: PARTENAIRE_EMAIL,
-        password: PARTENAIRE_PASSWORD,
+        email: targetEmail,
+        password: targetPassword,
         email_confirm: true,
         user_metadata: { nom: PARTENAIRE_NOM },
       });
@@ -82,17 +82,26 @@ Deno.serve(async (req) => {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      partUser = createData.user;
+      partUser = { id: createData.user.id, email: createData.user.email };
       created = true;
     } else {
-      // Reset password to known value
-      await admin.auth.admin.updateUserById(partUser.id, { password: PARTENAIRE_PASSWORD });
+      const updates: { password: string; email?: string; email_confirm?: boolean } = { password: targetPassword };
+      if (bodyEmail && bodyEmail !== (partUser.email ?? "").toLowerCase()) {
+        updates.email = bodyEmail;
+        updates.email_confirm = true;
+      }
+      const { error: updErr } = await admin.auth.admin.updateUserById(partUser.id, updates);
+      if (updErr) {
+        return new Response(JSON.stringify({ error: updErr.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Ensure profile
     await admin.from("profiles").upsert({
       id: partUser.id,
-      email: PARTENAIRE_EMAIL,
+      email: targetEmail,
       nom: PARTENAIRE_NOM,
     });
 
@@ -112,8 +121,8 @@ Deno.serve(async (req) => {
       JSON.stringify({
         ok: true,
         created,
-        email: PARTENAIRE_EMAIL,
-        password: PARTENAIRE_PASSWORD,
+        email: targetEmail,
+        password: targetPassword,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
