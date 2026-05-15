@@ -184,12 +184,26 @@ export function ThemeBadge({
 }) {
   const isAll = thematique === "__all" || thematique === null || thematique === undefined || thematique === "";
   const label = isAll ? "Toutes les thématiques" : thematique!;
+  const ov = !isAll ? getThemeOverride(thematique ?? "") : null;
   const s = isAll ? ALL_STYLE : themeStyle(thematique);
   const Icon = s.icon;
-  const sizing = size === "md"
-    ? "px-3 py-1.5 text-xs"
-    : "px-2.5 py-1 text-[11px]";
+  const sizing = size === "md" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[11px]";
   const iconSize = size === "md" ? "h-4 w-4" : "h-3.5 w-3.5";
+  if (ov) {
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 self-start rounded-full font-semibold ring-1 ${sizing} ${className}`}
+        style={{
+          background: hexToRgba(ov.color_hex, 0.14),
+          color: ov.color_hex,
+          boxShadow: `inset 0 0 0 1px ${hexToRgba(ov.color_hex, 0.35)}`,
+        }}
+      >
+        <Icon className={iconSize} />
+        {label}
+      </span>
+    );
+  }
   return (
     <span className={`inline-flex items-center gap-1.5 self-start rounded-full font-semibold ring-1 ${sizing} ${s.bg} ${s.fg} ${s.ring} ${className}`}>
       <Icon className={iconSize} />
