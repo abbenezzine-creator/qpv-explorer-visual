@@ -126,11 +126,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    const displayLogin = targetEmail.endsWith("@partenaire.local")
+      ? targetEmail.slice(0, -"@partenaire.local".length)
+      : targetEmail;
+
     return new Response(
       JSON.stringify({
         ok: true,
         created,
         email: targetEmail,
+        login: displayLogin,
         password: targetPassword,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
