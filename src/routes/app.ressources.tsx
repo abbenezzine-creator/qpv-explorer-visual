@@ -331,6 +331,13 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
             : <><FileText className="h-3 w-3" /> Fichier</>}
         </div>
 
+        {/* Theme badge — always visible overlay */}
+        {doc.thematique && (
+          <div className="absolute bottom-3 left-3">
+            <ThemeBadge thematique={doc.thematique} />
+          </div>
+        )}
+
         {(canEdit || canDelete) && (
           <div className="absolute right-3 top-3 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
             {canEdit && (
@@ -359,7 +366,6 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
 
       {/* Body */}
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <ThemeBadge thematique={doc.thematique} />
         <h3 className="line-clamp-2 text-base font-semibold leading-tight">{doc.titre}</h3>
         {doc.description && (
           <p className="line-clamp-2 text-sm text-muted-foreground">{doc.description}</p>
@@ -440,12 +446,13 @@ function CreateResourceDialog({
     setSaving(true);
     try {
       const folder = user?.assocId ?? "shared";
+      const themaToSave = thematique === "__all" ? null : thematique;
 
       if (kind === "link") {
         const { error } = await supabase.from("documents").insert({
           titre: titre.trim(),
           description: description.trim() || null,
-          thematique,
+          thematique: themaToSave,
           type: "link",
           url: url.trim(),
           file_path: null,
@@ -468,7 +475,7 @@ function CreateResourceDialog({
           const { error } = await supabase.from("documents").insert({
             titre: baseTitle,
             description: description.trim() || null,
-            thematique,
+            thematique: themaToSave,
             type: "file",
             url: null,
             file_path,
@@ -523,10 +530,11 @@ function CreateResourceDialog({
             <Select value={thematique} onValueChange={setThematique}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="__all">Toutes les thématiques</SelectItem>
                 {THEMATIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="mt-2"><ThemeBadge thematique={thematique} /></div>
+            <div className="mt-2"><ThemeBadge thematique={thematique === "__all" ? null : thematique} /></div>
           </div>
           {kind === "link" ? (
             <div>
@@ -587,7 +595,7 @@ function EditResourceDialog({
     if (target) {
       setTitre(target.titre ?? "");
       setDescription(target.description ?? "");
-      setThematique(target.thematique && THEMATIQUES.includes(target.thematique as typeof THEMATIQUES[number]) ? target.thematique : THEMATIQUES[0]);
+      setThematique(target.thematique && THEMATIQUES.includes(target.thematique as typeof THEMATIQUES[number]) ? target.thematique : "__all");
       setUrl(target.url ?? "");
       setReplaceFile(null);
     }
@@ -618,7 +626,7 @@ function EditResourceDialog({
       const { error } = await supabase.from("documents").update({
         titre: titre.trim(),
         description: description.trim() || null,
-        thematique,
+        thematique: thematique === "__all" ? null : thematique,
         url: isLink ? url.trim() : null,
         file_path,
         mime_type,
@@ -656,10 +664,11 @@ function EditResourceDialog({
             <Select value={thematique} onValueChange={setThematique}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="__all">Toutes les thématiques</SelectItem>
                 {THEMATIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="mt-2"><ThemeBadge thematique={thematique} /></div>
+            <div className="mt-2"><ThemeBadge thematique={thematique === "__all" ? null : thematique} /></div>
           </div>
           {isLink ? (
             <div>
