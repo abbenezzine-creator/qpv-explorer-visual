@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppStockageRouteImport } from './routes/app.stockage'
 import { Route as AppRessourcesRouteImport } from './routes/app.ressources'
 import { Route as AppEvaluationsRouteImport } from './routes/app.evaluations'
 import { Route as AppAssociationsRouteImport } from './routes/app.associations'
@@ -57,6 +58,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStockageRoute = AppStockageRouteImport.update({
+  id: '/stockage',
+  path: '/stockage',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRessourcesRoute = AppRessourcesRouteImport.update({
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/app/associations': typeof AppAssociationsRoute
   '/app/evaluations': typeof AppEvaluationsRoute
   '/app/ressources': typeof AppRessourcesRoute
+  '/app/stockage': typeof AppStockageRoute
   '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/app/associations': typeof AppAssociationsRoute
   '/app/evaluations': typeof AppEvaluationsRoute
   '/app/ressources': typeof AppRessourcesRoute
+  '/app/stockage': typeof AppStockageRoute
   '/app': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/app/associations': typeof AppAssociationsRoute
   '/app/evaluations': typeof AppEvaluationsRoute
   '/app/ressources': typeof AppRessourcesRoute
+  '/app/stockage': typeof AppStockageRoute
   '/app/': typeof AppIndexRoute
   '/app/actions/$id': typeof AppActionsIdRouteWithChildren
   '/app/actions/$id/evaluation': typeof AppActionsIdEvaluationRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/app/associations'
     | '/app/evaluations'
     | '/app/ressources'
+    | '/app/stockage'
     | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/app/associations'
     | '/app/evaluations'
     | '/app/ressources'
+    | '/app/stockage'
     | '/app'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/app/associations'
     | '/app/evaluations'
     | '/app/ressources'
+    | '/app/stockage'
     | '/app/'
     | '/app/actions/$id'
     | '/app/actions/$id/evaluation'
@@ -251,6 +263,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/stockage': {
+      id: '/app/stockage'
+      path: '/stockage'
+      fullPath: '/app/stockage'
+      preLoaderRoute: typeof AppStockageRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/ressources': {
@@ -336,6 +355,7 @@ interface AppRouteChildren {
   AppAssociationsRoute: typeof AppAssociationsRoute
   AppEvaluationsRoute: typeof AppEvaluationsRoute
   AppRessourcesRoute: typeof AppRessourcesRoute
+  AppStockageRoute: typeof AppStockageRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -344,6 +364,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssociationsRoute: AppAssociationsRoute,
   AppEvaluationsRoute: AppEvaluationsRoute,
   AppRessourcesRoute: AppRessourcesRoute,
+  AppStockageRoute: AppStockageRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
@@ -360,3 +381,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
