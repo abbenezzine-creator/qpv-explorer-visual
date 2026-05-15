@@ -55,6 +55,13 @@ function AppIndexPage() {
     return () => window.removeEventListener("ab-auth-change", sync);
   }, []);
 
+  // Partenaire n'a pas accès à la page Documents
+  useEffect(() => {
+    if (u?.role === "partenaire" && page === "documents") {
+      navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, page: "dashboard" }), replace: true });
+    }
+  }, [u?.role, page, navigate]);
+
   // Iframe load + autoLogin + nav forwarding
   useEffect(() => {
     const f = ref.current;

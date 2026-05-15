@@ -56,7 +56,7 @@ const evaluation: NavItem[] = [
   { title: "Impacts bénéficiaires", to: "/app", search: { page: "impacts-beneficiaires" }, icon: TrendingUp },
 ];
 
-const ressources: NavItem[] = [
+const ressourcesAll: NavItem[] = [
   { title: "Documents", to: "/app", search: { page: "documents" }, icon: FileText },
   { title: "Centre de Ressources", to: "/app/ressources", icon: Library },
   { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
@@ -109,7 +109,7 @@ export function AppSidebar() {
     (groupContains(territoire) && "territoire") ||
     (groupContains(principal) && "principal") ||
     (groupContains(evaluation) && "evaluation") ||
-    (groupContains(ressources) && "ressources") ||
+    (groupContains(ressourcesAll) && "ressources") ||
     (groupContains(admin) && "admin") ||
     "principal";
   const [openGroup, setOpenGroup] = useState<string>(initialOpen as string);
@@ -209,7 +209,7 @@ export function AppSidebar() {
         {renderCollapsibleGroup("territoire", "Territoire", territoire)}
         {renderCollapsibleGroup("principal", "Principal", principal)}
         {renderCollapsibleGroup("evaluation", "Évaluation", evaluation)}
-        {renderCollapsibleGroup("ressources", "Ressource Documentaire", ressources)}
+        {renderCollapsibleGroup("ressources", "Ressource Documentaire", user?.role === "partenaire" ? ressourcesAll.filter((it) => it.search?.page !== "documents") : ressourcesAll)}
         {isSuperAdmin && renderCollapsibleGroup("admin", "Administration", admin)}
         <SidebarGroup>
           {!collapsed && (
