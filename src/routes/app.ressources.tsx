@@ -626,7 +626,7 @@ function EditResourceDialog({
       const { error } = await supabase.from("documents").update({
         titre: titre.trim(),
         description: description.trim() || null,
-        thematique,
+        thematique: thematique === "__all" ? null : thematique,
         url: isLink ? url.trim() : null,
         file_path,
         mime_type,
