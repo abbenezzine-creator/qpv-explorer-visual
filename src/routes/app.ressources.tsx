@@ -372,6 +372,18 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
         {doc.description && (
           <p className="line-clamp-2 text-sm text-muted-foreground">{doc.description}</p>
         )}
+        {doc.url && (
+          <a
+            href={doc.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="truncate text-xs text-primary underline-offset-2 hover:underline"
+            title={doc.url}
+          >
+            {doc.url}
+          </a>
+        )}
         <div className="mt-auto flex items-center justify-between pt-2 text-xs text-muted-foreground">
           <span className="truncate">
             {isLink ? host : sizeKb ? `${sizeKb} Ko` : ""}
