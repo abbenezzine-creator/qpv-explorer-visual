@@ -1,7 +1,7 @@
 // Dashboard data bridge — builds HTML payloads injected into the iframe (#dashStats, #dashActions, #dashTL).
 // The HTML markup mirrors the classes already in public/associoboard.html so styling stays identical.
 import { supabase } from "@/integrations/supabase/client";
-import { themeHex, themeBadgeHtml } from "@/components/ThemeBadge";
+import { themeBadgeHtml } from "@/components/ThemeBadge";
 
 type Action = {
   id: string;
@@ -196,10 +196,8 @@ function actionCardHtml(a: Action, assocName: string, refsCount: number, evalsCo
   const scoreBadge = scoreAvg != null
     ? `<span class="badge" style="background:color-mix(in oklab, var(--accent-rose) 15%, transparent);color:var(--accent-rose);font-weight:700">★ ${scoreAvg}%</span>`
     : `<span class="badge badge-gray" style="opacity:.7">★ —</span>`;
-  const themeColor = a.thematique ? themeHex(a.thematique) : "var(--primary)";
   const themeBadge = a.thematique ? themeBadgeHtml(a.thematique) : "";
-  return `<div class="action-card" data-action-id="${a.id}" data-assoc-name="${escapeHtml(assocName)}" data-titre="${escapeHtml(a.titre)}" style="position:relative;padding-top:30px;border-left:4px solid ${themeColor}" onclick="if(!event.target.closest('button')){window.parent && window.parent.postMessage({type:'ab-view-action',actionId:'${a.id}'},'*')}">
-    <div class="ac-bar" style="background:${themeColor}"></div>
+  return `<div class="action-card" data-action-id="${a.id}" data-assoc-name="${escapeHtml(assocName)}" data-titre="${escapeHtml(a.titre)}" style="position:relative;padding-top:30px" onclick="if(!event.target.closest('button')){window.parent && window.parent.postMessage({type:'ab-view-action',actionId:'${a.id}'},'*')}">
     <button type="button" class="ac-view-btn" title="Voir le détail" style="position:absolute;top:10px;right:10px;z-index:2;font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-weight:600;color:var(--primary)" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-view-action',actionId:'${a.id}'},'*')">Voir détail →</button>
     <div class="ac-ref" style="padding-right:96px"><span>${escapeHtml(assocName.toUpperCase())}</span><span class="badge badge-${badge}">${escapeHtml(statutLbl)}</span></div>
     <div class="ac-title">${escapeHtml(a.titre)}</div>
@@ -260,10 +258,9 @@ function allActionsByThemeHtml(data: DashboardData, filters: DashboardFilters): 
   const ordered = Array.from(groups.entries()).sort((a, b) => a[0].localeCompare(b[0], "fr"));
   return ordered.map(([theme, list]) => {
     const themed = theme !== "Sans thématique";
-    const headColor = themed ? themeHex(theme) : "var(--primary)";
     const headBadge = themed ? themeBadgeHtml(theme) : `<span style="font-family:'Lexend',sans-serif;font-weight:700;font-size:13px;color:var(--primary);text-transform:uppercase;letter-spacing:.5px">${escapeHtml(theme)}</span>`;
     return `
-    <div class="theme-block" data-theme="${escapeHtml(theme)}" style="margin-bottom:18px;border-left:3px solid ${headColor};padding-left:10px">
+    <div class="theme-block" data-theme="${escapeHtml(theme)}" style="margin-bottom:18px">
       <div style="display:flex;align-items:center;gap:8px;margin:6px 0 10px;padding-bottom:6px;border-bottom:1px dashed var(--border)">
         ${headBadge}
         <span style="font-size:11px;color:var(--muted-fore)">${list.length} action${list.length > 1 ? "s" : ""}</span>
