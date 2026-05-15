@@ -11,7 +11,7 @@ import {
 /** Curated registry of Lucide icons usable as theme icons. */
 export const THEME_ICON_REGISTRY: Record<string, LucideIcon> = {
   GraduationCap, BookOpen, ShieldCheck, Plane, Scale, Briefcase, Heart, Sprout,
-  Users, HeartPulse, Leaf, Palette, Tag, Building2, Map, Hammer, Bike,
+  Users, HeartPulse, Leaf, Palette, Tag, Building2, Map: MapIcon, Hammer, Bike,
   Music, Camera, Globe, Star, Sun, Trees, Bus, Car, Home, Utensils,
   Baby, Gamepad2, Trophy, Flame, Lightbulb, Rocket, HandHeart, Smile,
   Megaphone, MessagesSquare, Wrench, Calendar, Flag, Sparkles, Activity,
