@@ -56,7 +56,7 @@ const evaluation: NavItem[] = [
   { title: "Impacts bénéficiaires", to: "/app", search: { page: "impacts-beneficiaires" }, icon: TrendingUp },
 ];
 
-const ressources: NavItem[] = [
+const ressourcesAll: NavItem[] = [
   { title: "Documents", to: "/app", search: { page: "documents" }, icon: FileText },
   { title: "Centre de Ressources", to: "/app/ressources", icon: Library },
   { title: "Guide du Référentiel", to: "/app", search: { page: "guide" }, icon: BookOpen },
