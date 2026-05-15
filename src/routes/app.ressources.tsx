@@ -331,15 +331,29 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
             : <><FileText className="h-3 w-3" /> Fichier</>}
         </div>
 
-        {canDelete && (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-background/90 p-1.5 text-muted-foreground opacity-0 shadow-sm backdrop-blur transition hover:text-destructive group-hover:opacity-100"
-            aria-label="Supprimer"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+        {(canEdit || canDelete) && (
+          <div className="absolute right-3 top-3 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
+            {canEdit && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="inline-flex items-center justify-center rounded-full bg-background/90 p-1.5 text-muted-foreground shadow-sm backdrop-blur transition hover:text-primary"
+                aria-label="Modifier"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                className="inline-flex items-center justify-center rounded-full bg-background/90 p-1.5 text-muted-foreground shadow-sm backdrop-blur transition hover:text-destructive"
+                aria-label="Supprimer"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         )}
       </div>
 
