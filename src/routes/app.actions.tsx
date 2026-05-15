@@ -443,7 +443,7 @@ function ActionsListPage() {
                 </div>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto p-8 pb-20" style={{ scrollbarGutter: "stable" }}>
-                <div className="mx-auto min-w-[900px] max-w-5xl space-y-6">
+                <div className="mx-auto w-full max-w-5xl space-y-6 md:min-w-[700px]">
                   <div>
                     <div className="text-xs uppercase text-muted-foreground">{viewing.annee ?? ""} · {assocMap.get(viewing.assoc_id) ?? ""}</div>
                     <h2 className="text-3xl font-bold">{viewing.titre}</h2>
