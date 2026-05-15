@@ -701,9 +701,9 @@ function ImportButton({ existing, onDone }: { existing: Row[]; onDone: () => voi
 
 function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onToggle: () => void; onCopy: (s: string) => void }) {
   const [busy, setBusy] = useState(false);
-  const [info, setInfo] = useState<{ email: string; password: string } | null>(null);
+  const [info, setInfo] = useState<{ login: string; email: string; password: string } | null>(null);
   const [editOpen, setEditOpen] = useState(false);
-  const [editEmail, setEditEmail] = useState("");
+  const [editLogin, setEditLogin] = useState("");
   const [editPwd, setEditPwd] = useState("");
   const [showEditPwd, setShowEditPwd] = useState(false);
 
@@ -713,8 +713,9 @@ function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onTogg
       const { data, error } = await supabase.functions.invoke("setup-partenaire", body ? { body } : undefined);
       if (error) throw error;
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
-      const d = data as { email: string; password: string; created: boolean };
-      setInfo({ email: d.email, password: d.password });
+      const d = data as { email: string; login?: string; password: string; created: boolean };
+      const displayLogin = d.login ?? (d.email.endsWith("@partenaire.local") ? d.email.slice(0, -"@partenaire.local".length) : d.email);
+      setInfo({ login: displayLogin, email: d.email, password: d.password });
       toast.success(body ? "Identifiants mis à jour" : (d.created ? "Compte Partenaire créé" : "Compte Partenaire actualisé"));
       return true;
     } catch (e) {
@@ -725,21 +726,24 @@ function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onTogg
     }
   };
 
-  const email = info?.email ?? "partenaire@associoboard.app";
+  const displayLogin = info?.login ?? "partenaire";
   const pwd = info?.password ?? "Partenaire2025";
 
   const openEdit = () => {
-    setEditEmail(email);
+    setEditLogin(displayLogin);
     setEditPwd(pwd);
     setShowEditPwd(false);
     setEditOpen(true);
   };
 
   const saveEdit = async () => {
-    const e = editEmail.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return toast.error("Email invalide");
+    const id = editLogin.trim();
+    if (!id) return toast.error("Identifiant requis");
+    if (!id.includes("@") && !/^[a-zA-Z0-9._-]+$/.test(id)) {
+      return toast.error("Identifiant : lettres, chiffres, . _ - uniquement");
+    }
     if (editPwd.length < 6) return toast.error("Mot de passe : 6 caractères minimum");
-    const ok = await provision({ email: e, password: editPwd });
+    const ok = await provision({ email: id, password: editPwd });
     if (ok) setEditOpen(false);
   };
 
@@ -751,8 +755,8 @@ function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onTogg
         <td className="px-3 py-2 text-xs text-muted-foreground" colSpan={4}>Compte global · lecture seule</td>
         <td className="px-3 py-2 font-mono text-xs">
           <span className="inline-flex items-center gap-1">
-            {email}
-            <button onClick={() => onCopy(email)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
+            {displayLogin}
+            <button onClick={() => onCopy(displayLogin)} title="Copier"><Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" /></button>
           </span>
         </td>
         <td className="px-3 py-2 font-mono text-xs">
@@ -781,12 +785,12 @@ function PartenaireRow({ visible, onToggle, onCopy }: { visible: boolean; onTogg
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Modifier le compte Partenaire</DialogTitle>
-            <DialogDescription>Identifiant (email) et mot de passe utilisés par le compte global Partenaire.</DialogDescription>
+            <DialogDescription>Identifiant (simple ID ou email) et mot de passe du compte global Partenaire.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Identifiant (email)</Label>
-              <Input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+              <Label>Identifiant</Label>
+              <Input value={editLogin} onChange={(e) => setEditLogin(e.target.value)} placeholder="ex : partenaire-mairie ou contact@mairie.fr" />
             </div>
             <div>
               <Label>Mot de passe</Label>
