@@ -1,18 +1,17 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Palette, Save, Plus, Trash2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Palette, Save, RotateCcw, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { getUser } from "@/lib/auth";
 import { ICON_NAMES, THEME_ICON_REGISTRY, loadThemeOverrides } from "@/lib/theme-overrides";
-import { ThemeBadge } from "@/components/ThemeBadge";
 import { THEMATIQUE_OPTIONS } from "@/lib/actions-data";
+import { themeHex, THEME_STYLES, DEFAULT_STYLE } from "@/components/ThemeBadge";
 
 export const Route = createFileRoute("/app/parametres-themes")({
   beforeLoad: async () => {
@@ -23,7 +22,15 @@ export const Route = createFileRoute("/app/parametres-themes")({
   component: ParametresThemesPage,
 });
 
-type Row = { id: string; thematique: string; color_hex: string; icon_name: string };
+type Row = { id?: string; thematique: string; color_hex: string; icon_name: string };
+
+function defaultIconNameFor(t: string): string {
+  const s = THEME_STYLES[t] ?? DEFAULT_STYLE;
+  const name = (s.icon as unknown as { displayName?: string; name?: string }).displayName
+    ?? (s.icon as unknown as { name?: string }).name
+    ?? "Tag";
+  return ICON_NAMES.includes(name) ? name : "Tag";
+}
 
 function ParametresThemesPage() {
   const user = getUser();
@@ -34,27 +41,31 @@ function ParametresThemesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("theme_settings" as never)
-        .select("id, thematique, color_hex, icon_name")
-        .order("thematique");
+        .select("id, thematique, color_hex, icon_name");
       if (error) throw error;
       return (data ?? []) as Row[];
     },
     enabled: isSuperAdmin,
   });
 
-  const [draft, setDraft] = useState<Record<string, { color_hex: string; icon_name: string }>>({});
-  const [newTheme, setNewTheme] = useState({ thematique: "", color_hex: "#3b82f6", icon_name: "Tag" });
-
-  useEffect(() => {
-    if (data) {
-      const d: typeof draft = {};
-      for (const r of data) d[r.id] = { color_hex: r.color_hex, icon_name: r.icon_name };
-      setDraft(d);
+  const baseRows: Row[] = useMemo(() => {
+    const map = new Map<string, Row>();
+    for (const t of THEMATIQUE_OPTIONS) {
+      map.set(t, { thematique: t, color_hex: themeHex(t), icon_name: defaultIconNameFor(t) });
     }
+    for (const r of data ?? []) {
+      map.set(r.thematique, { id: r.id, thematique: r.thematique, color_hex: r.color_hex, icon_name: r.icon_name });
+    }
+    return Array.from(map.values());
   }, [data]);
 
-  const existingNames = useMemo(() => new Set((data ?? []).map((r) => r.thematique)), [data]);
-  const availableThematiques = THEMATIQUE_OPTIONS.filter((t) => !existingNames.has(t));
+  const [draft, setDraft] = useState<Record<string, { color_hex: string; icon_name: string }>>({});
+
+  useEffect(() => {
+    const d: typeof draft = {};
+    for (const r of baseRows) d[r.thematique] = { color_hex: r.color_hex, icon_name: r.icon_name };
+    setDraft(d);
+  }, [baseRows]);
 
   if (!isSuperAdmin) {
     return (
@@ -69,36 +80,35 @@ function ParametresThemesPage() {
     );
   }
 
-  const save = async (id: string) => {
-    const v = draft[id];
+  const save = async (row: Row) => {
+    const v = draft[row.thematique];
     if (!v) return;
-    const { error } = await supabase
-      .from("theme_settings" as never)
-      .update({ color_hex: v.color_hex, icon_name: v.icon_name } as never)
-      .eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    if (row.id) {
+      const { error } = await supabase
+        .from("theme_settings" as never)
+        .update({ color_hex: v.color_hex, icon_name: v.icon_name } as never)
+        .eq("id", row.id);
+      if (error) { toast.error(error.message); return; }
+    } else {
+      const { error } = await supabase
+        .from("theme_settings" as never)
+        .insert({ thematique: row.thematique, color_hex: v.color_hex, icon_name: v.icon_name } as never);
+      if (error) { toast.error(error.message); return; }
+    }
     toast.success("Personnalisation enregistrée");
     await loadThemeOverrides(true);
     refetch();
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Supprimer cette personnalisation ?")) return;
-    const { error } = await supabase.from("theme_settings" as never).delete().eq("id", id);
+  const reset = async (row: Row) => {
+    if (!row.id) {
+      setDraft((p) => ({ ...p, [row.thematique]: { color_hex: themeHex(row.thematique), icon_name: defaultIconNameFor(row.thematique) } }));
+      return;
+    }
+    if (!confirm("Réinitialiser cette thématique aux valeurs par défaut ?")) return;
+    const { error } = await supabase.from("theme_settings" as never).delete().eq("id", row.id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Supprimée");
-    await loadThemeOverrides(true);
-    refetch();
-  };
-
-  const create = async () => {
-    if (!newTheme.thematique) { toast.error("Choisis une thématique"); return; }
-    const { error } = await supabase
-      .from("theme_settings" as never)
-      .insert({ thematique: newTheme.thematique, color_hex: newTheme.color_hex, icon_name: newTheme.icon_name } as never);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Thématique ajoutée");
-    setNewTheme({ thematique: "", color_hex: "#3b82f6", icon_name: "Tag" });
+    toast.success("Réinitialisée");
     await loadThemeOverrides(true);
     refetch();
   };
@@ -114,42 +124,12 @@ function ParametresThemesPage() {
             <Palette className="h-6 w-6" /> Personnalisation des thématiques
           </h1>
           <p className="text-sm text-muted-foreground">
-            Couleur et icône appliquées partout (cards, pastilles, listes, dashboard).
+            Couleur et icône appliquées partout (cards, pastilles, listes, dashboard). La liste est synchronisée avec les thématiques d'actions.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
           <RefreshCw className={`h-4 w-4 mr-1 ${isFetching ? "animate-spin" : ""}`} />Rafraîchir
         </Button>
-      </div>
-
-      {/* Add new */}
-      <div className="rounded-lg border bg-card p-4">
-        <h2 className="font-semibold mb-3 flex items-center gap-2"><Plus className="h-4 w-4" />Ajouter une thématique</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-          <div className="md:col-span-2">
-            <Label>Thématique</Label>
-            <Select value={newTheme.thematique} onValueChange={(v) => setNewTheme((p) => ({ ...p, thematique: v }))}>
-              <SelectTrigger><SelectValue placeholder="Choisir…" /></SelectTrigger>
-              <SelectContent>
-                {availableThematiques.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Couleur</Label>
-            <div className="flex gap-2">
-              <Input type="color" value={newTheme.color_hex} onChange={(e) => setNewTheme((p) => ({ ...p, color_hex: e.target.value }))} className="w-14 p-1 h-10" />
-              <Input value={newTheme.color_hex} onChange={(e) => setNewTheme((p) => ({ ...p, color_hex: e.target.value }))} />
-            </div>
-          </div>
-          <div>
-            <Label>Icône</Label>
-            <IconSelect value={newTheme.icon_name} onChange={(v) => setNewTheme((p) => ({ ...p, icon_name: v }))} />
-          </div>
-          <div className="md:col-span-4">
-            <Button onClick={create}><Plus className="h-4 w-4 mr-1" />Ajouter</Button>
-          </div>
-        </div>
       </div>
 
       <div className="rounded-lg border bg-card overflow-hidden">
@@ -165,33 +145,33 @@ function ParametresThemesPage() {
           </TableHeader>
           <TableBody>
             {isLoading && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-6">Chargement…</TableCell></TableRow>}
-            {(data ?? []).map((r) => {
-              const v = draft[r.id] ?? { color_hex: r.color_hex, icon_name: r.icon_name };
+            {baseRows.map((r) => {
+              const v = draft[r.thematique] ?? { color_hex: r.color_hex, icon_name: r.icon_name };
               return (
-                <TableRow key={r.id}>
-                  <TableCell className="font-medium">{r.thematique}</TableCell>
+                <TableRow key={r.thematique}>
+                  <TableCell className="font-medium">{r.thematique}{!r.id && <span className="ml-2 text-[10px] uppercase tracking-wide text-muted-foreground">par défaut</span>}</TableCell>
                   <TableCell>
                     <div className="flex gap-2 items-center">
                       <Input
                         type="color"
                         value={v.color_hex}
-                        onChange={(e) => setDraft((p) => ({ ...p, [r.id]: { ...v, color_hex: e.target.value } }))}
+                        onChange={(e) => setDraft((p) => ({ ...p, [r.thematique]: { ...v, color_hex: e.target.value } }))}
                         className="w-12 p-1 h-9"
                       />
                       <Input
                         value={v.color_hex}
-                        onChange={(e) => setDraft((p) => ({ ...p, [r.id]: { ...v, color_hex: e.target.value } }))}
+                        onChange={(e) => setDraft((p) => ({ ...p, [r.thematique]: { ...v, color_hex: e.target.value } }))}
                         className="w-28 font-mono text-xs"
                       />
                     </div>
                   </TableCell>
                   <TableCell>
-                    <IconSelect value={v.icon_name} onChange={(val) => setDraft((p) => ({ ...p, [r.id]: { ...v, icon_name: val } }))} />
+                    <IconSelect value={v.icon_name} onChange={(val) => setDraft((p) => ({ ...p, [r.thematique]: { ...v, icon_name: val } }))} />
                   </TableCell>
                   <TableCell><PreviewBadge thematique={r.thematique} color_hex={v.color_hex} icon_name={v.icon_name} /></TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" onClick={() => save(r.id)} className="mr-2"><Save className="h-3.5 w-3.5 mr-1" />Enregistrer</Button>
-                    <Button size="sm" variant="outline" onClick={() => remove(r.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <Button size="sm" onClick={() => save(r)} className="mr-2"><Save className="h-3.5 w-3.5 mr-1" />Enregistrer</Button>
+                    <Button size="sm" variant="outline" onClick={() => reset(r)}><RotateCcw className="h-3.5 w-3.5" /></Button>
                   </TableCell>
                 </TableRow>
               );
@@ -235,11 +215,8 @@ function PreviewBadge({ thematique, color_hex, icon_name }: { thematique: string
       className="inline-flex items-center gap-1.5 self-start rounded-full font-semibold ring-1 px-2.5 py-1 text-[11px]"
       style={{ background: bg, color: color_hex, boxShadow: `inset 0 0 0 1px ${color_hex}59` }}
     >
-      {I ? <I className="h-3.5 w-3.5" /> : null}
+      {I ? <I className="h-4 w-4" /> : null}
       {thematique}
     </span>
   );
 }
-
-// Avoid unused import lint
-void ThemeBadge;
