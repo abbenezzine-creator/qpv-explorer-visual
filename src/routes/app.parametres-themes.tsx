@@ -33,7 +33,9 @@ function defaultIconNameFor(t: string): string {
 }
 
 function ParametresThemesPage() {
-  const user = getUser();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const user = mounted ? getUser() : null;
   const isSuperAdmin = user?.role === "superadmin";
 
   const { data, isLoading, refetch, isFetching } = useQuery({
@@ -48,16 +50,35 @@ function ParametresThemesPage() {
     enabled: isSuperAdmin,
   });
 
+  const { data: actionThemes } = useQuery({
+    queryKey: ["action-thematiques"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("actions").select("thematique");
+      if (error) throw error;
+      const set = new Set<string>();
+      for (const r of data ?? []) {
+        const t = (r as { thematique: string | null }).thematique;
+        if (t && t.trim()) set.add(t.trim());
+      }
+      return Array.from(set).sort((a, b) => a.localeCompare(b, "fr"));
+    },
+    enabled: isSuperAdmin,
+  });
+
   const baseRows: Row[] = useMemo(() => {
     const map = new Map<string, Row>();
     for (const t of THEMATIQUE_OPTIONS) {
       map.set(t, { thematique: t, color_hex: themeHex(t), icon_name: defaultIconNameFor(t) });
     }
+    for (const t of actionThemes ?? []) {
+      if (!map.has(t)) map.set(t, { thematique: t, color_hex: themeHex(t), icon_name: defaultIconNameFor(t) });
+    }
     for (const r of data ?? []) {
       map.set(r.thematique, { id: r.id, thematique: r.thematique, color_hex: r.color_hex, icon_name: r.icon_name });
     }
-    return Array.from(map.values());
-  }, [data]);
+    return Array.from(map.values()).sort((a, b) => a.thematique.localeCompare(b.thematique, "fr"));
+  }, [data, actionThemes]);
+
 
   const [draft, setDraft] = useState<Record<string, { color_hex: string; icon_name: string }>>({});
 
@@ -66,6 +87,10 @@ function ParametresThemesPage() {
     for (const r of baseRows) d[r.thematique] = { color_hex: r.color_hex, icon_name: r.icon_name };
     setDraft(d);
   }, [baseRows]);
+
+  if (!mounted) {
+    return <div className="p-6"><div className="text-muted-foreground text-sm">Chargement…</div></div>;
+  }
 
   if (!isSuperAdmin) {
     return (
@@ -79,6 +104,7 @@ function ParametresThemesPage() {
       </div>
     );
   }
+
 
   const save = async (row: Row) => {
     const v = draft[row.thematique];
