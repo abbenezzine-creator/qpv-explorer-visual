@@ -58,7 +58,7 @@ function AppIndexPage() {
   // Partenaire n'a pas accès à la page Documents
   useEffect(() => {
     if (u?.role === "partenaire" && page === "documents") {
-      navigate({ search: (prev) => ({ ...prev, page: "dashboard" }), replace: true });
+      navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, page: "dashboard" }), replace: true });
     }
   }, [u?.role, page, navigate]);
 
