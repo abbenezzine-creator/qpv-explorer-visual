@@ -83,6 +83,7 @@ type DocRow = {
   thematique: string | null;
   type: string | null;
   visible_all: boolean;
+  visible_assoc_ids: string[] | null;
   created_at: string;
   cover_path: string | null;
 };
