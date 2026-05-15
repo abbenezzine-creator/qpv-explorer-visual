@@ -8,8 +8,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const PARTENAIRE_EMAIL = "partenaire@associoboard.app";
-const PARTENAIRE_PASSWORD = "Partenaire2025";
+const DEFAULT_PARTENAIRE_EMAIL = "partenaire@associoboard.app";
+const DEFAULT_PARTENAIRE_PASSWORD = "Partenaire2025";
 const PARTENAIRE_NOM = "Partenaire";
 
 Deno.serve(async (req) => {
