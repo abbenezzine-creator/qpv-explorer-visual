@@ -196,10 +196,8 @@ function actionCardHtml(a: Action, assocName: string, refsCount: number, evalsCo
   const scoreBadge = scoreAvg != null
     ? `<span class="badge" style="background:color-mix(in oklab, var(--accent-rose) 15%, transparent);color:var(--accent-rose);font-weight:700">★ ${scoreAvg}%</span>`
     : `<span class="badge badge-gray" style="opacity:.7">★ —</span>`;
-  const themeColor = a.thematique ? themeHex(a.thematique) : "var(--primary)";
   const themeBadge = a.thematique ? themeBadgeHtml(a.thematique) : "";
-  return `<div class="action-card" data-action-id="${a.id}" data-assoc-name="${escapeHtml(assocName)}" data-titre="${escapeHtml(a.titre)}" style="position:relative;padding-top:30px;border-left:4px solid ${themeColor}" onclick="if(!event.target.closest('button')){window.parent && window.parent.postMessage({type:'ab-view-action',actionId:'${a.id}'},'*')}">
-    <div class="ac-bar" style="background:${themeColor}"></div>
+  return `<div class="action-card" data-action-id="${a.id}" data-assoc-name="${escapeHtml(assocName)}" data-titre="${escapeHtml(a.titre)}" style="position:relative;padding-top:30px" onclick="if(!event.target.closest('button')){window.parent && window.parent.postMessage({type:'ab-view-action',actionId:'${a.id}'},'*')}">
     <button type="button" class="ac-view-btn" title="Voir le détail" style="position:absolute;top:10px;right:10px;z-index:2;font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-weight:600;color:var(--primary)" onclick="event.stopPropagation();window.parent && window.parent.postMessage({type:'ab-view-action',actionId:'${a.id}'},'*')">Voir détail →</button>
     <div class="ac-ref" style="padding-right:96px"><span>${escapeHtml(assocName.toUpperCase())}</span><span class="badge badge-${badge}">${escapeHtml(statutLbl)}</span></div>
     <div class="ac-title">${escapeHtml(a.titre)}</div>
