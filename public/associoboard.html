@@ -2997,6 +2997,8 @@ function updateQualGlobalScore(){
   if(cntEl) cntEl.textContent=String(evaluatedActions.size);
   if(scoreEl) scoreEl.textContent = n ? (Math.round(sum/n)+'%') : '—';
   // Moyenne par axe (C1..C10) sur les refs en scope + propagation aux critères
+  // NB : c1..c10 sont stockés en pourcentage 0..100 (cf. saveQualite -> axisScores).
+  // Logique alignée sur "Indicateurs Qualité" du tableau de bord (qualiteHtml).
   try{
     const scopedRefs=refs.filter(r=>idSet.has(String(r.action_id)));
     (typeof QUALITE_AXES!=='undefined'?QUALITE_AXES:[]).forEach(ax=>{
@@ -3004,11 +3006,10 @@ function updateQualGlobalScore(){
       const key=String(ax.id).toLowerCase(); // 'C1' -> 'c1'
       const vals=scopedRefs.map(r=>r[key]).filter(v=>v!=null && !isNaN(Number(v))).map(Number);
       const hasData=vals.length>0;
-      const avg=hasData?(vals.reduce((s,v)=>s+v,0)/vals.length):0; // 0..5
-      const pct=hasData?Math.round(avg/5*100):null;
+      const pct=hasData?Math.round(vals.reduce((s,v)=>s+v,0)/vals.length):null; // moyenne en %
       if(el) el.textContent=hasData?(pct+'%'):'—';
       // Propagation : chaque critère/indicateur de l'axe affiche la même moyenne (jauge + %)
-      const lvl=hasData?Math.max(1,Math.min(5,Math.round(avg))):0;
+      const lvl=hasData?Math.max(1,Math.min(5,Math.round(pct/20))):0; // 5 étoiles = 100%
       (ax.criteria||[]).forEach(c=>{
         try{ paintStars(c.id,lvl); }catch(e){}
         const pe=document.getElementById('rp-'+c.id);
