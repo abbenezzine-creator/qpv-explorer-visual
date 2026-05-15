@@ -280,6 +280,22 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
+  const download = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!doc.file_path) { toast.error("Fichier indisponible"); return; }
+    const filename = doc.file_path.split("/").pop() ?? doc.titre;
+    const { data, error } = await supabase.storage
+      .from("documents")
+      .createSignedUrl(doc.file_path, 3600, { download: filename });
+    if (error || !data) { toast.error("Téléchargement indisponible"); return; }
+    const a = document.createElement("a");
+    a.href = data.signedUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
   const mime = doc.mime_type ?? "";
   const isPdf = mime.includes("pdf");
   const isImg = mime.startsWith("image/");
@@ -360,9 +376,38 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
           <span className="truncate">
             {isLink ? host : sizeKb ? `${sizeKb} Ko` : ""}
           </span>
-          <span className="inline-flex items-center gap-1 font-medium text-primary opacity-0 transition group-hover:opacity-100">
-            Ouvrir <ExternalLink className="h-3 w-3" />
-          </span>
+        </div>
+
+        {/* Actions: cliquez ici (lien) / ouvrir + télécharger (fichier) */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          {isLink ? (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); open(); }}
+              className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20"
+            >
+              <ExternalLink className="h-3 w-3" /> Cliquez ici
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); open(); }}
+                className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20"
+              >
+                <ExternalLink className="h-3 w-3" /> Cliquez ici
+              </button>
+              {doc.file_path && (
+                <button
+                  type="button"
+                  onClick={download}
+                  className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+                >
+                  <FileText className="h-3 w-3" /> Télécharger
+                </button>
+              )}
+            </>
+          )}
         </div>
       </div>
     </article>
