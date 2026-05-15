@@ -209,7 +209,7 @@ export function AppSidebar() {
         {renderCollapsibleGroup("territoire", "Territoire", territoire)}
         {renderCollapsibleGroup("principal", "Principal", principal)}
         {renderCollapsibleGroup("evaluation", "Évaluation", evaluation)}
-        {renderCollapsibleGroup("ressources", "Ressource Documentaire", ressources)}
+        {renderCollapsibleGroup("ressources", "Ressource Documentaire", user?.role === "partenaire" ? ressourcesAll.filter((it) => it.search?.page !== "documents") : ressourcesAll)}
         {isSuperAdmin && renderCollapsibleGroup("admin", "Administration", admin)}
         <SidebarGroup>
           {!collapsed && (
