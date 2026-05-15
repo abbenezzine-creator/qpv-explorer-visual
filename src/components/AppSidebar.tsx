@@ -109,7 +109,7 @@ export function AppSidebar() {
     (groupContains(territoire) && "territoire") ||
     (groupContains(principal) && "principal") ||
     (groupContains(evaluation) && "evaluation") ||
-    (groupContains(ressources) && "ressources") ||
+    (groupContains(ressourcesAll) && "ressources") ||
     (groupContains(admin) && "admin") ||
     "principal";
   const [openGroup, setOpenGroup] = useState<string>(initialOpen as string);
