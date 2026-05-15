@@ -578,6 +578,21 @@ function CreateResourceDialog({
             </Select>
             <div className="mt-2"><ThemeBadge thematique={thematique === "__all" ? null : thematique} /></div>
           </div>
+          <div>
+            <Label>Visibilité</Label>
+            <Select value={visibility} onValueChange={(v) => setVisibility(v as Visibility)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les associations</SelectItem>
+                <SelectItem value="by_theme" disabled={thematique === "__all"}>
+                  Associations dont les actions correspondent à la thématique
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            {visibility === "by_theme" && thematique === "__all" && (
+              <p className="mt-1 text-xs text-amber-600">Sélectionnez une thématique pour activer ce ciblage.</p>
+            )}
+          </div>
           {kind === "link" ? (
             <div>
               <Label htmlFor="r-url">URL *</Label>
