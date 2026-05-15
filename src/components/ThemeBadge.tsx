@@ -39,8 +39,21 @@ export const ALL_STYLE: ThemeStyle = {
   ring: "ring-primary/30",
 };
 
-export const themeStyle = (t: string | null | undefined): ThemeStyle =>
-  (t && THEME_STYLES[t]) || DEFAULT_STYLE;
+export const themeStyle = (t: string | null | undefined): ThemeStyle => {
+  if (!t) return DEFAULT_STYLE;
+  const ov = getThemeOverride(t);
+  if (ov) {
+    const Icon = THEME_ICON_REGISTRY[ov.icon_name] ?? Tag;
+    return {
+      icon: Icon,
+      bg: "",
+      fg: "",
+      ring: "",
+      // Inline-styled below in <ThemeBadge/> when override exists
+    } as ThemeStyle;
+  }
+  return THEME_STYLES[t] || DEFAULT_STYLE;
+};
 
 /** Hex equivalents (Tailwind ~500) of each ThemeBadge color, for use outside React (CSS borders, iframe HTML, gradients). */
 export const THEME_HEX: Record<string, string> = {
