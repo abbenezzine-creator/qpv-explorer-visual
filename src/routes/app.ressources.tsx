@@ -452,7 +452,7 @@ function CreateResourceDialog({
         const { error } = await supabase.from("documents").insert({
           titre: titre.trim(),
           description: description.trim() || null,
-          thematique,
+          thematique: themaToSave,
           type: "link",
           url: url.trim(),
           file_path: null,
@@ -475,7 +475,7 @@ function CreateResourceDialog({
           const { error } = await supabase.from("documents").insert({
             titre: baseTitle,
             description: description.trim() || null,
-            thematique,
+            thematique: themaToSave,
             type: "file",
             url: null,
             file_path,
