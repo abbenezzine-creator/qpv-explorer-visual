@@ -366,7 +366,6 @@ function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocR
 
       {/* Body */}
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <ThemeBadge thematique={doc.thematique} />
         <h3 className="line-clamp-2 text-base font-semibold leading-tight">{doc.titre}</h3>
         {doc.description && (
           <p className="line-clamp-2 text-sm text-muted-foreground">{doc.description}</p>
