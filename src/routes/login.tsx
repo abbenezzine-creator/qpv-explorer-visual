@@ -24,14 +24,16 @@ const STATIC_LOGINS: Record<string, { email: string; label: string }> = {
 async function resolveLoginToEmail(loginRaw: string): Promise<string | null> {
   const login = loginRaw.trim();
   if (!login) return null;
-  // Si l'utilisateur a entré un email (cas superadmin direct), utilise-le tel quel
   if (login.includes("@")) return login;
   const key = login.toLowerCase();
   if (STATIC_LOGINS[key]) return STATIC_LOGINS[key].email;
-  // Sinon résout via la table associations (security-definer RPC)
-  const { data, error } = await supabase.rpc("resolve_login_to_email", { _login: login });
-  if (error) return null;
-  return (data as string | null) ?? null;
+  // Résout via la table associations (security-definer RPC)
+  const { data } = await supabase.rpc("resolve_login_to_email", { _login: login });
+  if (data) return data as string;
+  // Fallback : identifiant Partenaire personnalisé → email synthétique
+  const id = key.replace(/[^a-z0-9._-]/g, "");
+  if (id) return `${id}@partenaire.local`;
+  return null;
 }
 
 function LoginPage() {
