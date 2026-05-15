@@ -452,12 +452,13 @@ function CreateResourceDialog({
   const [thematique, setThematique] = useState<string>(THEMATIQUES[0]);
   const [url, setUrl] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [visibility, setVisibility] = useState<Visibility>("all");
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   const reset = () => {
     setKind("file"); setTitre(""); setDescription(""); setThematique(THEMATIQUES[0]);
-    setUrl(""); setFiles([]); setProgress(null);
+    setUrl(""); setFiles([]); setVisibility("all"); setProgress(null);
   };
 
   const submit = async () => {
@@ -474,6 +475,19 @@ function CreateResourceDialog({
       const folder = user?.assocId ?? "shared";
       const themaToSave = thematique === "__all" ? null : thematique;
 
+      // Compute visibility payload
+      let visible_all = true;
+      let visible_assoc_ids: string[] = [];
+      if (visibility === "by_theme") {
+        if (!themaToSave) {
+          toast.error("Choisissez une thématique pour cibler les associations.");
+          setSaving(false);
+          return;
+        }
+        visible_assoc_ids = await assocIdsForTheme(themaToSave);
+        visible_all = false;
+      }
+
       if (kind === "link") {
         const { error } = await supabase.from("documents").insert({
           titre: titre.trim(),
@@ -485,7 +499,8 @@ function CreateResourceDialog({
           mime_type: null,
           file_size: null,
           assoc_id: user?.assocId ?? null,
-          visible_all: true,
+          visible_all,
+          visible_assoc_ids,
         });
         if (error) throw error;
         toast.success("Lien ajouté");
@@ -508,7 +523,8 @@ function CreateResourceDialog({
             mime_type: file.type || null,
             file_size: file.size,
             assoc_id: user?.assocId ?? null,
-            visible_all: true,
+            visible_all,
+            visible_assoc_ids,
           });
           if (error) throw error;
           i++;
