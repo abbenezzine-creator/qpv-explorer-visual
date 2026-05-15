@@ -1,6 +1,7 @@
 import { createFileRoute, redirect, useNavigate, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { loadThemeOverrides } from "@/lib/theme-overrides";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async () => {
@@ -17,6 +18,7 @@ function AppLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    loadThemeOverrides().catch(() => {});
     const onMsg = (e: MessageEvent) => {
       const d = e.data as { type?: string; to?: string } | undefined;
       if (d?.type === "ab-navigate" && typeof d.to === "string" && d.to.startsWith("/")) {

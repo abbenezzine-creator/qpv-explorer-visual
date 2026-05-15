@@ -3,6 +3,7 @@ import {
   ShieldCheck, Palette, Tag, Layers, BookOpen, Plane, Heart, Sprout,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { getThemeOverride, THEME_ICON_REGISTRY, hexToRgba, iconInnerSvg } from "@/lib/theme-overrides";
 
 export type ThemeStyle = { icon: LucideIcon; bg: string; fg: string; ring: string };
 
@@ -38,8 +39,21 @@ export const ALL_STYLE: ThemeStyle = {
   ring: "ring-primary/30",
 };
 
-export const themeStyle = (t: string | null | undefined): ThemeStyle =>
-  (t && THEME_STYLES[t]) || DEFAULT_STYLE;
+export const themeStyle = (t: string | null | undefined): ThemeStyle => {
+  if (!t) return DEFAULT_STYLE;
+  const ov = getThemeOverride(t);
+  if (ov) {
+    const Icon = THEME_ICON_REGISTRY[ov.icon_name] ?? Tag;
+    return {
+      icon: Icon,
+      bg: "",
+      fg: "",
+      ring: "",
+      // Inline-styled below in <ThemeBadge/> when override exists
+    } as ThemeStyle;
+  }
+  return THEME_STYLES[t] || DEFAULT_STYLE;
+};
 
 /** Hex equivalents (Tailwind ~500) of each ThemeBadge color, for use outside React (CSS borders, iframe HTML, gradients). */
 export const THEME_HEX: Record<string, string> = {
@@ -68,6 +82,8 @@ const DEFAULT_HEX = "#94a3b8"; // slate-400
 
 export function themeHex(t: string | null | undefined): string {
   if (!t) return DEFAULT_HEX;
+  const ov = getThemeOverride(t);
+  if (ov) return ov.color_hex;
   return THEME_HEX[t] ?? DEFAULT_HEX;
 }
 
@@ -140,8 +156,16 @@ const DEFAULT_ICON_SVG = '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-
 /** Renders a small themed badge as raw HTML — for use inside the dashboard iframe. */
 export function themeBadgeHtml(t: string | null | undefined): string {
   if (!t) return "";
-  const tint = THEME_TINTS[t] ?? DEFAULT_TINT;
-  const icon = THEME_ICON_SVG[t] ?? DEFAULT_ICON_SVG;
+  const ov = getThemeOverride(t);
+  let tint: { bg: string; fg: string; ring: string };
+  let icon: string;
+  if (ov) {
+    tint = { bg: hexToRgba(ov.color_hex, 0.14), fg: ov.color_hex, ring: hexToRgba(ov.color_hex, 0.35) };
+    icon = iconInnerSvg(ov.icon_name) || DEFAULT_ICON_SVG;
+  } else {
+    tint = THEME_TINTS[t] ?? DEFAULT_TINT;
+    icon = THEME_ICON_SVG[t] ?? DEFAULT_ICON_SVG;
+  }
   const safe = String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
   return `<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;background:${tint.bg};color:${tint.fg};box-shadow:inset 0 0 0 1px ${tint.ring};font-size:11px;font-weight:600;line-height:1.4">`
     + `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>`
@@ -160,12 +184,26 @@ export function ThemeBadge({
 }) {
   const isAll = thematique === "__all" || thematique === null || thematique === undefined || thematique === "";
   const label = isAll ? "Toutes les thématiques" : thematique!;
+  const ov = !isAll ? getThemeOverride(thematique ?? "") : null;
   const s = isAll ? ALL_STYLE : themeStyle(thematique);
   const Icon = s.icon;
-  const sizing = size === "md"
-    ? "px-3 py-1.5 text-xs"
-    : "px-2.5 py-1 text-[11px]";
+  const sizing = size === "md" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[11px]";
   const iconSize = size === "md" ? "h-4 w-4" : "h-3.5 w-3.5";
+  if (ov) {
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 self-start rounded-full font-semibold ring-1 ${sizing} ${className}`}
+        style={{
+          background: hexToRgba(ov.color_hex, 0.14),
+          color: ov.color_hex,
+          boxShadow: `inset 0 0 0 1px ${hexToRgba(ov.color_hex, 0.35)}`,
+        }}
+      >
+        <Icon className={iconSize} />
+        {label}
+      </span>
+    );
+  }
   return (
     <span className={`inline-flex items-center gap-1.5 self-start rounded-full font-semibold ring-1 ${sizing} ${s.bg} ${s.fg} ${s.ring} ${className}`}>
       <Icon className={iconSize} />

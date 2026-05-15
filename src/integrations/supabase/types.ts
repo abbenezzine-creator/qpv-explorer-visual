@@ -581,6 +581,33 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_settings: {
+        Row: {
+          color_hex: string
+          created_at: string
+          icon_name: string
+          id: string
+          thematique: string
+          updated_at: string
+        }
+        Insert: {
+          color_hex: string
+          created_at?: string
+          icon_name: string
+          id?: string
+          thematique: string
+          updated_at?: string
+        }
+        Update: {
+          color_hex?: string
+          created_at?: string
+          icon_name?: string
+          id?: string
+          thematique?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
