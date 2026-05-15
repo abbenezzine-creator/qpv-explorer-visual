@@ -41,13 +41,22 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Optional overrides from request body
+    // Optional overrides from request body. `email` may be a real email OR a plain identifier.
     let bodyEmail: string | undefined;
     let bodyPassword: string | undefined;
     try {
       if (req.headers.get("content-type")?.includes("application/json")) {
         const b = await req.json();
-        if (typeof b?.email === "string" && b.email.trim()) bodyEmail = b.email.trim().toLowerCase();
+        if (typeof b?.email === "string" && b.email.trim()) {
+          const raw = b.email.trim().toLowerCase();
+          if (raw.includes("@")) {
+            bodyEmail = raw;
+          } else {
+            // Identifiant simple → email synthétique
+            const id = raw.replace(/[^a-z0-9._-]/g, "");
+            if (id) bodyEmail = `${id}@partenaire.local`;
+          }
+        }
         if (typeof b?.password === "string" && b.password.length >= 6) bodyPassword = b.password;
       }
     } catch { /* noop */ }
