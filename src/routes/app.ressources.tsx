@@ -211,7 +211,9 @@ function RessourcesPage() {
                 key={d.id}
                 doc={d}
                 canDelete={canDelete}
+                canEdit={canEdit}
                 onDelete={() => setConfirmDelete(d)}
+                onEdit={() => setEditTarget(d)}
               />
             ))}
           </div>
@@ -222,6 +224,12 @@ function RessourcesPage() {
         open={openCreate}
         onOpenChange={setOpenCreate}
         onCreated={() => qc.invalidateQueries({ queryKey: ["ressources"] })}
+      />
+
+      <EditResourceDialog
+        target={editTarget}
+        onClose={() => setEditTarget(null)}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["ressources"] })}
       />
 
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
