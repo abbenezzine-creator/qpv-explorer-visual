@@ -3,6 +3,7 @@ import {
   ShieldCheck, Palette, Tag, Layers, BookOpen, Plane, Heart, Sprout,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { getThemeOverride, THEME_ICON_REGISTRY, hexToRgba, iconInnerSvg } from "@/lib/theme-overrides";
 
 export type ThemeStyle = { icon: LucideIcon; bg: string; fg: string; ring: string };
 
