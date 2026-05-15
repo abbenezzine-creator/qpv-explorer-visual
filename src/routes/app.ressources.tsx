@@ -568,3 +568,124 @@ function CreateResourceDialog({
     </Dialog>
   );
 }
+
+/* ---------------- Edit dialog (superadmin) ---------------- */
+
+function EditResourceDialog({
+  target, onClose, onSaved,
+}: { target: DocRow | null; onClose: () => void; onSaved: () => void }) {
+  const open = !!target;
+  const isLink = !!target?.url && !target?.file_path;
+  const [titre, setTitre] = useState("");
+  const [description, setDescription] = useState("");
+  const [thematique, setThematique] = useState<string>(THEMATIQUES[0]);
+  const [url, setUrl] = useState("");
+  const [replaceFile, setReplaceFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (target) {
+      setTitre(target.titre ?? "");
+      setDescription(target.description ?? "");
+      setThematique(target.thematique && THEMATIQUES.includes(target.thematique as typeof THEMATIQUES[number]) ? target.thematique : THEMATIQUES[0]);
+      setUrl(target.url ?? "");
+      setReplaceFile(null);
+    }
+  }, [target]);
+
+  const submit = async () => {
+    if (!target) return;
+    if (!titre.trim()) { toast.error("Le titre est requis"); return; }
+    if (isLink && !url.trim()) { toast.error("L'URL est requise"); return; }
+    setSaving(true);
+    try {
+      let file_path = target.file_path;
+      let mime_type = target.mime_type;
+      let file_size = target.file_size;
+      if (!isLink && replaceFile) {
+        const safeName = replaceFile.name.replace(/[^a-zA-Z0-9._-]+/g, "_");
+        const folder = target.file_path?.split("/")[0] ?? "shared";
+        const newPath = `${folder}/${Date.now()}_${safeName}`;
+        const { error: upErr } = await supabase.storage.from("documents").upload(newPath, replaceFile, { upsert: false });
+        if (upErr) throw upErr;
+        if (target.file_path) {
+          await supabase.storage.from("documents").remove([target.file_path]);
+        }
+        file_path = newPath;
+        mime_type = replaceFile.type || null;
+        file_size = replaceFile.size;
+      }
+      const { error } = await supabase.from("documents").update({
+        titre: titre.trim(),
+        description: description.trim() || null,
+        thematique,
+        url: isLink ? url.trim() : null,
+        file_path,
+        mime_type,
+        file_size,
+      }).eq("id", target.id);
+      if (error) throw error;
+      toast.success("Ressource mise à jour");
+      onClose();
+      onSaved();
+    } catch (e) {
+      toast.error("Échec : " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Modifier la ressource</DialogTitle>
+          <DialogDescription>Édition réservée au super administrateur.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="e-titre">Titre *</Label>
+            <Input id="e-titre" value={titre} onChange={(e) => setTitre(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="e-desc">Description</Label>
+            <Textarea id="e-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+          <div>
+            <Label>Thématique</Label>
+            <Select value={thematique} onValueChange={setThematique}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {THEMATIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <div className="mt-2"><ThemeBadge thematique={thematique} /></div>
+          </div>
+          {isLink ? (
+            <div>
+              <Label htmlFor="e-url">URL *</Label>
+              <Input id="e-url" type="url" value={url} onChange={(e) => setUrl(e.target.value)} />
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="e-file">Remplacer le fichier (optionnel)</Label>
+              <Input
+                id="e-file"
+                type="file"
+                accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                onChange={(e) => setReplaceFile(e.target.files?.[0] ?? null)}
+              />
+              {replaceFile && (
+                <p className="mt-1 text-xs text-muted-foreground">{replaceFile.name} · {Math.round(replaceFile.size / 1024)} Ko</p>
+              )}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={saving}>Annuler</Button>
+          <Button onClick={submit} disabled={saving}>{saving ? "Enregistrement…" : "Enregistrer"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
