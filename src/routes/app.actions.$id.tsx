@@ -47,16 +47,16 @@ function ActionDetailPage() {
   if (!action) return <div className="p-6">Action introuvable. <Link to="/app/actions" className="text-primary">Retour</Link></div>;
 
   return (
-    <div className="h-full min-h-0 overflow-y-auto overflow-x-auto p-6 pb-20" style={{ scrollbarGutter: "stable" }}>
-      <div className="mb-4 flex items-center justify-between">
-        <Button asChild variant="ghost" size="sm">
+    <div className="h-full min-h-0 overflow-y-auto overflow-x-auto p-3 pb-20 sm:p-6" style={{ scrollbarGutter: "stable" }}>
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <Button asChild variant="ghost" size="sm" className="self-start">
           {fromDashboard ? (
             <Link to="/app" search={{ page: "dashboard" } as never}><ArrowLeft className="mr-2 h-4 w-4" /> Retour au tableau de bord</Link>
           ) : (
             <Link to="/app/actions"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Link>
           )}
         </Button>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {editable && (
             <Button asChild>
               <Link to="/app/actions/$id/evaluation" params={{ id: action.id }}>
@@ -72,9 +72,9 @@ function ActionDetailPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-6">
-        <div className="mb-2 flex items-center gap-2">
-          <h1 className="text-2xl font-bold">{action.titre}</h1>
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold">{action.titre}</h1>
           <span className={`rounded-full border px-2 py-0.5 text-xs ${STATUT_VARIANT[action.statut]}`}>
             {labelOf(STATUT_OPTIONS, action.statut)}
           </span>

@@ -502,15 +502,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 
 <!-- APP -->
 <div class="app" id="appWrapper">
-  <!-- GS BANNER -->
-  <div class="gs-banner" id="gsBanner">
-    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="url(#ig)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2-2a3 3 0 0 0-4.2-4.2L5 6.5"/><path d="M7 5l-2 2a3 3 0 0 0 4.2 4.2L11 9.5"/></svg>
-    <span style="font-size:12px;color:var(--muted-fore)"><span style="color:var(--primary);font-weight:700">Google Sheets</span> — URL Web App :</span>
-    <input class="gs-inp" id="gsUrl" placeholder="https://script.google.com/macros/s/XXXX/exec"/>
-    <button class="btn btn-primary btn-sm" onclick="connectSheets()">Connecter</button>
-    <div style="display:flex;align-items:center;gap:5px;font-size:12px"><div class="gs-dot" id="gsDot"></div><span id="gsStatusTxt" style="color:var(--muted-fore)">Non connecté</span></div>
-    <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="document.getElementById('gsBanner').classList.add('hidden')">✕</button>
-  </div>
+  <!-- GS BANNER déplacé dans Paramètres -->
   <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()" aria-hidden="true"></div>
 
   <!-- SIDEBAR -->
@@ -750,6 +742,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <!-- PARAMETRES -->
     <div class="page" id="page-parametres">
       <div class="page-hdr"><div><div class="page-title">Paramètres</div><div class="page-sub">Administration — Super Administrateur</div></div></div>
+      <div class="gs-banner" id="gsBanner" style="margin-bottom:16px">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="url(#ig)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2-2a3 3 0 0 0-4.2-4.2L5 6.5"/><path d="M7 5l-2 2a3 3 0 0 0 4.2 4.2L11 9.5"/></svg>
+        <span style="font-size:12px;color:var(--muted-fore)"><span style="color:var(--primary);font-weight:700">Google Sheets</span> — URL Web App :</span>
+        <input class="gs-inp" id="gsUrl" placeholder="https://script.google.com/macros/s/XXXX/exec"/>
+        <button class="btn btn-primary btn-sm" onclick="connectSheets()">Connecter</button>
+        <div style="display:flex;align-items:center;gap:5px;font-size:12px"><div class="gs-dot" id="gsDot"></div><span id="gsStatusTxt" style="color:var(--muted-fore)">Non connecté</span></div>
+      </div>
       <div class="settings-grid" style="margin-bottom:16px">
         <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Associations</div></div><div class="card-body" style="padding:14px"><div style="font-size:13px;color:var(--muted-fore);margin-bottom:12px">La gestion des associations a été déplacée vers la nouvelle interface React (persistée dans Supabase).</div><button class="btn btn-primary btn-sm" onclick="goReact('/app/associations')">→ Ouvrir Associations</button><div id="assocList" style="display:none"></div></div></div>
         <div class="settings-card"><div class="settings-card-hdr"><div class="card-title">Partenaires évaluateurs</div><button class="btn btn-primary btn-sm" onclick="openAddPartnerModal()">+ Ajouter</button></div><div class="settings-list" id="partnerList"></div></div>
@@ -879,26 +878,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
           <div class="page-title">Guide du Référentiel d'Évaluation</div>
           <div class="page-sub">Politique de la Ville d'Orléans — 10 critères · 30 indicateurs · Modèle Qualiopi adapté — V1.0 Avril 2026</div>
         </div>
-        <div style="display:flex;gap:8px">
-          <select class="form-sel" id="guideCritSel" onchange="scrollToCrit(this.value)" style="padding:6px 10px;font-size:13px">
-            <option value="">Naviguer vers un critère…</option>
-            <option value="gc-guide">1. Guide</option>
-            <option value="gc-abrev">2. Abréviations</option>
-            <option value="gc-synop">3. Tableau synoptique & grille de suivi</option>
-            <option value="gc-notation">4. Système de notation</option>
-            <option value="gc-c1">C1 — Communication</option>
-            <option value="gc-c2">C2 — Objectifs</option>
-            <option value="gc-c3">C3 — Qualification</option>
-            <option value="gc-c4">C4 — Modalités</option>
-            <option value="gc-c5">C5 — Conformité légale</option>
-            <option value="gc-c6">C6 — Moyens pédagogiques</option>
-            <option value="gc-c7">C7 — Gestion financière</option>
-            <option value="gc-c8">C8 — Évaluation & Impact</option>
-            <option value="gc-c9">C9 — Amélioration continue</option>
-            <option value="gc-c10">C10 — Transition écologique</option>
-            <option value="gc-plan">7. Plan d'action & gouvernance</option>
-          </select>
-        </div>
+        <div style="display:none"></div>
       </div>
       <div id="guide-content"></div>
     </div>
@@ -6127,7 +6107,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
           <div class="page-sub" id="impactsBenefSub">Synthèse des évaluations bénéficiaires</div>
         </div>
       </div>
-      <div id="impactsBenefFilters" style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+      <div id="impactsBenefFilters" style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px"></div>
       <div id="impactsBenefBody"></div>`;
     document.getElementById('mainArea')?.appendChild(p) || document.body.appendChild(p);
     return p;

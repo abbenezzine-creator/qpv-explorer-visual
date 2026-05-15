@@ -161,11 +161,11 @@ function ActionsListPage() {
   const canCreate = canCreateAny(user);
 
   return (
-    <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="p-3 sm:p-6">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Actions</h1>
-          <p className="text-sm text-muted-foreground">Pilotage des actions par association</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Actions</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Pilotage des actions par association</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {user?.role === "superadmin" && (
@@ -420,7 +420,7 @@ function ActionsListPage() {
         >
           {viewing && (
             <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
-              <div className="flex shrink-0 items-center justify-between border-b border-border bg-card px-6 py-3">
+              <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-card px-3 py-3 sm:px-6">
                 <Button variant="ghost" size="sm" onClick={() => {
                   const origin = viewOrigin;
                   setViewing(null);
@@ -442,8 +442,8 @@ function ActionsListPage() {
                   )}
                 </div>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto p-8 pb-20" style={{ scrollbarGutter: "stable" }}>
-                <div className="mx-auto min-w-[900px] max-w-5xl space-y-6">
+              <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto p-3 pb-20 sm:p-8" style={{ scrollbarGutter: "stable" }}>
+                <div className="mx-auto w-full max-w-5xl space-y-6 md:min-w-[700px]">
                   <div>
                     <div className="text-xs uppercase text-muted-foreground">{viewing.annee ?? ""} · {assocMap.get(viewing.assoc_id) ?? ""}</div>
                     <h2 className="text-3xl font-bold">{viewing.titre}</h2>
