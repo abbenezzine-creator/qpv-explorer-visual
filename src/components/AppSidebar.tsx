@@ -16,6 +16,7 @@ import {
   ClipboardList,
   ShieldCheck,
   ChevronDown,
+  HardDrive,
 } from "lucide-react";
 
 import {
