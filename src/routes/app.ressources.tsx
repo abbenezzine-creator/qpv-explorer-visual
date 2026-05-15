@@ -595,7 +595,7 @@ function EditResourceDialog({
     if (target) {
       setTitre(target.titre ?? "");
       setDescription(target.description ?? "");
-      setThematique(target.thematique && THEMATIQUES.includes(target.thematique as typeof THEMATIQUES[number]) ? target.thematique : THEMATIQUES[0]);
+      setThematique(target.thematique && THEMATIQUES.includes(target.thematique as typeof THEMATIQUES[number]) ? target.thematique : "__all");
       setUrl(target.url ?? "");
       setReplaceFile(null);
     }
