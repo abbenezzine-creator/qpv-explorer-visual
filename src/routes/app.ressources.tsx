@@ -1,8 +1,9 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getUser } from "@/lib/auth";
+import { THEMATIQUE_OPTIONS } from "@/lib/actions-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +21,9 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText, Link2, Plus, Trash2, ExternalLink, Search, FileImage, FileType2, File as FileIcon,
+  GraduationCap, Briefcase, HeartPulse, Users, Scale, Leaf, ShieldCheck, Palette, Tag,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/ressources")({
@@ -32,16 +35,35 @@ export const Route = createFileRoute("/app/ressources")({
   component: RessourcesPage,
 });
 
-const THEMATIQUES = [
-  "Méthodologie",
-  "Évaluation",
-  "Référentiel Qualité",
-  "Boîte à outils",
-  "Réglementation",
-  "Formation",
-  "Communication",
-  "Autre",
-] as const;
+/* Thematiques alignées sur les actions */
+const THEMATIQUES = THEMATIQUE_OPTIONS;
+
+type ThemeStyle = { icon: LucideIcon; bg: string; fg: string; ring: string };
+const THEME_STYLES: Record<string, ThemeStyle> = {
+  "Education / Parentalité": { icon: GraduationCap, bg: "bg-violet-100", fg: "text-violet-700", ring: "ring-violet-200" },
+  "Emploi & Développement":  { icon: Briefcase,     bg: "bg-amber-100",  fg: "text-amber-700",  ring: "ring-amber-200" },
+  "Santé":                   { icon: HeartPulse,    bg: "bg-rose-100",   fg: "text-rose-700",   ring: "ring-rose-200" },
+  "Cohésion sociale":        { icon: Users,         bg: "bg-sky-100",    fg: "text-sky-700",    ring: "ring-sky-200" },
+  "Citoyenneté":             { icon: Scale,         bg: "bg-indigo-100", fg: "text-indigo-700", ring: "ring-indigo-200" },
+  "Transition écologique":   { icon: Leaf,          bg: "bg-emerald-100",fg: "text-emerald-700",ring: "ring-emerald-200" },
+  "Accès aux droits":        { icon: Scale,         bg: "bg-blue-100",   fg: "text-blue-700",   ring: "ring-blue-200" },
+  "Prévention":              { icon: ShieldCheck,   bg: "bg-teal-100",   fg: "text-teal-700",   ring: "ring-teal-200" },
+  "Culture":                 { icon: Palette,       bg: "bg-fuchsia-100",fg: "text-fuchsia-700",ring: "ring-fuchsia-200" },
+};
+const DEFAULT_STYLE: ThemeStyle = { icon: Tag, bg: "bg-muted", fg: "text-foreground", ring: "ring-border" };
+const themeStyle = (t: string | null): ThemeStyle => (t && THEME_STYLES[t]) || DEFAULT_STYLE;
+
+function ThemeBadge({ thematique }: { thematique: string | null }) {
+  if (!thematique) return null;
+  const s = themeStyle(thematique);
+  const Icon = s.icon;
+  return (
+    <span className={`inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${s.bg} ${s.fg} ${s.ring}`}>
+      <Icon className="h-3.5 w-3.5" />
+      {thematique}
+    </span>
+  );
+}
 
 type DocRow = {
   id: string;
@@ -58,8 +80,12 @@ type DocRow = {
 };
 
 function RessourcesPage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const user = getUser();
-  const isAdmin = user?.role === "superadmin" || user?.role === "admin_asso";
+  // "Modifier/supprimer" réservé au superadmin ; ajout autorisé pour admin_asso/agent.
+  const canDelete = mounted && user?.role === "superadmin";
+  const canCreate = mounted && (user?.role === "superadmin" || user?.role === "admin_asso" || user?.role === "agent");
   const qc = useQueryClient();
 
   const [search, setSearch] = useState("");
@@ -80,10 +106,13 @@ function RessourcesPage() {
     },
   });
 
+  const all = docsQ.data ?? [];
+  const totalDocs = useMemo(() => all.filter((d) => !!d.file_path).length, [all]);
+  const totalLinks = useMemo(() => all.filter((d) => !!d.url && !d.file_path).length, [all]);
+
   const filtered = useMemo(() => {
-    const list = docsQ.data ?? [];
     const q = search.trim().toLowerCase();
-    return list.filter((d) => {
+    return all.filter((d) => {
       if (filterTheme !== "__all" && (d.thematique ?? "") !== filterTheme) return false;
       const isLink = !!d.url && !d.file_path;
       if (filterKind === "file" && isLink) return false;
@@ -91,7 +120,7 @@ function RessourcesPage() {
       if (q && !`${d.titre} ${d.description ?? ""} ${d.thematique ?? ""}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [docsQ.data, search, filterTheme, filterKind]);
+  }, [all, search, filterTheme, filterKind]);
 
   const delMut = useMutation({
     mutationFn: async (row: DocRow) => {
@@ -119,11 +148,18 @@ function RessourcesPage() {
               Documents, guides et liens utiles pour piloter le Contrat de Ville.
             </p>
           </div>
-          {isAdmin && (
+          {canCreate && (
             <Button onClick={() => setOpenCreate(true)} size="lg" className="shadow-md">
               <Plus className="mr-2 h-4 w-4" /> Ajouter une ressource
             </Button>
           )}
+        </div>
+
+        {/* Counters */}
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <CounterCard icon={<FileText className="h-5 w-5" />} label="Documents" value={totalDocs} tone="from-primary/15 to-primary/0 text-primary" />
+          <CounterCard icon={<Link2 className="h-5 w-5" />} label="Liens" value={totalLinks} tone="from-emerald-500/15 to-transparent text-emerald-600" />
+          <CounterCard icon={<Tag className="h-5 w-5" />} label="Total" value={all.length} tone="from-fuchsia-500/15 to-transparent text-fuchsia-600" />
         </div>
 
         {/* Filters */}
@@ -138,7 +174,7 @@ function RessourcesPage() {
             />
           </div>
           <Select value={filterTheme} onValueChange={setFilterTheme}>
-            <SelectTrigger className="w-[200px]"><SelectValue placeholder="Thématique" /></SelectTrigger>
+            <SelectTrigger className="w-[220px]"><SelectValue placeholder="Thématique" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="__all">Toutes les thématiques</SelectItem>
               {THEMATIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
@@ -160,7 +196,7 @@ function RessourcesPage() {
           <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
             <FileText className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">Aucune ressource pour le moment.</p>
-            {isAdmin && (
+            {canCreate && (
               <Button variant="outline" className="mt-4" onClick={() => setOpenCreate(true)}>
                 <Plus className="mr-2 h-4 w-4" /> Ajouter la première ressource
               </Button>
@@ -172,7 +208,7 @@ function RessourcesPage() {
               <ResourceCard
                 key={d.id}
                 doc={d}
-                canDelete={isAdmin}
+                canDelete={canDelete}
                 onDelete={() => setConfirmDelete(d)}
               />
             ))}
@@ -209,23 +245,40 @@ function RessourcesPage() {
   );
 }
 
+function CounterCard({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: number; tone: string }) {
+  return (
+    <div className={`relative overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm`}>
+      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tone} opacity-60`} />
+      <div className="relative flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background/80 shadow-sm">
+          {icon}
+        </div>
+        <div>
+          <div className="text-2xl font-bold leading-none">{value}</div>
+          <div className="mt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- Card ---------------- */
 
 function ResourceCard({ doc, canDelete, onDelete }: { doc: DocRow; canDelete: boolean; onDelete: () => void }) {
   const isLink = !!doc.url && !doc.file_path;
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
-  // Resolve target URL (signed for files)
   const open = async () => {
     if (isLink) {
-      window.open(doc.url!, "_blank", "noopener,noreferrer");
+      if (doc.url) window.open(doc.url, "_blank", "noopener,noreferrer");
       return;
     }
     if (signedUrl) {
       window.open(signedUrl, "_blank", "noopener,noreferrer");
       return;
     }
-    const { data, error } = await supabase.storage.from("documents").createSignedUrl(doc.file_path!, 3600);
+    if (!doc.file_path) { toast.error("Fichier indisponible"); return; }
+    const { data, error } = await supabase.storage.from("documents").createSignedUrl(doc.file_path, 3600);
     if (error || !data) { toast.error("Lien indisponible"); return; }
     setSignedUrl(data.signedUrl);
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
@@ -235,7 +288,7 @@ function ResourceCard({ doc, canDelete, onDelete }: { doc: DocRow; canDelete: bo
   const isPdf = mime.includes("pdf");
   const isImg = mime.startsWith("image/");
   const sizeKb = doc.file_size ? Math.round(doc.file_size / 1024) : null;
-  const host = isLink ? safeHost(doc.url!) : null;
+  const host = isLink && doc.url ? safeHost(doc.url) : null;
 
   return (
     <article
@@ -246,8 +299,8 @@ function ResourceCard({ doc, canDelete, onDelete }: { doc: DocRow; canDelete: bo
       <div className="relative h-40 overflow-hidden bg-gradient-to-br from-muted to-muted/40">
         {isLink ? (
           <LinkPreview host={host ?? ""} />
-        ) : isImg ? (
-          <SignedImage path={doc.file_path!} alt={doc.titre} />
+        ) : isImg && doc.file_path ? (
+          <SignedImage path={doc.file_path} alt={doc.titre} />
         ) : isPdf ? (
           <div className="flex h-full items-center justify-center">
             <div className="rounded-xl bg-background/70 p-4 shadow-sm backdrop-blur">
@@ -282,11 +335,7 @@ function ResourceCard({ doc, canDelete, onDelete }: { doc: DocRow; canDelete: bo
 
       {/* Body */}
       <div className="flex flex-1 flex-col gap-2 p-4">
-        {doc.thematique && (
-          <span className="self-start rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-            {doc.thematique}
-          </span>
-        )}
+        <ThemeBadge thematique={doc.thematique} />
         <h3 className="line-clamp-2 text-base font-semibold leading-tight">{doc.titre}</h3>
         {doc.description && (
           <p className="line-clamp-2 text-sm text-muted-foreground">{doc.description}</p>
@@ -309,7 +358,7 @@ function safeHost(url: string): string {
 }
 
 function LinkPreview({ host }: { host: string }) {
-  const initial = (host[0] ?? "?").toUpperCase();
+  const initial = (host?.[0] ?? "?").toUpperCase();
   return (
     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
       <div className="flex flex-col items-center gap-2">
@@ -346,49 +395,70 @@ function CreateResourceDialog({
   const [description, setDescription] = useState("");
   const [thematique, setThematique] = useState<string>(THEMATIQUES[0]);
   const [url, setUrl] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   const reset = () => {
     setKind("file"); setTitre(""); setDescription(""); setThematique(THEMATIQUES[0]);
-    setUrl(""); setFile(null);
+    setUrl(""); setFiles([]); setProgress(null);
   };
 
   const submit = async () => {
-    if (!titre.trim()) { toast.error("Le titre est requis"); return; }
-    if (kind === "link" && !url.trim()) { toast.error("L'URL est requise"); return; }
-    if (kind === "file" && !file) { toast.error("Sélectionnez un fichier"); return; }
+    if (kind === "link") {
+      if (!titre.trim()) { toast.error("Le titre est requis"); return; }
+      if (!url.trim()) { toast.error("L'URL est requise"); return; }
+    } else {
+      if (files.length === 0) { toast.error("Sélectionnez au moins un fichier"); return; }
+      if (files.length === 1 && !titre.trim()) { toast.error("Le titre est requis"); return; }
+    }
 
     setSaving(true);
     try {
-      let file_path: string | null = null;
-      let mime_type: string | null = null;
-      let file_size: number | null = null;
       const folder = user?.assocId ?? "shared";
 
-      if (kind === "file" && file) {
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_");
-        file_path = `${folder}/${Date.now()}_${safeName}`;
-        const { error: upErr } = await supabase.storage.from("documents").upload(file_path, file, { upsert: false });
-        if (upErr) throw upErr;
-        mime_type = file.type || null;
-        file_size = file.size;
+      if (kind === "link") {
+        const { error } = await supabase.from("documents").insert({
+          titre: titre.trim(),
+          description: description.trim() || null,
+          thematique,
+          type: "link",
+          url: url.trim(),
+          file_path: null,
+          mime_type: null,
+          file_size: null,
+          assoc_id: user?.assocId ?? null,
+          visible_all: true,
+        });
+        if (error) throw error;
+        toast.success("Lien ajouté");
+      } else {
+        setProgress({ done: 0, total: files.length });
+        let i = 0;
+        for (const file of files) {
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_");
+          const file_path = `${folder}/${Date.now()}_${i}_${safeName}`;
+          const { error: upErr } = await supabase.storage.from("documents").upload(file_path, file, { upsert: false });
+          if (upErr) throw upErr;
+          const baseTitle = files.length === 1 ? titre.trim() : (titre.trim() || file.name.replace(/\.[^.]+$/, ""));
+          const { error } = await supabase.from("documents").insert({
+            titre: baseTitle,
+            description: description.trim() || null,
+            thematique,
+            type: "file",
+            url: null,
+            file_path,
+            mime_type: file.type || null,
+            file_size: file.size,
+            assoc_id: user?.assocId ?? null,
+            visible_all: true,
+          });
+          if (error) throw error;
+          i++;
+          setProgress({ done: i, total: files.length });
+        }
+        toast.success(`${files.length} ressource(s) ajoutée(s)`);
       }
-
-      const { error } = await supabase.from("documents").insert({
-        titre: titre.trim(),
-        description: description.trim() || null,
-        thematique,
-        type: kind,
-        url: kind === "link" ? url.trim() : null,
-        file_path,
-        mime_type,
-        file_size,
-        assoc_id: user?.assocId ?? null,
-        visible_all: true,
-      });
-      if (error) throw error;
-      toast.success("Ressource ajoutée");
       reset();
       onOpenChange(false);
       onCreated();
@@ -396,6 +466,7 @@ function CreateResourceDialog({
       toast.error("Échec : " + (e instanceof Error ? e.message : String(e)));
     } finally {
       setSaving(false);
+      setProgress(null);
     }
   };
 
@@ -404,19 +475,19 @@ function CreateResourceDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Ajouter une ressource</DialogTitle>
-          <DialogDescription>Document (PDF, image…) ou lien externe.</DialogDescription>
+          <DialogDescription>Document(s) (PDF, image…) ou lien externe.</DialogDescription>
         </DialogHeader>
 
         <Tabs value={kind} onValueChange={(v) => setKind(v as "file" | "link")}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="file"><FileText className="mr-2 h-4 w-4" /> Document</TabsTrigger>
+            <TabsTrigger value="file"><FileText className="mr-2 h-4 w-4" /> Document(s)</TabsTrigger>
             <TabsTrigger value="link"><Link2 className="mr-2 h-4 w-4" /> Lien</TabsTrigger>
           </TabsList>
         </Tabs>
 
         <div className="space-y-3">
           <div>
-            <Label htmlFor="r-titre">Titre *</Label>
+            <Label htmlFor="r-titre">Titre {kind === "link" || files.length <= 1 ? "*" : "(optionnel — nom du fichier sinon)"}</Label>
             <Input id="r-titre" value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="Ex. Guide du Référentiel Qualité" />
           </div>
           <div>
@@ -431,6 +502,7 @@ function CreateResourceDialog({
                 {THEMATIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
+            <div className="mt-2"><ThemeBadge thematique={thematique} /></div>
           </div>
           {kind === "link" ? (
             <div>
@@ -439,9 +511,27 @@ function CreateResourceDialog({
             </div>
           ) : (
             <div>
-              <Label htmlFor="r-file">Fichier *</Label>
-              <Input id="r-file" type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-              {file && <p className="mt-1 text-xs text-muted-foreground">{file.name} · {Math.round(file.size / 1024)} Ko</p>}
+              <Label htmlFor="r-file">Fichier(s) * — sélection multiple possible</Label>
+              <Input
+                id="r-file"
+                type="file"
+                multiple
+                accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+              />
+              {files.length > 0 && (
+                <ul className="mt-2 max-h-32 overflow-y-auto rounded-md border border-border bg-muted/30 p-2 text-xs">
+                  {files.map((f, idx) => (
+                    <li key={idx} className="flex items-center justify-between gap-2 py-0.5">
+                      <span className="truncate">{f.name}</span>
+                      <span className="shrink-0 text-muted-foreground">{Math.round(f.size / 1024)} Ko</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {progress && (
+                <p className="mt-2 text-xs text-muted-foreground">Envoi {progress.done}/{progress.total}…</p>
+              )}
             </div>
           )}
         </div>
