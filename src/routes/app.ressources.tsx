@@ -274,7 +274,7 @@ function CounterCard({ icon, label, value, tone }: { icon: React.ReactNode; labe
 
 /* ---------------- Card ---------------- */
 
-function ResourceCard({ doc, canDelete, onDelete }: { doc: DocRow; canDelete: boolean; onDelete: () => void }) {
+function ResourceCard({ doc, canDelete, canEdit, onDelete, onEdit }: { doc: DocRow; canDelete: boolean; canEdit: boolean; onDelete: () => void; onEdit: () => void }) {
   const isLink = !!doc.url && !doc.file_path;
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
