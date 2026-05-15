@@ -43,15 +43,25 @@ export const themeStyle = (t: string | null | undefined): ThemeStyle =>
 
 /** Hex equivalents (Tailwind ~500) of each ThemeBadge color, for use outside React (CSS borders, iframe HTML, gradients). */
 export const THEME_HEX: Record<string, string> = {
-  "Education / Parentalité": "#8b5cf6", // violet-500
-  "Emploi & Développement":  "#f59e0b", // amber-500
-  "Santé":                   "#f43f5e", // rose-500
-  "Cohésion sociale":        "#0ea5e9", // sky-500
-  "Citoyenneté":             "#6366f1", // indigo-500
-  "Transition écologique":   "#10b981", // emerald-500
-  "Accès aux droits":        "#3b82f6", // blue-500
-  "Prévention":              "#14b8a6", // teal-500
-  "Culture":                 "#d946ef", // fuchsia-500
+  // New
+  "Education - Sport - Jeunesse":                       "#0ea5e9", // sky-500
+  "Cité éducative":                                     "#ec4899", // pink-500
+  "Cadre de vie - Tranquillité et sûreté publique":     "#8b5cf6", // violet-500
+  "Quartier d'été - VVV":                               "#d946ef", // fuchsia-500
+  "Accès aux droit - Lutte contre les discrimination":  "#3b82f6", // blue-500
+  "Emploi - Développement économique":                  "#f97316", // orange-500
+  "Solidarité - égalité des chances":                   "#10b981", // emerald-500
+  "Transition":                                         "#22c55e", // green-500
+  // Legacy
+  "Education / Parentalité": "#0ea5e9",
+  "Emploi & Développement":  "#f97316",
+  "Santé":                   "#f43f5e",
+  "Cohésion sociale":        "#0ea5e9",
+  "Citoyenneté":             "#6366f1",
+  "Transition écologique":   "#10b981",
+  "Accès aux droits":        "#3b82f6",
+  "Prévention":              "#14b8a6",
+  "Culture":                 "#d946ef",
 };
 
 const DEFAULT_HEX = "#94a3b8"; // slate-400
