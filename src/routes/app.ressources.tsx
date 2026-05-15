@@ -446,6 +446,7 @@ function CreateResourceDialog({
     setSaving(true);
     try {
       const folder = user?.assocId ?? "shared";
+      const themaToSave = thematique === "__all" ? null : thematique;
 
       if (kind === "link") {
         const { error } = await supabase.from("documents").insert({
