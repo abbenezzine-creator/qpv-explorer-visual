@@ -713,15 +713,30 @@ function EditResourceDialog({
         cover_path = null;
       }
 
+      const themaToSave = thematique === "__all" ? null : thematique;
+      let visible_all = true;
+      let visible_assoc_ids: string[] = [];
+      if (visibility === "by_theme") {
+        if (!themaToSave) {
+          toast.error("Choisissez une thématique pour cibler les associations.");
+          setSaving(false);
+          return;
+        }
+        visible_assoc_ids = await assocIdsForTheme(themaToSave);
+        visible_all = false;
+      }
+
       const { error } = await supabase.from("documents").update({
         titre: titre.trim(),
         description: description.trim() || null,
-        thematique: thematique === "__all" ? null : thematique,
+        thematique: themaToSave,
         url: url.trim() || null,
         file_path,
         mime_type,
         file_size,
         cover_path,
+        visible_all,
+        visible_assoc_ids,
       }).eq("id", target.id);
       if (error) throw error;
       toast.success("Ressource mise à jour");
