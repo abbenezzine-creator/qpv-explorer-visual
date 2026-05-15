@@ -409,7 +409,7 @@ function LinkPreview({ host }: { host: string }) {
   );
 }
 
-function SignedImage({ path, alt }: { path: string; alt: string }) {
+function SignedImage({ path, alt, fit = "cover" }: { path: string; alt: string; fit?: "cover" | "contain" }) {
   const q = useQuery({
     queryKey: ["signed-img", path],
     queryFn: async () => {
@@ -419,7 +419,14 @@ function SignedImage({ path, alt }: { path: string; alt: string }) {
     staleTime: 50 * 60 * 1000,
   });
   if (!q.data) return <div className="flex h-full items-center justify-center"><FileImage className="h-10 w-10 text-muted-foreground/50" /></div>;
-  return <img src={q.data} alt={alt} className="h-full w-full object-cover" loading="lazy" />;
+  if (fit === "contain") {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/60 to-muted/20 p-2">
+        <img src={q.data} alt={alt} className="max-h-full max-w-full object-contain" loading="lazy" />
+      </div>
+    );
+  }
+  return <img src={q.data} alt={alt} className="h-full w-full object-cover object-center" loading="lazy" />;
 }
 
 /* ---------------- Create dialog ---------------- */
