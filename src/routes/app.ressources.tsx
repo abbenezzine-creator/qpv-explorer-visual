@@ -671,6 +671,7 @@ function EditResourceDialog({
       setReplaceFile(null);
       setCoverFile(null);
       setRemoveCover(false);
+      setVisibility(target.visible_all ? "all" : "by_theme");
     }
   }, [target]);
 
