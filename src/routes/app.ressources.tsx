@@ -21,7 +21,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText, Link2, Plus, Trash2, ExternalLink, Search, FileImage, FileType2, File as FileIcon,
-  Pencil,
+  Pencil, Tag,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeBadge } from "@/components/ThemeBadge";
