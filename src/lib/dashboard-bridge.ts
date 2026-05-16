@@ -360,6 +360,7 @@ const QUALITE_AXES: { key: keyof RefQualite; id: string; name: string; color: st
   { key: "c5",  id: "C5",  name: "C5 — CONFORMITÉ & VEILLE LÉGALE",   color: "oklch(0.6 0.17 240)",  details: [
     "Agréments relatifs à la conformité de l'organisme.",
     "Veille réglementaire active.",
+    "Conformité RGPD : registre des traitements, consentements, sécurité des données, information des bénéficiaires.",
   ] },
   { key: "c6",  id: "C6",  name: "C6 — MOYENS PÉDAGOGIQUES",          color: "oklch(0.52 0.22 285)", details: [
     "Moyens humains et techniques adaptés, environnement approprié.",
