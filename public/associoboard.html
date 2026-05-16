@@ -2776,6 +2776,7 @@ function setQualMode(on){
   pg.classList.toggle('qual-eval-mode', QUAL_EVAL_MODE);
   pg.classList.toggle('qual-readonly', !QUAL_EVAL_MODE);
   if(QUAL_EVAL_MODE) populateQualEvalPartnerSel();
+  try{ renderQualTopFilters(); }catch(e){}
 }
 function populateQualEvalPartnerSel(){
   const sel=document.getElementById('qualPartnerSelEval'); if(!sel) return;
