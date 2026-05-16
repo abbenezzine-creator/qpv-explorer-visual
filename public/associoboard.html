@@ -715,16 +715,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <!-- RESULTATS -->
     <div class="page" id="page-resultats">
       <div class="page-hdr"><div><div class="page-title">Résultats & Impacts</div><div class="page-sub">Synthèse des évaluations</div></div></div>
-      <div class="stats-grid" style="margin-bottom:20px">
-        <div class="stat-card"><div class="stat-blob" style="background:var(--success)"></div><div class="stat-lbl">Questionnaires</div><div class="stat-val" style="color:var(--success)">143</div><div class="stat-trend">Ce trimestre</div></div>
-        <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Objectifs atteints</div><div class="stat-val" style="color:oklch(0.6 0.17 60)">87%</div><div class="stat-trend">↑ +5% vs N-1</div></div>
-        <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Score qualité</div><div class="stat-val" style="color:var(--primary)">80%</div><div class="stat-trend">Moy. pondérée</div></div>
-        <div class="stat-card"><div class="stat-blob" style="background:var(--info)"></div><div class="stat-lbl">NPS Bénéficiaires</div><div class="stat-val" style="color:var(--info)">+62</div><div class="stat-trend">Excellent</div></div>
+      <div class="stats-grid" style="margin-bottom:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+        <div class="stat-card"><div class="stat-blob" style="background:var(--success)"></div><div class="stat-lbl">Nombre total d'actions</div><div class="stat-val" id="resTotalActions" style="color:var(--success)">—</div><div class="stat-trend" id="resTotalActionsSub">Toutes associations</div></div>
+        <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Objectifs atteints</div><div class="stat-val" id="resObjAtteints" style="color:oklch(0.6 0.17 60)">—</div><div class="stat-trend">Mesures d'impact bénéficiaires</div></div>
+        <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Score qualité</div><div class="stat-val" id="resScoreQual" style="color:var(--primary)">—</div><div class="stat-trend">Moyenne référentiel qualité</div></div>
       </div>
-      <div class="circ-grid" id="resultCircles"></div>
-      <div class="two-col">
-        <div class="card"><div class="card-hdr"><div class="card-title">Atteinte par action</div></div><div class="card-body" id="objParAction"></div></div>
-        <div class="card"><div class="card-hdr"><div class="card-title">Analyse qualitative <span class="badge badge-purple" style="margin-left:5px">Auto</span></div></div><div class="card-body" id="globalAnalysis"></div></div>
+      <div class="card" style="margin-bottom:18px"><div class="card-hdr"><div class="card-title">Mesure d'impact par thématique</div></div><div class="card-body"><div class="circ-grid" id="resultCircles"></div></div></div>
+
+      <div class="card" style="margin-bottom:18px;border-top:4px solid oklch(0.52 0.22 285)">
+        <div class="card-hdr"><div class="card-title">Montée en compétences des associations</div><span class="badge badge-purple" style="margin-left:8px">Référentiel Qualité</span></div>
+        <div class="card-body">
+          <div id="competencesCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:22px"></div>
+          <div style="display:flex;justify-content:center;align-items:center;padding:10px"><svg id="competencesRadar" viewBox="0 0 520 480" width="520" height="480" style="max-width:100%"></svg></div>
+        </div>
       </div>
 
       <!-- AI DETAILED ANALYSIS -->
@@ -735,7 +738,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         </div>
         <div style="font-size:12px;color:var(--muted-fore);margin-bottom:14px">Synthèse thématique combinant chiffres clés, courbes comparatives, actions et référentiel qualité — générée à partir des données croisées du tableau de bord, du questionnaire bénéficiaires, du référentiel et de l'enquête citoyenne.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-          <button class="btn btn-primary btn-sm" onclick="generateAIDetailedAnalysis()" style="background:var(--grad-rose)">
+          <button class="btn btn-primary btn-sm" onclick="regenerateAIDetailedAnalysis()" style="background:var(--grad-rose)">
             <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M7 1l1.6 4 3.4.4-2.5 2.4.6 3.4L7 9.6 3.9 11.2l.6-3.4L2 5.4 5.4 5z"/></svg>
             Régénérer l'analyse
           </button>
@@ -3470,24 +3473,182 @@ function renderRadarChart(data){
 
 // ========== RESULTATS ==========
 function renderResultatsPage(){
-  const data=[
-    {l:'Accès aux droits',av:55,ap:82,c:'oklch(0.52 0.22 285)',th:'Numérique'},
-    {l:'Emploi',av:45,ap:76,c:'oklch(0.76 0.17 75)',th:'Emploi'},
-    {l:'Education',av:60,ap:88,c:'oklch(0.62 0.22 340)',th:'Famille'},
-    {l:'Citoyenneté',av:50,ap:75,c:'oklch(0.6 0.17 240)',th:'Formation'},
-    {l:'Santé',av:65,ap:88,c:'oklch(0.52 0.16 150)',th:'Bien-être'},
-    {l:'Cohésion',av:58,ap:82,c:'oklch(0.62 0.22 340)',th:'Social'},
-  ];
+  const acts = (typeof ACTIONS !== 'undefined' ? ACTIONS : []).slice();
+  const isAdmin = currentUser?.role==='superadmin';
+  const aid = isAdmin ? currentAssocId : currentUser?.assocId;
+  const scoped = acts.filter(a => aid ? a.assocId===aid : true);
+
+  // ===== Cards =====
+  const totalActions = scoped.length;
+  // Objectifs atteints : moyenne des pct_apres sur l'ensemble des surveyResponses
+  let pctSum=0, pctN=0;
+  scoped.forEach(a => (a.surveyResponses||[]).forEach(r=>{
+    const v = +r.pct_apres; if(!isNaN(v)){ pctSum+=v; pctN++; }
+  }));
+  const objAtteints = pctN ? Math.round(pctSum/pctN) : null;
+  // Score qualité : moyenne sur QUAL_EVALS des actions scoped
+  let qSum=0, qN=0;
+  const scopedIds = new Set(scoped.map(a=>String(a.id)));
+  if(typeof QUAL_EVALS!=='undefined'){
+    Object.keys(QUAL_EVALS).forEach(k=>{
+      const aId = k.split('_')[0];
+      if(!scopedIds.has(aId)) return;
+      Object.values(QUAL_EVALS[k]||{}).forEach(v=>{ if(typeof v==='number' && v>0){ qSum+=v; qN++; }});
+    });
+  }
+  const scoreQual = qN ? Math.round(qSum/qN/5*100) : null;
+  const setTxt = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  setTxt('resTotalActions', totalActions);
+  setTxt('resTotalActionsSub', aid ? (typeof getAssocName==='function'?getAssocName(aid):'Mon association') : 'Toutes associations');
+  setTxt('resObjAtteints', objAtteints!=null ? objAtteints+'%' : '—');
+  setTxt('resScoreQual', scoreQual!=null ? scoreQual+'%' : '—');
+
+  // ===== Jauges circulaires : moyenne pct_apres par thématique =====
+  const themeAgg = {};
+  scoped.forEach(a => {
+    const th = a.theme || 'Autre';
+    (a.surveyResponses||[]).forEach(r=>{
+      const ap = +r.pct_apres, av = +r.pct_avant;
+      if(isNaN(ap)) return;
+      const t = themeAgg[th] = themeAgg[th] || {apSum:0,apN:0,avSum:0,avN:0};
+      t.apSum+=ap; t.apN++;
+      if(!isNaN(av)){ t.avSum+=av; t.avN++; }
+    });
+  });
+  const themePalette = ['oklch(0.52 0.22 285)','oklch(0.76 0.17 75)','oklch(0.62 0.22 340)','oklch(0.6 0.17 240)','oklch(0.52 0.16 150)','oklch(0.6 0.17 60)','oklch(0.55 0.22 25)','oklch(0.45 0.18 200)'];
   const rc=document.getElementById('resultCircles');
-  if(rc) rc.innerHTML=data.map(d=>circleChart(d.ap,d.l,d.c,d.av)).join('');
-  const oa=document.getElementById('objParAction');
-  if(oa) oa.innerHTML=ACTIONS.slice(0,5).map(a=>{
-    const v=a.surveyResult?Math.round((a.surveyResult.obj||3)/5*100):(60+Math.floor(Math.random()*35));
-    return `<div class="progress-row"><div class="progress-hdr"><span style="font-size:11px">${a.titre.substring(0,26)}…</span><strong style="color:${cv(TCOL[a.type]||'purple')}">${v}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${v}%;background:${a.gradient}"></div></div></div>`;
-  }).join('');
-  generateAutoAnalysis({conf:5,mai:3,sit:3},{conf:7.5,mai:7,sit:4,obj:4,qac:8,util:3,reco:3},document.getElementById('globalAnalysis'));
+  if(rc){
+    const themes = Object.keys(themeAgg);
+    if(!themes.length){
+      rc.innerHTML = '<div style="color:var(--muted-fore);font-size:13px;padding:18px;text-align:center;width:100%">Aucune mesure d\'impact enregistrée. Lancez une évaluation bénéficiaire depuis une carte action.</div>';
+    } else {
+      rc.innerHTML = themes.map((th,i)=>{
+        const t = themeAgg[th];
+        const ap = Math.round(t.apSum/t.apN);
+        const av = t.avN ? Math.round(t.avSum/t.avN) : null;
+        return circleChart(ap, th, themePalette[i%themePalette.length], av);
+      }).join('');
+    }
+  }
+
+  // ===== Montée en compétences : moyenne par axe C1..C10 =====
+  const axes = (typeof QUALITE_AXES!=='undefined'?QUALITE_AXES:[]);
+  const axisData = axes.map(ax=>{
+    const vals = [];
+    scoped.forEach(a=>{
+      ax.criteria.forEach(c=>{
+        const v = (typeof _qualScore==='function') ? _qualScore(a.id, c.id) : null;
+        if(v!=null) vals.push(v);
+      });
+    });
+    const pct = vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : null;
+    return {id:ax.id, name:ax.name, color:ax.color, pct};
+  });
+  const cc = document.getElementById('competencesCards');
+  if(cc){
+    const star = (filled,color)=>`<svg viewBox="0 0 16 16" width="14" height="14" fill="${filled?color:'none'}" stroke="${color}" stroke-width="1.4"><polygon points="8,1.5 10,6 14.5,6.4 11,9.4 12,14 8,11.6 4,14 5,9.4 1.5,6.4 6,6"/></svg>`;
+    cc.innerHTML = axisData.map(d=>{
+      const pct = d.pct;
+      const stars = pct!=null ? Math.max(0,Math.min(5,Math.round(pct/20))) : 0;
+      const valTxt = pct!=null ? pct+'%' : '—';
+      return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 14px;border-left:4px solid ${d.color};display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:11px;font-weight:800;color:${d.color};letter-spacing:.04em">${d.name}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div style="display:flex;gap:2px">${[1,2,3,4,5].map(i=>star(i<=stars,d.color)).join('')}</div>
+          <div style="font-family:Lexend,sans-serif;font-size:18px;font-weight:800;color:${d.color}">${valTxt}</div>
+        </div>
+        <div style="height:5px;background:var(--muted);border-radius:3px;overflow:hidden"><div style="width:${pct||0}%;height:100%;background:${d.color}"></div></div>
+      </div>`;
+    }).join('');
+  }
+  // Radar (large) — 10 axes
+  const svg = document.getElementById('competencesRadar');
+  if(svg){
+    const cx=260, cy=240, r=170;
+    const N = axisData.length;
+    const angles = axisData.map((_,i)=> (-Math.PI/2) + i*2*Math.PI/N);
+    let h='';
+    [1,.75,.5,.25].forEach(f=>{
+      const pts = angles.map(a=>[(cx+r*f*Math.cos(a)).toFixed(1),(cy+r*f*Math.sin(a)).toFixed(1)].join(',')).join(' ');
+      h += `<polygon points="${pts}" fill="none" stroke="var(--border)" stroke-width="1"/>`;
+    });
+    angles.forEach(a=>{ h += `<line x1="${cx}" y1="${cy}" x2="${(cx+r*Math.cos(a)).toFixed(1)}" y2="${(cy+r*Math.sin(a)).toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`; });
+    const dp = axisData.map((d,i)=>{
+      const v = (d.pct||0)/100;
+      return [(cx+r*v*Math.cos(angles[i])).toFixed(1),(cy+r*v*Math.sin(angles[i])).toFixed(1)].join(',');
+    }).join(' ');
+    h += `<polygon points="${dp}" fill="oklch(0.52 0.22 285/.22)" stroke="oklch(0.52 0.22 285)" stroke-width="2.5" stroke-linejoin="round"/>`;
+    axisData.forEach((d,i)=>{
+      const v=(d.pct||0)/100;
+      h += `<circle cx="${(cx+r*v*Math.cos(angles[i])).toFixed(1)}" cy="${(cy+r*v*Math.sin(angles[i])).toFixed(1)}" r="3.5" fill="${d.color}"/>`;
+    });
+    axisData.forEach((d,i)=>{
+      const lx = (cx + (r+28)*Math.cos(angles[i])).toFixed(1);
+      const ly = (cy + (r+28)*Math.sin(angles[i])).toFixed(1);
+      const anchor = parseFloat(lx)<cx-5?'end':parseFloat(lx)>cx+5?'start':'middle';
+      const lbl = d.id + (d.pct!=null?' · '+d.pct+'%':'');
+      h += `<text x="${lx}" y="${ly}" text-anchor="${anchor}" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="${d.color}">${lbl}</text>`;
+    });
+    svg.innerHTML = h;
+  }
+
   generateAIDetailedAnalysis();
 }
+
+// ===== Régénération IA avec popup =====
+function regenerateAIDetailedAnalysis(){
+  let modal = document.getElementById('aiThinkModal');
+  if(modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'aiThinkModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(6px);z-index:9700;display:flex;align-items:center;justify-content:center;padding:18px';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px 34px;max-width:420px;width:100%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.35)">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px">
+        <svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="oklch(0.62 0.22 340)" stroke-width="1.6" stroke-linecap="round"><path d="M10 1.5l1.8 4.6 4.7.5-3.5 3.2.9 4.7L10 12l-3.9 2.5.9-4.7L3.5 6.6l4.7-.5z"/></svg>
+        <div style="font-family:Lexend,sans-serif;font-weight:800;font-size:16px;background:var(--grad-rose);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Analyse IA en cours…</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted-fore);margin-bottom:18px">Croisement des données : Diagnostic territorial, enquête habitant, impacts des actions et référentiel qualité — par thématique.</div>
+      <div style="position:relative;width:120px;height:120px;margin:0 auto 14px">
+        <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg)">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--muted)" stroke-width="9"/>
+          <circle id="aiThinkArc" cx="50" cy="50" r="42" fill="none" stroke="url(#aiThinkGrad)" stroke-width="9" stroke-linecap="round" stroke-dasharray="263.9" stroke-dashoffset="263.9"/>
+          <defs><linearGradient id="aiThinkGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="oklch(0.52 0.22 285)"/><stop offset="100%" stop-color="oklch(0.62 0.22 340)"/></linearGradient></defs>
+        </svg>
+        <div id="aiThinkPct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Lexend,sans-serif;font-weight:800;font-size:22px;color:oklch(0.52 0.22 285)">0%</div>
+      </div>
+      <div id="aiThinkStep" style="font-size:11.5px;color:var(--muted-fore);font-style:italic">Lecture des données…</div>
+    </div>`;
+  document.body.appendChild(modal);
+  const steps = [
+    'Lecture du Diagnostic territorial…',
+    'Agrégation des enquêtes habitant…',
+    'Analyse des impacts d\'actions…',
+    'Pondération par thématique…',
+    'Génération de la synthèse finale…'
+  ];
+  const arc = modal.querySelector('#aiThinkArc');
+  const pctEl = modal.querySelector('#aiThinkPct');
+  const stepEl = modal.querySelector('#aiThinkStep');
+  const C = 2*Math.PI*42;
+  let p = 0;
+  const t0 = Date.now();
+  const dur = 2200;
+  const tick = ()=>{
+    const k = Math.min(1,(Date.now()-t0)/dur);
+    p = Math.round(k*100);
+    if(arc) arc.setAttribute('stroke-dashoffset', (C*(1-k)).toFixed(1));
+    if(pctEl) pctEl.textContent = p+'%';
+    if(stepEl) stepEl.textContent = steps[Math.min(steps.length-1, Math.floor(k*steps.length))];
+    if(k<1) requestAnimationFrame(tick);
+    else {
+      try{ generateAIDetailedAnalysis(); }catch(e){ console.error(e); }
+      setTimeout(()=>{ modal.remove(); if(typeof showToast==='function') showToast('Analyse régénérée'); }, 260);
+    }
+  };
+  requestAnimationFrame(tick);
+}
+window.regenerateAIDetailedAnalysis = regenerateAIDetailedAnalysis;
 
 // ========== AI DETAILED ANALYSIS — Résultats & Impacts ==========
 function exportAIAnalysis(){ showToast("Export PDF — fonctionnalité à venir"); }
