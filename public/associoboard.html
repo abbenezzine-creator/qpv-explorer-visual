@@ -2857,6 +2857,26 @@ function renderQualTopFilters(){
   const assocsAll=Array.isArray(meta.assocs)?meta.assocs.map(a=>({id:a.id,nom:a.nom})):[];
   const assocIdsInPool=new Set(poolBase.map(a=>String(a.assocId)));
   const assocs=assocsAll.filter(a=>assocIdsInPool.has(String(a.id))).sort((a,b)=>(a.nom||'').localeCompare(b.nom||'','fr'));
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const lblSty='display:block;font-size:11px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em';
+
+  // ===== MODE B (Évaluation) : afficher les filtres en texte fixe (contexte verrouillé)
+  if(typeof QUAL_EVAL_MODE!=='undefined' && QUAL_EVAL_MODE){
+    const sac=document.getElementById('qualActionSel');
+    const aid=document.getElementById('qualAssocSel')?.value||'';
+    const actId=sac?.value||'';
+    const act=rawActions.find(a=>String(a.id)===String(actId));
+    const assoc=assocsAll.find(a=>String(a.id)===String(act?.assoc_id||aid));
+    const txtSty='display:block;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--muted,rgba(0,0,0,.04));color:var(--fore);font-weight:600;min-height:36px';
+    bar.innerHTML=
+      `<div><label style="${lblSty}">Association</label><div style="${txtSty}">${esc(assoc?.nom||'—')}</div></div>`+
+      `<div><label style="${lblSty}">Action</label><div style="${txtSty}">${esc(act?.titre||'—')}</div></div>`+
+      `<div><label style="${lblSty}">Thématique</label><div style="${txtSty}">${esc(act?.thematique||'—')}</div></div>`+
+      `<div><label style="${lblSty}">Année</label><div style="${txtSty}">${esc(act?.annee||'—')}</div></div>`;
+    return;
+  }
+
+  // ===== MODE A (Consultation) : listes déroulantes interactives
   const themes=Array.from(new Set(poolBase.map(a=>a.theme).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'fr'));
   const years=Array.from(new Set(poolBase.map(a=>a.annee).filter(Boolean))).sort((a,b)=>b-a);
   const aidSel=userAid?String(userAid):(currentAssocId?String(currentAssocId):'');
@@ -2869,10 +2889,8 @@ function renderQualTopFilters(){
     return true;
   }).sort((a,b)=>(a.titre||'').localeCompare(b.titre||'','fr'));
   const actSel=document.getElementById('qualActionSel')?.value||'';
-  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const opt=(v,l,sel)=>`<option value="${esc(v)}"${String(sel)===String(v)?' selected':''}>${esc(l)}</option>`;
   const sty='width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--fore)';
-  const lblSty='display:block;font-size:11px;font-weight:700;color:var(--muted-fore);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em';
   bar.innerHTML=
     `<div><label style="${lblSty}">Association</label>`+
       `<select id="qfAssoc" style="${sty}"${userAid?' disabled':''}>`+opt('','— Toutes les associations —',aidSel)+
@@ -2886,7 +2904,7 @@ function renderQualTopFilters(){
     `<div><label style="${lblSty}">Année</label>`+
       `<select id="qfYear" style="${sty}">`+opt('','Toutes années',yearSel)+
       years.map(y=>opt(y,y,yearSel)).join('')+`</select></div>`;
-  // Reset l'action sélectionnée à chaque changement de Assoc/Thème/Année (alignement avec Impacts bénéficiaires)
+  // Reset l'action sélectionnée à chaque changement de Assoc/Thème/Année
   function _resetQualAction(){
     const sac=document.getElementById('qualActionSel'); if(sac) sac.value='';
     try{ onQualActionChange(); }catch(e){}
@@ -2894,18 +2912,24 @@ function renderQualTopFilters(){
   const qfA=document.getElementById('qfAssoc');
   if(qfA) qfA.onchange=function(){ _resetQualAction(); try{ switchAssociation(this.value); }catch(e){} try{ renderQualTopFilters(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
   const qfT=document.getElementById('qfTheme');
-  if(qfT) qfT.onchange=function(){ _resetQualAction(); const g=document.getElementById('globalThemeSel'); if(g){ g.value=this.value; } try{ onGlobalThemeChange(); }catch(e){} try{ renderQualTopFilters(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
+  if(qfT) qfT.onchange=function(){ _resetQualAction(); currentTheme=this.value||null; const g=document.getElementById('globalThemeSel'); if(g){ g.value=this.value; } try{ onGlobalThemeChange(); }catch(e){} try{ renderQualTopFilters(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
   const qfY=document.getElementById('qfYear');
-  if(qfY) qfY.onchange=function(){ _resetQualAction(); const g=document.getElementById('yearFilter'); if(g){ g.value=this.value; } try{ onYearChange(); }catch(e){} try{ renderQualTopFilters(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
+  if(qfY) qfY.onchange=function(){ _resetQualAction(); currentYear=this.value?Number(this.value):null; const g=document.getElementById('yearFilter'); if(g){ g.value=this.value; } try{ onYearChange(); }catch(e){} try{ renderQualTopFilters(); }catch(e){} try{ updateQualGlobalScore(); }catch(e){} };
   const qfAct=document.getElementById('qfAction');
   if(qfAct) qfAct.onchange=function(){
     const sa=document.getElementById('qualAssocSel');
     const sac=document.getElementById('qualActionSel');
     if(this.value){
       const a=(window.__dashMeta?.actions||[]).find(x=>String(x.id)===String(this.value));
-      if(a && sa){ sa.value=String(a.assoc_id||a.assocId); onQualAssocChange(); }
+      if(a){
+        // Auto-synchroniser Association + Thématique + Année avec l'action choisie
+        if(a.assoc_id!=null){ currentAssocId=a.assoc_id; if(sa){ sa.value=String(a.assoc_id); onQualAssocChange(); } }
+        if(a.thematique){ currentTheme=a.thematique; const g=document.getElementById('globalThemeSel'); if(g) g.value=a.thematique; }
+        if(a.annee){ currentYear=a.annee; const gy=document.getElementById('yearFilter'); if(gy) gy.value=String(a.annee); }
+      }
     }
     if(sac){ sac.value=this.value; onQualActionChange(); }
+    try{ renderQualTopFilters(); }catch(e){}
     try{ updateQualGlobalScore(); }catch(e){}
   };
   // Initial average paint with current scope
