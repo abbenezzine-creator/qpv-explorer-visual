@@ -3056,6 +3056,7 @@ function updateQualGlobalScore(){
   // NB : c1..c10 sont stockés en pourcentage 0..100 (cf. saveQualite -> axisScores).
   // Logique alignée sur "Indicateurs Qualité" du tableau de bord (qualiteHtml).
   try{
+    if(QUAL_EVAL_MODE) return; // En Mode B, ne pas écraser les étoiles saisies par l'évaluateur
     const scopedRefs=refs.filter(r=>idSet.has(String(r.action_id)));
     (typeof QUALITE_AXES!=='undefined'?QUALITE_AXES:[]).forEach(ax=>{
       const el=document.getElementById('sc-'+ax.id);
