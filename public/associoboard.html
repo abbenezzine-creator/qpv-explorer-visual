@@ -1561,6 +1561,7 @@ const QUALITE_AXES = [
   {id:'C5',name:'C5 — CONFORMITÉ & VEILLE LÉGALE',color:'oklch(0.6 0.17 240)',criteria:[
     {id:'14',text:"Agréments relatifs à la conformité de l'organisme."},
     {id:'15',text:'Veille réglementaire active.'},
+    {id:'31',text:'Conformité RGPD : registre des traitements, consentements, sécurité des données, information des bénéficiaires.'},
   ]},
   {id:'C6',name:'C6 — MOYENS PÉDAGOGIQUES & ÉDUCATIFS',color:'oklch(0.52 0.22 285)',criteria:[
     {id:'16',text:'Moyens humains et techniques adaptés, environnement approprié.'},
@@ -5330,6 +5331,7 @@ function renderGuide() {
     {c:'C5',name:'CONFORMITÉ ET VEILLE LÉGALE',color:'oklch(0.6 0.17 240)',inds:[
       {n:14,t:'Agréments relatifs à la conformité de l\'organisme.',nc:'MAJEURE'},
       {n:15,t:'Veille réglementaire active.',nc:'MAJEURE'},
+      {n:31,t:'Conformité RGPD : registre des traitements, consentements, sécurité des données, information des bénéficiaires.',nc:'MAJEURE'},
     ]},
     {c:'C6',name:'MOYENS PÉDAGOGIQUES ET ÉDUCATIFS',color:'oklch(0.52 0.22 285)',inds:[
       {n:16,t:'Moyens humains et techniques adaptés, environnement approprié.',nc:'MAJEURE'},
@@ -5523,6 +5525,14 @@ function renderGuide() {
        ob:'<em>Tous types :</em> veille sur les évolutions de la politique de la ville (contrat de ville, circulaires, lois de finances)',
        ok:chk(['Démarche de veille active justifiable','Évolutions réglementaires récentes connues et prises en compte'],true),
        ko:chk(['Aucune démarche de veille mise en place','Organisme non informé des évolutions récentes'],false),gl:''
+      },
+      {num:31,nc:'MAJEURE',title:'Conformité RGPD',
+       na:'L\'organisme respecte le Règlement Général sur la Protection des Données : il tient un registre des traitements, recueille les consentements nécessaires, sécurise les données personnelles des bénéficiaires et les informe de leurs droits.',
+       pr:bul(['Registre des traitements à jour','Mentions d\'information et formulaires de consentement','Procédure de gestion des droits (accès, rectification, suppression)','Mesures techniques et organisationnelles (accès restreint, sauvegardes, chiffrement)','Désignation d\'un référent RGPD ou DPO','Procédure en cas de violation de données']),
+       ob:'<em>Tous types :</em> RGPD obligatoire dès qu\'il y a collecte de données personnelles (inscriptions, listes de présence, photos, évaluations)',
+       ok:chk(['Registre des traitements tenu et accessible','Bénéficiaires informés de leurs droits','Mesures de sécurité en place'],true),
+       ko:chk(['Aucune démarche RGPD engagée','Données non sécurisées','Bénéficiaires non informés'],false),
+       gl:'<strong>RGPD :</strong> Règlement Général sur la Protection des Données (UE 2016/679). <strong>DPO :</strong> Délégué à la Protection des Données.'
       },
     ]},
     {id:'gc-c6',n:'C6',name:'Moyens pédagogiques et éducatifs',color:C[5],inds:[
