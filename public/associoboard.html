@@ -1477,7 +1477,7 @@ function onDashAllYearChange(){
   }
   window.__abNotifyFilters = notifyFilters;
   function wireFilters(){
-    ['yearFilter','assocGlobalSel','globalThemeSel'].forEach(function(id){
+    ['yearFilter','globalThemeSel'].forEach(function(id){
       var el = document.getElementById(id); if(!el || el.__abWired) return;
       el.__abWired = true; el.addEventListener('change', notifyFilters);
     });
