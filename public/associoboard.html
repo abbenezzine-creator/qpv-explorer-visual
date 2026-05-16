@@ -2948,11 +2948,11 @@ function renderQualTopFilters(){
     }
   }
   const qfA=document.getElementById('qfAssoc');
-  if(qfA) qfA.onchange=function(){ _setAssoc(this.value); _setAction(''); _autoCascadeFromSelection(); renderQualTopFilters(); try{ updateQualGlobalScore(); }catch(e){} try{ switchAssociation(this.value); }catch(e){} };
+  if(qfA) qfA.onchange=function(){ _setAssoc(this.value); renderQualTopFilters(); try{ updateQualGlobalScore(); }catch(e){} try{ switchAssociation(this.value); }catch(e){} };
   const qfT=document.getElementById('qfTheme');
-  if(qfT) qfT.onchange=function(){ _setTheme(this.value); _setAction(''); _autoCascadeFromSelection(); renderQualTopFilters(); try{ updateQualGlobalScore(); }catch(e){} };
+  if(qfT) qfT.onchange=function(){ _setTheme(this.value); renderQualTopFilters(); try{ updateQualGlobalScore(); }catch(e){} };
   const qfY=document.getElementById('qfYear');
-  if(qfY) qfY.onchange=function(){ _setYear(this.value); _setAction(''); _autoCascadeFromSelection(); renderQualTopFilters(); try{ updateQualGlobalScore(); }catch(e){} };
+  if(qfY) qfY.onchange=function(){ _setYear(this.value); renderQualTopFilters(); try{ updateQualGlobalScore(); }catch(e){} };
   const qfAct=document.getElementById('qfAction');
   if(qfAct) qfAct.onchange=function(){
     _setAction(this.value);
