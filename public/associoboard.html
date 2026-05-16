@@ -7109,7 +7109,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     var hash = (location.hash||'').replace('#page=','');
     var page = hash || 'dashboard';
     var hide = (page === 'dashboard' || page === 'impacts-beneficiaires' || page === 'documents');
-    ['assocSelWrap','yearFilter','globalThemeSel','globalSousThemeSel'].forEach(function(id){
+    ['yearFilter','globalThemeSel','globalSousThemeSel'].forEach(function(id){
       var el = document.getElementById(id); if(!el) return;
       el.style.display = hide ? 'none' : (id==='globalSousThemeSel' ? 'none' : '');
     });
