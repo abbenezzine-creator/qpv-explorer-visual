@@ -2933,7 +2933,7 @@ function renderQualTopFilters(){
   // Sync helpers : appliquer la sélection puis recalculer
   function _setAssoc(v){
     QUAL_FILTER_ASSOC = userAid ? String(userAid) : (v||'');
-    try{ const sa=document.getElementById('qualAssocSel'); if(sa){ sa.value=QUAL_FILTER_ASSOC; onQualAssocChange(); } }catch(e){}
+    try{ const sa=document.getElementById('qualAssocSel'); if(sa) sa.value=QUAL_FILTER_ASSOC; }catch(e){}
   }
   function _setTheme(v){ QUAL_FILTER_THEME=v||''; }
   function _setYear(v){ QUAL_FILTER_YEAR=v||''; }
@@ -2950,7 +2950,7 @@ function renderQualTopFilters(){
     }
   }
   const qfA=document.getElementById('qfAssoc');
-  if(qfA) qfA.onchange=function(){ _setAssoc(this.value); renderQualTopFilters(); try{ updateQualGlobalScore(); }catch(e){} try{ switchAssociation(this.value); }catch(e){} };
+  if(qfA) qfA.onchange=function(){ _setAssoc(this.value); renderQualTopFilters(); try{ updateQualGlobalScore(); }catch(e){} };
   const qfT=document.getElementById('qfTheme');
   if(qfT) qfT.onchange=function(){ _setTheme(this.value); renderQualTopFilters(); try{ updateQualGlobalScore(); }catch(e){} };
   const qfY=document.getElementById('qfYear');
