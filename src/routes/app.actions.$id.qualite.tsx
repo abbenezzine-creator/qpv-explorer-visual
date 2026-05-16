@@ -36,6 +36,7 @@ const CRITERES = [
   { key: "participation", label: "Participation des habitants", hint: "Les habitants sont-ils associés à la conception et au suivi ?" },
   { key: "partenariat", label: "Partenariat", hint: "Qualité et diversité des partenaires mobilisés." },
   { key: "transversalite", label: "Transversalité", hint: "Articulation avec d'autres dispositifs ou actions." },
+  { key: "conformite_rgpd", label: "Conformité RGPD", hint: "Respect du RGPD : registre des traitements, consentements, sécurité des données, information des bénéficiaires." },
 ] as const;
 
 const NOTES = [0, 1, 2, 3, 4] as const;
