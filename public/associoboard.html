@@ -2988,8 +2988,11 @@ function addEvaluator(){
   showToast('Évaluateur ajouté — vous pouvez noter');
 }
 function rateRef(axId,critId,val){
+  if(!QUAL_EVAL_MODE){
+    showToast("Mode consultation — cliquez sur le bouton \u201cRéférentiel Qualité\u201d d'une carte action pour saisir une évaluation.");
+    return;
+  }
   if(!currentEvalKey){
-    // fallback: anonymous evaluator on selected action
     const aid=document.getElementById('qualActionSel')?.value;
     if(!aid){showToast('Sélectionnez une action');return;}
     currentEvalKey = `${aid}_anon`;
@@ -2997,7 +3000,7 @@ function rateRef(axId,critId,val){
   if(!QUAL_EVALS[currentEvalKey]) QUAL_EVALS[currentEvalKey]={};
   QUAL_EVALS[currentEvalKey][critId]=val;
   paintStars(critId,val);
-  updateAxeScore(axId); updateQualGlobalScore(); updateEvalTabs();
+  updateAxeScore(axId); updateEvalTabs();
 }
 function updateAxeScore(axId){
   const ax=QUALITE_AXES.find(a=>a.id===axId); if(!ax) return;
