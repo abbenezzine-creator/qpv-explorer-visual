@@ -3472,21 +3472,166 @@ function renderRadarChart(data){
 }
 
 // ========== RESULTATS ==========
-function renderResultatsPage(){
-  const acts = (typeof ACTIONS !== 'undefined' ? ACTIONS : []).slice();
-  const isAdmin = currentUser?.role==='superadmin';
-  const aid = isAdmin ? currentAssocId : currentUser?.assocId;
-  const scoped = acts.filter(a => aid ? a.assocId===aid : true);
+window.__resultatsFilters = window.__resultatsFilters || { assoc:'', action:'', theme:'', year:'' };
 
-  // ===== Cards =====
+function _resRenderFilters(){
+  const bar = document.getElementById('resFiltersBar');
+  if(!bar || typeof ACTIONS==='undefined') return;
+  const f = window.__resultatsFilters;
+  const isAdmin = currentUser?.role==='superadmin';
+  const userAid = !isAdmin ? currentUser?.assocId : null;
+  if(userAid) f.assoc = String(userAid);
+  const pool = ACTIONS.slice();
+  const assocs = Array.from(new Set(pool.map(a=>a.assocId).filter(Boolean)))
+    .map(id=>({id, nom:(typeof getAssocName==='function'?getAssocName(id):id)}))
+    .sort((a,b)=>(a.nom||'').localeCompare(b.nom||'','fr'));
+  const themes = Array.from(new Set(pool.map(a=>a.theme).filter(Boolean))).sort();
+  const years = Array.from(new Set(pool.map(a=>a.annee).filter(Boolean))).sort((a,b)=>b-a);
+  const actPool = pool.filter(a=>{
+    if(f.assoc && String(a.assocId)!==String(f.assoc)) return false;
+    if(f.theme && a.theme!==f.theme) return false;
+    if(f.year && String(a.annee)!==String(f.year)) return false;
+    return true;
+  });
+  const actions = actPool.map(a=>({id:a.id,titre:a.titre||'(sans titre)'}))
+    .sort((a,b)=>a.titre.localeCompare(b.titre,'fr'));
+  const esc = v => String(v).replace(/"/g,'&quot;');
+  const opt = (v,l,sel)=>'<option value="'+esc(v)+'"'+(String(sel)===String(v)?' selected':'')+'>'+l+'</option>';
+  const sty = 'width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff';
+  const lblSty = 'display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em';
+  bar.innerHTML =
+    '<div><label style="'+lblSty+'">Association</label>'+
+      '<select id="rfAssoc" style="'+sty+'"'+(userAid?' disabled':'')+'>'+opt('','— Toutes les associations —',f.assoc)+
+      assocs.map(s=>opt(s.id,s.nom,f.assoc)).join('')+'</select>'+
+      '<div style="margin-top:4px;font-size:11px;color:#64748b">'+actPool.length+' action'+(actPool.length>1?'s':'')+' correspondante'+(actPool.length>1?'s':'')+'</div></div>'+
+    '<div><label style="'+lblSty+'">Action</label>'+
+      '<select id="rfAction" style="'+sty+'">'+opt('','Toutes les actions',f.action)+
+      actions.map(a=>opt(a.id,a.titre,f.action)).join('')+'</select></div>'+
+    '<div><label style="'+lblSty+'">Thématique</label>'+
+      '<select id="rfTheme" style="'+sty+'">'+opt('','Toutes thématiques',f.theme)+
+      themes.map(t=>opt(t,t,f.theme)).join('')+'</select></div>'+
+    '<div><label style="'+lblSty+'">Année</label>'+
+      '<select id="rfYear" style="'+sty+'">'+opt('','Toutes années',f.year)+
+      years.map(y=>opt(y,y,f.year)).join('')+'</select></div>'+
+    '<div><button id="rfReset" class="btn btn-ghost btn-sm" style="white-space:nowrap">↻ Réinitialiser</button></div>';
+  const bind = (id,key,resetAct)=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.onchange = ()=>{
+      window.__resultatsFilters[key] = el.value;
+      if(key==='action' && el.value){
+        const a = ACTIONS.find(x=>String(x.id)===String(el.value));
+        if(a){
+          if(a.assocId) window.__resultatsFilters.assoc = String(a.assocId);
+          if(a.theme)   window.__resultatsFilters.theme = a.theme;
+          if(a.annee)   window.__resultatsFilters.year  = String(a.annee);
+        }
+      } else if(resetAct){
+        window.__resultatsFilters.action = '';
+      }
+      renderResultatsPage();
+    };
+  };
+  bind('rfAssoc','assoc',true);
+  bind('rfAction','action',false);
+  bind('rfTheme','theme',true);
+  bind('rfYear','year',true);
+  const rb = document.getElementById('rfReset');
+  if(rb) rb.onclick = ()=>{
+    window.__resultatsFilters = { assoc:userAid?String(userAid):'', action:'', theme:'', year:'' };
+    renderResultatsPage();
+  };
+}
+
+function _resBuildThemeCard(theme, resps, color){
+  const n = resps.length;
+  const sumLen = k => resps.reduce((s,r)=>s+((r[k]||[]).length||0),0);
+  const avg = k => n ? Math.round(resps.reduce((s,r)=>s+(+r[k]||0),0)/n) : 0;
+  const sumNum = k => resps.reduce((s,r)=>s+(+r[k]||0),0);
+  const totFreins=sumLen('freins_leves'), totActions=sumLen('actions'),
+        totComp=sumLen('competences'), totRes=sumLen('resultats');
+  const avantM=avg('pct_avant'), apresM=avg('pct_apres'), deltaM=apresM-avantM;
+  const totCoutEvite=sumNum('cout_evite'), totRichesse=sumNum('richesse');
+  const totValeur=sumNum('valeur_totale')||(totCoutEvite+totRichesse);
+  const fmtEur = v=> v ? Math.round(v).toLocaleString('fr-FR')+' €' : '—';
+  const journeyStep = (icon,title,titleColor,sub,big,bigColor)=>`
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:90px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:.08em;color:${titleColor};text-transform:uppercase">${title}</div>
+      <div style="width:54px;height:54px;border-radius:50%;border:2px solid ${titleColor};display:flex;align-items:center;justify-content:center;color:${titleColor};font-size:22px;background:#fff">${icon}</div>
+      <div style="font-size:12px;color:#475569;text-align:center">${sub}</div>
+      ${big?`<div style="font-size:14px;font-weight:800;color:${bigColor||titleColor}">${big}</div>`:''}
+    </div>`;
+  const donut = (pct,c,bg)=>{
+    const r=42,C=2*Math.PI*r,off=C*(1-(pct||0)/100);
+    return `<div style="position:relative;width:130px;height:130px">
+      <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg)">
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="${bg}" stroke-width="10"/>
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="${c}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:${c}">${pct}%</div>
+    </div>`;
+  };
+  return `
+    <div class="card" style="border-top:4px solid ${color}">
+      <div class="card-hdr"><div class="card-title" style="color:${color}">${theme}</div><span style="margin-left:8px;font-size:11px;color:#64748b">${n} bénéficiaire${n>1?'s':''} évalué${n>1?'s':''}</span></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;position:relative">
+          <div style="position:absolute;left:8%;right:8%;top:52%;height:1px;background:#e2e8f0"></div>
+          <div style="display:flex;justify-content:space-between;width:100%;position:relative;z-index:1;gap:8px">
+            ${journeyStep('⚑','Départ','#dc2626','Avant',avantM+'%','#dc2626')}
+            ${journeyStep('👤','Difficultés','#2563eb',totFreins+' freins<br/><span style="font-size:10px;color:#94a3b8">levés</span>')}
+            ${journeyStep('◎','Actions','#7c3aed',totActions+' actions<br/><span style="font-size:10px;color:#94a3b8">suivies</span>')}
+            ${journeyStep('◉','Compétences','#ea580c',totComp+' compétences<br/><span style="font-size:10px;color:#94a3b8">mobilisées</span>')}
+            ${journeyStep('✓','Arrivée','#059669','Après',apresM+'%','#059669')}
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+          <div style="text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;color:#94a3b8;text-transform:uppercase;margin-bottom:18px">Mesure d'impact</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">${donut(avantM,'#dc2626','#fee2e2')}<div style="font-size:12px;font-weight:800;letter-spacing:.08em;color:#475569">AVANT</div></div>
+            <div style="font-size:32px;color:#94a3b8">→</div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">${donut(apresM,'#059669','#d1fae5')}<div style="font-size:12px;font-weight:800;letter-spacing:.08em;color:#475569">APRÈS</div></div>
+          </div>
+          <div style="margin-top:18px;background:#ecfdf5;color:#047857;text-align:center;padding:12px;border-radius:10px;font-weight:700;font-size:14px">
+            Progression de ${deltaM>=0?'+':''}${deltaM} points · ${totRes} résultat${totRes>1?'s':''} concret${totRes>1?'s':''} obtenu${totRes>1?'s':''}
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <span style="font-size:20px">€</span>
+            <div><div style="font-size:15px;font-weight:800;color:#0f172a">Valeur sociale créée sur 12 mois</div><div style="font-size:12px;color:#64748b">Estimation socio-économique cumulée des parcours</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <div style="background:#fef3c7;border-radius:12px;padding:16px;text-align:center"><div style="font-size:11px;font-weight:800;color:#92400e;letter-spacing:.06em;text-transform:uppercase">Coût évité</div><div style="font-size:22px;font-weight:800;color:#92400e;margin-top:6px">${fmtEur(totCoutEvite)}</div><div style="font-size:11px;color:#78350f;margin-top:2px">à la collectivité</div></div>
+            <div style="background:#d1fae5;border-radius:12px;padding:16px;text-align:center"><div style="font-size:11px;font-weight:800;color:#065f46;letter-spacing:.06em;text-transform:uppercase">Richesse apportée</div><div style="font-size:22px;font-weight:800;color:#065f46;margin-top:6px">${fmtEur(totRichesse)}</div><div style="font-size:11px;color:#064e3b;margin-top:2px">par les bénéficiaires</div></div>
+            <div style="background:#dbeafe;border-radius:12px;padding:16px;text-align:center"><div style="font-size:11px;font-weight:800;color:#1e3a8a;letter-spacing:.06em;text-transform:uppercase">Valeur totale</div><div style="font-size:22px;font-weight:800;color:#1e3a8a;margin-top:6px">${fmtEur(totValeur)}</div><div style="font-size:11px;color:#1e3a8a;margin-top:2px">cumulée sur 1 an</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderResultatsPage(){
+  _resRenderFilters();
+  const f = window.__resultatsFilters;
+  const acts = (typeof ACTIONS!=='undefined'?ACTIONS:[]).slice();
+  const isAdmin = currentUser?.role==='superadmin';
+  const userAid = !isAdmin ? currentUser?.assocId : null;
+  if(userAid) f.assoc = String(userAid);
+  const scoped = acts.filter(a=>{
+    if(f.assoc && String(a.assocId)!==String(f.assoc)) return false;
+    if(f.action && String(a.id)!==String(f.action)) return false;
+    if(f.theme && a.theme!==f.theme) return false;
+    if(f.year && String(a.annee)!==String(f.year)) return false;
+    return true;
+  });
+
+  // ===== Top stat cards =====
   const totalActions = scoped.length;
-  // Objectifs atteints : moyenne des pct_apres sur l'ensemble des surveyResponses
   let pctSum=0, pctN=0;
   scoped.forEach(a => (a.surveyResponses||[]).forEach(r=>{
     const v = +r.pct_apres; if(!isNaN(v)){ pctSum+=v; pctN++; }
   }));
   const objAtteints = pctN ? Math.round(pctSum/pctN) : null;
-  // Score qualité : moyenne sur QUAL_EVALS des actions scoped
   let qSum=0, qN=0;
   const scopedIds = new Set(scoped.map(a=>String(a.id)));
   if(typeof QUAL_EVALS!=='undefined'){
@@ -3499,39 +3644,39 @@ function renderResultatsPage(){
   const scoreQual = qN ? Math.round(qSum/qN/5*100) : null;
   const setTxt = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
   setTxt('resTotalActions', totalActions);
-  setTxt('resTotalActionsSub', aid ? (typeof getAssocName==='function'?getAssocName(aid):'Mon association') : 'Toutes associations');
+  const scopeLbl = f.assoc ? (typeof getAssocName==='function'?getAssocName(f.assoc):'Mon association') : 'Toutes associations';
+  setTxt('resTotalActionsSub', scopeLbl);
   setTxt('resObjAtteints', objAtteints!=null ? objAtteints+'%' : '—');
   setTxt('resScoreQual', scoreQual!=null ? scoreQual+'%' : '—');
+  const sub = document.getElementById('resScopeSub');
+  if(sub){
+    const sA = scopeLbl;
+    const sAct = f.action ? (acts.find(x=>String(x.id)===String(f.action))?.titre||'—') : 'Toutes les actions';
+    const sT = f.theme || 'Toutes thématiques';
+    const sY = f.year || 'Toutes années';
+    sub.textContent = sA + ' · ' + sAct + ' · ' + sT + ' · ' + sY;
+  }
 
-  // ===== Jauges circulaires : moyenne pct_apres par thématique =====
-  const themeAgg = {};
-  scoped.forEach(a => {
+  // ===== Thematic impact cards =====
+  const themePalette = ['oklch(0.52 0.22 285)','oklch(0.76 0.17 75)','oklch(0.62 0.22 340)','oklch(0.6 0.17 240)','oklch(0.52 0.16 150)','oklch(0.6 0.17 60)','oklch(0.55 0.22 25)','oklch(0.45 0.18 200)'];
+  const byTheme = {};
+  scoped.forEach(a=>{
     const th = a.theme || 'Autre';
     (a.surveyResponses||[]).forEach(r=>{
-      const ap = +r.pct_apres, av = +r.pct_avant;
-      if(isNaN(ap)) return;
-      const t = themeAgg[th] = themeAgg[th] || {apSum:0,apN:0,avSum:0,avN:0};
-      t.apSum+=ap; t.apN++;
-      if(!isNaN(av)){ t.avSum+=av; t.avN++; }
+      (byTheme[th] = byTheme[th]||[]).push(r);
     });
   });
-  const themePalette = ['oklch(0.52 0.22 285)','oklch(0.76 0.17 75)','oklch(0.62 0.22 340)','oklch(0.6 0.17 240)','oklch(0.52 0.16 150)','oklch(0.6 0.17 60)','oklch(0.55 0.22 25)','oklch(0.45 0.18 200)'];
-  const rc=document.getElementById('resultCircles');
-  if(rc){
-    const themes = Object.keys(themeAgg);
+  const themes = Object.keys(byTheme);
+  const cont = document.getElementById('resThematicImpacts');
+  if(cont){
     if(!themes.length){
-      rc.innerHTML = '<div style="color:var(--muted-fore);font-size:13px;padding:18px;text-align:center;width:100%">Aucune mesure d\'impact enregistrée. Lancez une évaluation bénéficiaire depuis une carte action.</div>';
+      cont.innerHTML = '<div class="card"><div class="card-body" style="color:var(--muted-fore);font-size:13px;text-align:center">Aucune mesure d\'impact enregistrée pour ce périmètre. Lancez une évaluation bénéficiaire depuis une carte action.</div></div>';
     } else {
-      rc.innerHTML = themes.map((th,i)=>{
-        const t = themeAgg[th];
-        const ap = Math.round(t.apSum/t.apN);
-        const av = t.avN ? Math.round(t.avSum/t.avN) : null;
-        return circleChart(ap, th, themePalette[i%themePalette.length], av);
-      }).join('');
+      cont.innerHTML = themes.map((th,i)=> _resBuildThemeCard(th, byTheme[th], themePalette[i%themePalette.length])).join('');
     }
   }
 
-  // ===== Montée en compétences : moyenne par axe C1..C10 =====
+  // ===== Montée en compétences (cards only — radar removed) =====
   const axes = (typeof QUALITE_AXES!=='undefined'?QUALITE_AXES:[]);
   const axisData = axes.map(ax=>{
     const vals = [];
@@ -3561,39 +3706,10 @@ function renderResultatsPage(){
       </div>`;
     }).join('');
   }
-  // Radar (large) — 10 axes
-  const svg = document.getElementById('competencesRadar');
-  if(svg){
-    const cx=260, cy=240, r=170;
-    const N = axisData.length;
-    const angles = axisData.map((_,i)=> (-Math.PI/2) + i*2*Math.PI/N);
-    let h='';
-    [1,.75,.5,.25].forEach(f=>{
-      const pts = angles.map(a=>[(cx+r*f*Math.cos(a)).toFixed(1),(cy+r*f*Math.sin(a)).toFixed(1)].join(',')).join(' ');
-      h += `<polygon points="${pts}" fill="none" stroke="var(--border)" stroke-width="1"/>`;
-    });
-    angles.forEach(a=>{ h += `<line x1="${cx}" y1="${cy}" x2="${(cx+r*Math.cos(a)).toFixed(1)}" y2="${(cy+r*Math.sin(a)).toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`; });
-    const dp = axisData.map((d,i)=>{
-      const v = (d.pct||0)/100;
-      return [(cx+r*v*Math.cos(angles[i])).toFixed(1),(cy+r*v*Math.sin(angles[i])).toFixed(1)].join(',');
-    }).join(' ');
-    h += `<polygon points="${dp}" fill="oklch(0.52 0.22 285/.22)" stroke="oklch(0.52 0.22 285)" stroke-width="2.5" stroke-linejoin="round"/>`;
-    axisData.forEach((d,i)=>{
-      const v=(d.pct||0)/100;
-      h += `<circle cx="${(cx+r*v*Math.cos(angles[i])).toFixed(1)}" cy="${(cy+r*v*Math.sin(angles[i])).toFixed(1)}" r="3.5" fill="${d.color}"/>`;
-    });
-    axisData.forEach((d,i)=>{
-      const lx = (cx + (r+28)*Math.cos(angles[i])).toFixed(1);
-      const ly = (cy + (r+28)*Math.sin(angles[i])).toFixed(1);
-      const anchor = parseFloat(lx)<cx-5?'end':parseFloat(lx)>cx+5?'start':'middle';
-      const lbl = d.id + (d.pct!=null?' · '+d.pct+'%':'');
-      h += `<text x="${lx}" y="${ly}" text-anchor="${anchor}" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="${d.color}">${lbl}</text>`;
-    });
-    svg.innerHTML = h;
-  }
 
   generateAIDetailedAnalysis();
 }
+window.renderResultatsPage = renderResultatsPage;
 
 // ===== Régénération IA avec popup =====
 function regenerateAIDetailedAnalysis(){
