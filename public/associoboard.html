@@ -1470,11 +1470,9 @@ function onDashAllYearChange(){
   function notifyFilters(){
     try{
       var year = parseInt((document.getElementById('yearFilter')||{}).value, 10) || null;
-      var assocSel = document.getElementById('assocGlobalSel');
-      var assocId = assocSel ? (assocSel.value || null) : null;
       var thSel = document.getElementById('globalThemeSel');
       var thematique = thSel ? (thSel.value || null) : null;
-      window.parent && window.parent.postMessage({type:'ab-filters-changed', year:year, assocId:assocId, thematique:thematique}, '*');
+      window.parent && window.parent.postMessage({type:'ab-filters-changed', year:year, assocId:null, thematique:thematique}, '*');
     }catch(e){}
   }
   window.__abNotifyFilters = notifyFilters;
