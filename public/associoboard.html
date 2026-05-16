@@ -4272,8 +4272,6 @@ async function importActionsXlsx(){
 function popSel(id,items,vk,lk,ph){const s=document.getElementById(id);if(!s)return;s.innerHTML=`<option value="">${ph}</option>`+items.map(i=>`<option value="${i[vk]}">${i[lk]}</option>`).join('');}
 function updateAllSelects(){
   const isAdmin=currentUser?.role==='superadmin';
-  const as=document.getElementById('assocGlobalSel');
-  if(as&&isAdmin) as.innerHTML='<option value="">— Toutes —</option>'+ASSOCS.map(a=>`<option value="${a.id}">${a.nom}</option>`).join('');
   const fa=document.getElementById('fa-assoc');
   if(fa) fa.innerHTML='<option value="">— Choisir —</option>'+ASSOCS.map(a=>`<option value="${a.id}">${a.nom}</option>`).join('');
   popSel('qualAssocSel',ASSOCS,'id','nom','— Association —');
