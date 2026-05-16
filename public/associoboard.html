@@ -1690,7 +1690,6 @@ function applyCollapse(){
   const hide=collapsed;
   document.getElementById('sbLogoTxt').style.display=hide?'none':'';
   document.getElementById('sbUserInfo').style.display=hide?'none':'';
-  // assocSelWrap moved to topbar — visibility handled by setupUserCtx only
   document.querySelectorAll('.nav-lbl,.nav-badge,.sb-nav-lbl,.theme-lbl').forEach(el=>{if(el)el.style.display=hide?'none':'';});
 }
 function toggleCollapse(){collapsed=!collapsed;localStorage.setItem('sb-col',collapsed?'1':'0');applyCollapse();}
