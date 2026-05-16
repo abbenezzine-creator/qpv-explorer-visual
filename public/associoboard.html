@@ -2934,6 +2934,7 @@ function renderQualTopFilters(){
   function _setAssoc(v){
     QUAL_FILTER_ASSOC = userAid ? String(userAid) : (v||'');
     try{ const sa=document.getElementById('qualAssocSel'); if(sa) sa.value=QUAL_FILTER_ASSOC; }catch(e){}
+    _clearActionIfIncompatible();
   }
   function _clearActionIfIncompatible(){
     if(!QUAL_FILTER_ACTION) return;
