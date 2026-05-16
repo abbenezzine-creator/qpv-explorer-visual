@@ -2769,6 +2769,7 @@ function qualScopedActions(){
 }
 // ===== Mode dual : Consultation (A) / Saisie (B) =====
 let QUAL_EVAL_MODE = false;
+let QUAL_FILTER_ASSOC = '', QUAL_FILTER_ACTION = '', QUAL_FILTER_THEME = '', QUAL_FILTER_YEAR = '';
 function setQualMode(on){
   QUAL_EVAL_MODE = !!on;
   const pg = document.getElementById('page-qualite');
