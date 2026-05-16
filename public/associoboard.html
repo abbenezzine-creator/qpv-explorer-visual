@@ -2755,7 +2755,50 @@ function qualScopedActions(){
     return true;
   });
 }
+// ===== Mode dual : Consultation (A) / Saisie (B) =====
+let QUAL_EVAL_MODE = false;
+function setQualMode(on){
+  QUAL_EVAL_MODE = !!on;
+  const pg = document.getElementById('page-qualite');
+  if(!pg) return;
+  pg.classList.toggle('qual-eval-mode', QUAL_EVAL_MODE);
+  pg.classList.toggle('qual-readonly', !QUAL_EVAL_MODE);
+  if(QUAL_EVAL_MODE) populateQualEvalPartnerSel();
+}
+function populateQualEvalPartnerSel(){
+  const sel=document.getElementById('qualPartnerSelEval'); if(!sel) return;
+  const cur=sel.value||'';
+  const opts=['<option value="">Anonyme</option>']
+    .concat((PARTNERS||[]).map(p=>`<option value="${p.id}">${(p.nom||'').replace(/</g,'&lt;')}</option>`))
+    .concat(['<option value="__add">+ Ajouter un partenaire évaluateur…</option>']);
+  sel.innerHTML=opts.join('');
+  if(cur && cur!=='__add') sel.value=cur;
+}
+function onQualPartnerEvalChange(){
+  const sel=document.getElementById('qualPartnerSelEval'); if(!sel) return;
+  if(sel.value==='__add'){
+    sel.value='';
+    window._qualAddPartnerCallback = function(newId){
+      populateQualEvalPartnerSel();
+      const s2=document.getElementById('qualPartnerSelEval');
+      if(s2 && newId!=null){ s2.value=String(newId); onQualPartnerEvalChange(); }
+    };
+    try{ openAddPartnerModal(); }catch(e){}
+    return;
+  }
+  const legacy=document.getElementById('qualPartnerSel'); if(legacy) legacy.value=sel.value||'';
+  const aid=document.getElementById('qualActionSel')?.value;
+  if(aid){
+    const pid=sel.value||'anon';
+    const key=`${aid}_${pid}`;
+    if(!QUAL_EVALS[key]) QUAL_EVALS[key]={};
+    currentEvalKey=key;
+    try{ loadEvalForKey(key); }catch(e){}
+  }
+}
+
 function renderQualite(){
+  setQualMode(false); // Default consultation mode
   const cont=document.getElementById('refGrid');
   cont.innerHTML=QUALITE_AXES.map(ax=>`
     <div class="ref-card">
