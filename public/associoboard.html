@@ -558,9 +558,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       </button>
       <div class="topbar-title" id="pageTitle">Tableau de Bord</div>
       <div class="topbar-right">
-        <span id="assocSelWrap" style="display:none">
-          <select class="year-sel" id="assocGlobalSel" onchange="switchAssociation(this.value)" style="max-width:180px"><option value="">— Toutes les associations —</option></select>
-        </span>
         <select class="year-sel" id="yearFilter" onchange="onYearChange()"></select>
         <select class="year-sel" id="globalThemeSel" onchange="onGlobalThemeChange()"><option value="">Toutes thématiques</option></select>
         <select class="year-sel" id="globalSousThemeSel" onchange="onGlobalSousThemeChange()" style="display:none"><option value="">Toutes sous-thématiques</option></select>
@@ -1380,13 +1377,6 @@ function onDashAllYearChange(){
           ts.innerHTML = '<option value="">Toutes thématiques</option>' +
             meta.themes.map(function(t){ return '<option value="'+esc(t)+'"'+(t===ct?' selected':'')+'>'+esc(t)+'</option>'; }).join('');
         }
-        var as = sel('assocGlobalSel');
-        if(as && Array.isArray(meta.assocs)){
-          var ca = (meta.selected && meta.selected.assocId) || as.value || '';
-          as.innerHTML = '<option value="">— Toutes les associations —</option>' +
-            meta.assocs.map(function(a){ return '<option value="'+esc(a.id)+'"'+(a.id===ca?' selected':'')+'>'+esc(a.nom)+'</option>'; }).join('');
-          var aw = document.getElementById('assocSelWrap'); if(aw) aw.style.display = '';
-        }
         try { if(typeof window.__updateDashMeta === 'function') window.__updateDashMeta(meta); } catch(_){}
       }catch(e){}
       return;
@@ -1480,16 +1470,14 @@ function onDashAllYearChange(){
   function notifyFilters(){
     try{
       var year = parseInt((document.getElementById('yearFilter')||{}).value, 10) || null;
-      var assocSel = document.getElementById('assocGlobalSel');
-      var assocId = assocSel ? (assocSel.value || null) : null;
       var thSel = document.getElementById('globalThemeSel');
       var thematique = thSel ? (thSel.value || null) : null;
-      window.parent && window.parent.postMessage({type:'ab-filters-changed', year:year, assocId:assocId, thematique:thematique}, '*');
+      window.parent && window.parent.postMessage({type:'ab-filters-changed', year:year, assocId:null, thematique:thematique}, '*');
     }catch(e){}
   }
   window.__abNotifyFilters = notifyFilters;
   function wireFilters(){
-    ['yearFilter','assocGlobalSel','globalThemeSel'].forEach(function(id){
+    ['yearFilter','globalThemeSel'].forEach(function(id){
       var el = document.getElementById(id); if(!el || el.__abWired) return;
       el.__abWired = true; el.addEventListener('change', notifyFilters);
     });
@@ -1663,7 +1651,6 @@ function setupUserCtx(){
   document.getElementById('sbAvatar').style.background=u.color||'oklch(0.52 0.22 285)';
   const isAdmin=u.role==='superadmin';
   document.querySelectorAll('.nav-admin-only').forEach(el=>el.classList.toggle('show',isAdmin));
-  document.getElementById('assocSelWrap').style.display=isAdmin?'inline-flex':'none';
   if(!isAdmin){currentAssocId=u.assocId;document.getElementById('dashAssocName').textContent=(ASSOCS.find(x=>x.id===u.assocId)?.nom)||u.nom||getAssocName(u.assocId);}
   else{currentAssocId=null;document.getElementById('dashAssocName').textContent='Administrateur';}
 }
@@ -1703,7 +1690,6 @@ function applyCollapse(){
   const hide=collapsed;
   document.getElementById('sbLogoTxt').style.display=hide?'none':'';
   document.getElementById('sbUserInfo').style.display=hide?'none':'';
-  // assocSelWrap moved to topbar — visibility handled by setupUserCtx only
   document.querySelectorAll('.nav-lbl,.nav-badge,.sb-nav-lbl,.theme-lbl').forEach(el=>{if(el)el.style.display=hide?'none':'';});
 }
 function toggleCollapse(){collapsed=!collapsed;localStorage.setItem('sb-col',collapsed?'1':'0');applyCollapse();}
@@ -4285,8 +4271,6 @@ async function importActionsXlsx(){
 function popSel(id,items,vk,lk,ph){const s=document.getElementById(id);if(!s)return;s.innerHTML=`<option value="">${ph}</option>`+items.map(i=>`<option value="${i[vk]}">${i[lk]}</option>`).join('');}
 function updateAllSelects(){
   const isAdmin=currentUser?.role==='superadmin';
-  const as=document.getElementById('assocGlobalSel');
-  if(as&&isAdmin) as.innerHTML='<option value="">— Toutes —</option>'+ASSOCS.map(a=>`<option value="${a.id}">${a.nom}</option>`).join('');
   const fa=document.getElementById('fa-assoc');
   if(fa) fa.innerHTML='<option value="">— Choisir —</option>'+ASSOCS.map(a=>`<option value="${a.id}">${a.nom}</option>`).join('');
   popSel('qualAssocSel',ASSOCS,'id','nom','— Association —');
@@ -7125,7 +7109,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     var hash = (location.hash||'').replace('#page=','');
     var page = hash || 'dashboard';
     var hide = (page === 'dashboard' || page === 'impacts-beneficiaires' || page === 'documents');
-    ['assocSelWrap','yearFilter','globalThemeSel','globalSousThemeSel'].forEach(function(id){
+    ['yearFilter','globalThemeSel','globalSousThemeSel'].forEach(function(id){
       var el = document.getElementById(id); if(!el) return;
       el.style.display = hide ? 'none' : (id==='globalSousThemeSel' ? 'none' : '');
     });
