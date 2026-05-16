@@ -2879,10 +2879,12 @@ function renderQualTopFilters(){
   }
 
   // ===== MODE A (Consultation) : listes déroulantes interactives et bidirectionnelles
-  const aidSel=userAid?String(userAid):(currentAssocId?String(currentAssocId):'');
-  const themeSel=currentTheme||'';
-  const yearSel=currentYear?String(currentYear):'';
-  const actSel=document.getElementById('qualActionSel')?.value||'';
+  const hiddenAct=document.getElementById('qualActionSel')?.value||'';
+  if(hiddenAct && !QUAL_FILTER_ACTION) QUAL_FILTER_ACTION=String(hiddenAct);
+  const aidSel=userAid?String(userAid):(QUAL_FILTER_ASSOC||'');
+  const themeSel=QUAL_FILTER_THEME||'';
+  const yearSel=QUAL_FILTER_YEAR||'';
+  const actSel=QUAL_FILTER_ACTION||'';
   // Pool filtré selon la sélection courante (toutes contraintes appliquées)
   const matches=a=>{
     if(aidSel && String(a.assocId)!==aidSel) return false;
@@ -2930,13 +2932,12 @@ function renderQualTopFilters(){
     `<div style="display:flex;align-items:flex-end"><button type="button" id="qfReset" style="${btnSty}" title="Réinitialiser les filtres">↺ Réinitialiser</button></div>`;
   // Sync helpers : appliquer la sélection puis recalculer
   function _setAssoc(v){
-    currentAssocId = v?(isNaN(Number(v))?v:Number(v)):null;
-    try{ const sa=document.getElementById('qualAssocSel'); if(sa){ sa.value=v||''; onQualAssocChange(); } }catch(e){}
-    try{ const el=document.getElementById('dashAssocName'); if(el) el.textContent = currentAssocId ? (ASSOCS.find(x=>String(x.id)===String(currentAssocId))?.nom||'') : 'Administrateur'; }catch(e){}
+    QUAL_FILTER_ASSOC = userAid ? String(userAid) : (v||'');
+    try{ const sa=document.getElementById('qualAssocSel'); if(sa){ sa.value=QUAL_FILTER_ASSOC; onQualAssocChange(); } }catch(e){}
   }
-  function _setTheme(v){ currentTheme=v||null; const g=document.getElementById('globalThemeSel'); if(g) g.value=v||''; try{ onGlobalThemeChange(); }catch(e){} }
-  function _setYear(v){ currentYear=v?Number(v):null; const g=document.getElementById('yearFilter'); if(g) g.value=v||''; try{ onYearChange(); }catch(e){} }
-  function _setAction(v){ const sac=document.getElementById('qualActionSel'); if(sac){ sac.value=v||''; onQualActionChange(); } }
+  function _setTheme(v){ QUAL_FILTER_THEME=v||''; }
+  function _setYear(v){ QUAL_FILTER_YEAR=v||''; }
+  function _setAction(v){ QUAL_FILTER_ACTION=v||''; const sac=document.getElementById('qualActionSel'); if(sac){ sac.value=QUAL_FILTER_ACTION; onQualActionChange(); } }
   // Auto-cascade : si la sélection courante restreint à une seule action, pré-remplir tous les champs
   function _autoCascadeFromSelection(){
     const f=poolBase.filter(matches);
