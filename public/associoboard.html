@@ -1805,11 +1805,18 @@ function onGlobalSousThemeChange(){
   try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
 }
 
+let globalQpvKey = 'orleans';
+function onGlobalQpvChange(){
+  try{ globalQpvKey = (document.getElementById('globalQpvSel')||{}).value || ''; }catch(_){ globalQpvKey=''; }
+  try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
+  try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
+}
 function filteredActions(){
   const ft=document.getElementById('filterType')?.value;
   const fth=document.getElementById('filterTheme')?.value;
   const fq=document.getElementById('filterQpv')?.value;
   const aid=currentUser?.role==='association'?currentUser.assocId:currentAssocId;
+  const ORL_QS=['Argonne','La Source','Dauphine','Les Blossières','Blossières'];
   return ACTIONS.filter(a=>{
     if(aid&&a.assocId!==aid) return false;
     if(a.annee&&a.annee!==currentYear) return false;
@@ -1818,6 +1825,10 @@ function filteredActions(){
     if(currentTheme&&a.theme!==currentTheme) return false;
     if(currentSousTheme&&a.sousTheme!==currentSousTheme) return false;
     if(fq&&!(a.quartiers||[]).includes(fq)) return false;
+    if(globalQpvKey){
+      const target = globalQpvKey==='orleans' ? ORL_QS : [globalQpvKey];
+      if(!(a.quartiers||[]).some(q=>target.includes(q))) return false;
+    }
     return true;
   });
 }
