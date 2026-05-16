@@ -1415,8 +1415,18 @@ function onDashAllYearChange(){
             filtered.map(function(a){ return '<option value="'+a.id+'">'+(a.titre||'').replace(/</g,'&lt;')+'</option>'; }).join('');
           if(target) sac.value = target.id;
         }
+        // Pré-remplir Thème + Année via les filtres globaux pour que renderQualTopFilters les reflète
+        try{
+          if(target){
+            if(target.thematique){ window.currentTheme = target.thematique; const gt=document.getElementById('globalThemeSel'); if(gt) gt.value=target.thematique; }
+            if(target.annee){ window.currentYear = target.annee; const gy=document.getElementById('yearFilter'); if(gy) gy.value=String(target.annee); }
+            if(target.assoc_id){ window.currentAssocId = target.assoc_id; }
+          }
+          if(typeof window.renderQualTopFilters==='function') window.renderQualTopFilters();
+        }catch(e){}
         // Default to anonymous evaluator and load eval state
         var sp = document.getElementById('qualPartnerSel'); if(sp) sp.value = '';
+        var spe = document.getElementById('qualPartnerSelEval'); if(spe) spe.value = '';
         if(target && typeof window.loadEvalForKey === 'function'){
           var key = target.id + '_anon';
           window.QUAL_EVALS = window.QUAL_EVALS || {};
@@ -1424,6 +1434,8 @@ function onDashAllYearChange(){
           window.currentEvalKey = key;
           try { window.loadEvalForKey(key); } catch(e){}
         }
+        // Activate Mode B (saisie d'évaluation)
+        try { if(typeof window.setQualMode==='function') window.setQualMode(true); } catch(e){}
       }catch(e){}
       return;
     }
