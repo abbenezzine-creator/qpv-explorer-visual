@@ -2910,10 +2910,13 @@ function renderQualTopFilters(){
   const opt=(v,l,sel)=>`<option value="${esc(v)}"${String(sel)===String(v)?' selected':''}>${esc(l)}</option>`;
   const sty='width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--fore)';
   const btnSty='padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;background:var(--card);color:var(--fore);cursor:pointer;white-space:nowrap';
+  const countTxt = `${filtered.length} action${filtered.length>1?'s':''} ${filtered.length>1?'correspondantes':'correspondante'}`;
+  const cntSty='display:block;margin-top:4px;font-size:11px;color:var(--muted-fore);font-style:italic';
   bar.innerHTML=
     `<div><label style="${lblSty}">Association</label>`+
       `<select id="qfAssoc" style="${sty}"${userAid?' disabled':''}>`+opt('','— Toutes les associations —',aidSel)+
-      assocPool.map(a=>opt(a.id,a.nom,aidSel)).join('')+`</select></div>`+
+      assocPool.map(a=>opt(a.id,a.nom,aidSel)).join('')+`</select>`+
+      `<span id="qfAssocCount" style="${cntSty}">${countTxt}</span></div>`+
     `<div><label style="${lblSty}">Action</label>`+
       `<select id="qfAction" style="${sty}">`+opt('','Toutes les actions',actSel)+
       actionPool.map(a=>opt(a.id,a.titre||'(sans titre)',actSel)).join('')+`</select></div>`+
