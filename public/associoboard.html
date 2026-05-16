@@ -884,7 +884,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       <div class="page-hdr">
         <div>
           <div class="page-title">Guide du Référentiel d'Évaluation</div>
-          <div class="page-sub">Politique de la Ville d'Orléans — 10 critères · 30 indicateurs · Modèle Qualiopi adapté — V1.0 Avril 2026</div>
+          <div class="page-sub">Politique de la Ville d'Orléans — 10 critères · 31 indicateurs · Modèle Qualiopi adapté — V1.0 Avril 2026</div>
         </div>
       </div>
       <div id="guide-content"></div>
@@ -1535,7 +1535,7 @@ let DOCUMENTS = [
   {id:2,assocId:2,nom:"Bilan d'activité 2024",cat:'Bilan',visib:'assoc',assocVis:[2],date:'2025-01-15'},
   {id:3,assocId:null,nom:'Guide Contrat de Ville 2024–2030',cat:'Guide',visib:'admin',assocVis:[],date:'2024-12-01'},
 ];
-// Aligned with Guide du Référentiel — Tableau synoptique (10 critères / 30 indicateurs)
+// Aligned with Guide du Référentiel — Tableau synoptique (10 critères / 31 indicateurs)
 const QUALITE_AXES = [
   {id:'C1',name:'C1 — COMMUNICATION',color:'oklch(0.52 0.22 285)',criteria:[
     {id:'1',text:"L'organisme diffuse une information accessible au public, détaillée et vérifiable."},
@@ -5250,7 +5250,7 @@ function renderGuide() {
     +'<div style="font-size:14px;opacity:.9;margin-bottom:14px">des organismes subventionnés dans le cadre du Contrat de Ville 2024–2030</div>'
     +'<div style="display:flex;gap:14px;flex-wrap:wrap">'
     +'<span style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600">10 critères</span>'
-    +'<span style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600">30 indicateurs</span>'
+    +'<span style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600">31 indicateurs</span>'
     +'<span style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600">Modèle Qualiopi adapté</span>'
     +'<span style="background:rgba(255,255,255,.2);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600">Version 1.0 — Avril 2026</span>'
     +'</div></div>';
@@ -5259,7 +5259,7 @@ function renderGuide() {
   html += sectionHdr('gc-guide','1.','Guide du présent référentiel','oklch(0.52 0.22 285)');
   html += '<div class="card"><div class="card-body" style="font-size:13px;line-height:1.8;color:var(--muted-fore)">'
     +'<p style="margin-bottom:12px">Ce référentiel est un guide permettant de favoriser le suivi objectif des organismes subventionnés à travers les projets financés dans le cadre du contrat de ville d\'Orléans. Il s\'inspire directement du référentiel national <strong>Qualiopi</strong> et l\'adapte au contexte spécifique de la politique de la ville.</p>'
-    +'<p style="margin-bottom:14px">Il se base sur <strong>10 critères déclinés en 30 indicateurs</strong>, couvrant l\'ensemble du cycle de vie d\'un projet : communication, définition des objectifs, qualification des intervenants, modalités de mise en œuvre, conformité réglementaire, moyens pédagogiques, gestion financière, évaluation, amélioration continue et transition écologique.</p>'
+    +'<p style="margin-bottom:14px">Il se base sur <strong>10 critères déclinés en 31 indicateurs</strong>, couvrant l\'ensemble du cycle de vie d\'un projet : communication, définition des objectifs, qualification des intervenants, modalités de mise en œuvre, conformité réglementaire, moyens pédagogiques, gestion financière, évaluation, amélioration continue et transition écologique.</p>'
     +'<div style="background:var(--muted);border-radius:10px;padding:14px 18px;margin-bottom:14px">'
     +'<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);margin-bottom:10px">Structure de chaque fiche indicateur</div>'
     +bul(['Numéro et intitulé de l\'indicateur','Critère de rattachement','Type de non-conformité (majeure ou mineure)','Niveau attendu : description du niveau de performance exigé','Éléments de preuve : documents et supports attendus','Obligations spécifiques par type d\'organisme (OAN, OED, ODEV, OSA, OC, OVIE, OCY)','Exemples de conformité et de non-conformité','Glossaire des termes utilisés'])
@@ -5360,7 +5360,7 @@ function renderGuide() {
       {n:'T',t:'Indicateur transversal : intégration de la dimension environnementale.',nc:'MINEURE'},
     ]},
   ];
-  html += '<p style="font-size:13px;color:var(--muted-fore);margin-bottom:14px">Tableau unique combinant les 30 indicateurs (avec leur type de non-conformité) et la grille de suivi à compléter lors de l\'auto-évaluation puis de l\'évaluation partenariale.</p>';
+  html += '<p style="font-size:13px;color:var(--muted-fore);margin-bottom:14px">Tableau unique combinant les 31 indicateurs (avec leur type de non-conformité) et la grille de suivi à compléter lors de l\'auto-évaluation puis de l\'évaluation partenariale.</p>';
   // (Notation cards inserted after the merged table — see below)
   html += '<div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'
     +'<thead><tr>'
@@ -5661,7 +5661,7 @@ function renderGuide() {
     ]},
   ];
 
-  html += sectionHdr('gc-fiches','6.','Fiches indicateurs détaillées — 30 fiches','oklch(0.52 0.22 285)');
+  html += sectionHdr('gc-fiches','6.','Fiches indicateurs détaillées — 31 fiches','oklch(0.52 0.22 285)');
   FICHES_DATA.forEach(function(crit) {
     html += sectionHdr(crit.id, crit.n + ' —', crit.name, crit.color);
     crit.inds.forEach(function(ind) {
