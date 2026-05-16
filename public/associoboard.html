@@ -2927,16 +2927,22 @@ function openActionQualite(actionId){
   try { nav('qualite'); } catch(e){}
   setTimeout(()=>{
     const a = ACTIONS.find(x=>x.id===actionId); if(!a) return;
+    // Pré-remplir filtres top (Assoc / Theme / Année) puis re-render pour que l'action soit sélectionnable
+    if(a.assocId!=null) currentAssocId = a.assocId;
+    if(a.theme) currentTheme = a.theme;
+    if(a.annee) currentYear = a.annee;
+    try{ renderQualTopFilters(); }catch(e){}
     const sa = document.getElementById('qualAssocSel');
     const sac = document.getElementById('qualActionSel');
     if(sa){ sa.value = String(a.assocId); onQualAssocChange(); }
     if(sac){ sac.value = String(a.id); onQualActionChange(); }
-    // default to anonymous evaluator
     const sp = document.getElementById('qualPartnerSel'); if(sp) sp.value='';
+    const spe = document.getElementById('qualPartnerSelEval'); if(spe) spe.value='';
     const key = `${a.id}_anon`;
     if(!QUAL_EVALS[key]) QUAL_EVALS[key]={};
     currentEvalKey = key;
     loadEvalForKey(key);
+    setQualMode(true); // Activate Mode B
   }, 80);
 }
 function updateEvalTabs(){
