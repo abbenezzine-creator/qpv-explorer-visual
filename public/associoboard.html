@@ -2830,6 +2830,7 @@ function renderQualite(){
   const qa=document.getElementById('qualAssocSel');
   if(qa && aidGlobal){ qa.value=String(aidGlobal); }
   popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
+  populateQualEvalPartnerSel();
   onQualAssocChange();
   renderQualTopFilters();
 }
