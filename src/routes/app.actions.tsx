@@ -82,7 +82,7 @@ function ActionsListPage() {
   const [restoreOpen, setRestoreOpen] = useState(false);
   const [q, setQ] = useState("");
   const [fAssoc, setFAssoc] = useState<string>(ALL);
-  const [fQpv, setFQpv] = useState<string>(ALL);
+  const [fQpv, setFQpv] = useState<string>(QPV_ORLEANS);
   const [fThematique, setFThematique] = useState<string>(ALL);
   const [viewing, setViewing] = useState<Action | null>(null);
   const [viewOrigin, setViewOrigin] = useState<string | null>(null);
