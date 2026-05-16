@@ -3960,7 +3960,7 @@ function addAssociation(){
   showToast('Association ajoutée — login: '+login+' · mdp: '+pwd);
   ['aa-nom','aa-login','aa-pwd','aa-email'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
 }
-function addPartner(){const nom=document.getElementById('ap-nom').value.trim();if(!nom){showToast('Saisissez un nom');return;}PARTNERS.push({id:++nextId,nom,type:document.getElementById('ap-type').value});closeModal('addPartnerModal');renderSettings();showToast('Partenaire ajouté : '+nom);document.getElementById('ap-nom').value='';}
+function addPartner(){const nom=document.getElementById('ap-nom').value.trim();if(!nom){showToast('Saisissez un nom');return;}const newId=++nextId;PARTNERS.push({id:newId,nom,type:document.getElementById('ap-type').value});closeModal('addPartnerModal');try{renderSettings();}catch(e){}showToast('Partenaire ajouté : '+nom);document.getElementById('ap-nom').value='';try{populateQualEvalPartnerSel();}catch(e){}if(typeof window._qualAddPartnerCallback==='function'){try{window._qualAddPartnerCallback(newId);}catch(e){}window._qualAddPartnerCallback=null;}}
 function deleteAssoc(id){
   ASSOCS=ASSOCS.filter(a=>a.id!==id);
   Object.keys(ACCOUNTS).forEach(k=>{ if(ACCOUNTS[k].assocId===id) delete ACCOUNTS[k]; });
