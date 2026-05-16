@@ -1377,13 +1377,6 @@ function onDashAllYearChange(){
           ts.innerHTML = '<option value="">Toutes thématiques</option>' +
             meta.themes.map(function(t){ return '<option value="'+esc(t)+'"'+(t===ct?' selected':'')+'>'+esc(t)+'</option>'; }).join('');
         }
-        var as = sel('assocGlobalSel');
-        if(as && Array.isArray(meta.assocs)){
-          var ca = (meta.selected && meta.selected.assocId) || as.value || '';
-          as.innerHTML = '<option value="">— Toutes les associations —</option>' +
-            meta.assocs.map(function(a){ return '<option value="'+esc(a.id)+'"'+(a.id===ca?' selected':'')+'>'+esc(a.nom)+'</option>'; }).join('');
-          var aw = document.getElementById('assocSelWrap'); if(aw) aw.style.display = '';
-        }
         try { if(typeof window.__updateDashMeta === 'function') window.__updateDashMeta(meta); } catch(_){}
       }catch(e){}
       return;
