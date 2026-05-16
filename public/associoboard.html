@@ -630,6 +630,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <select id="qualActionSel" onchange="onQualActionChange()"><option value="">— Action —</option></select>
         <select id="qualPartnerSel" onchange="loadEvalForEvaluator()"><option value="">Anonyme (par défaut)</option></select>
       </div>
+      <div class="qual-readonly-badge">👁 Mode consultation — sélectionnez les filtres pour visualiser les moyennes. Pour saisir une évaluation, cliquez sur le bouton "Référentiel Qualité" d'une carte action.</div>
+      <div id="qualEvalBar">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--primary)">✎ Mode saisie</div>
+        <label style="font-size:12px;color:var(--muted-fore);font-weight:600">Partenaire évaluateur :</label>
+        <select id="qualPartnerSelEval" onchange="onQualPartnerEvalChange()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--fore);min-width:220px"></select>
+        <button class="btn btn-primary btn-sm" id="btnSaveQualite" onclick="saveQualite()" style="margin-left:auto"><span id="btnSaveQualiteLbl">Enregistrer l'évaluation</span></button>
+      </div>
       <div class="eval-tabs" id="evalTabs"></div>
       <div class="ref-leg">
         <div class="ref-leg-item"><span class="ref-star-leg" style="color:oklch(0.6 0.24 25)">★</span>Non conforme</div>
