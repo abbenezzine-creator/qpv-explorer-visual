@@ -6804,7 +6804,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
         const wrap = document.createElement('div');
         wrap.id = 'mergedUtiliteWrap';
         wrap.style.margin = '0 0 24px';
-        wrap.innerHTML = `<div style="font-family:Lexend,sans-serif;font-size:18px;font-weight:800;margin:6px 0 12px">Utilité sociale</div>`;
+        wrap.innerHTML = `<div style="font-family:Lexend,sans-serif;font-size:18px;font-weight:800;margin:6px 0 2px">Utilité sociale</div><div style="font-size:12px;color:var(--muted-fore);margin:0 0 12px">Données agrégées à partir des évaluations bénéficiaires saisies depuis la page <b>Impacts bénéficiaires</b> (questionnaires de parcours · 6 dimensions d'utilité sociale).</div>`;
         const inner = util.querySelectorAll(':scope > *:not(.page-hdr)');
         inner.forEach(n=>wrap.appendChild(n));
         const hdr = page.querySelector(':scope > .page-hdr');
