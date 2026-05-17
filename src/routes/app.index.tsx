@@ -349,9 +349,9 @@ function AppIndexPage() {
   // Push payload to iframe whenever data, filters, readiness or page change
   useEffect(() => {
     if (!iframeReady || !dashQ.data) return;
-    // Push the meta payload to the iframe for both the Dashboard and the
-    // Référentiel Qualité page (whose top filter bar reads window.__dashMeta).
-    if (page !== "dashboard" && page !== "qualite") return;
+    // Push the meta payload to the iframe for the pages that read window.__dashMeta
+    // (Dashboard, Référentiel Qualité, and Résultats & Impacts quality widgets).
+    if (page !== "dashboard" && page !== "qualite" && page !== "resultats") return;
     const f = ref.current;
     if (!f?.contentWindow) return;
     const payload = buildDashboardPayload(dashQ.data, filters);
