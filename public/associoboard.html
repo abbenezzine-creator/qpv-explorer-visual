@@ -3492,29 +3492,41 @@ function renderResultatsPage(){
       }));
 
   // ===== Cards =====
-  const totalActions = scoped.length;
+  // Nombre total d'actions : EXACTEMENT la même valeur que la card "Actions {year}"
+  // du Tableau de bord (renderDashboard) : superadmin sans sélection -> toutes
+  // les actions de l'année ; sinon -> scoped par filteredActions().
+  const isSuperAdmin = currentUser?.role==='superadmin';
+  const allActsYear = (typeof ACTIONS!=='undefined'?ACTIONS:[]).filter(a=>!a.annee||a.annee===yr);
+  const totalActions = isSuperAdmin && !currentAssocId ? allActsYear.length : scoped.length;
+
   // Objectifs atteints : moyenne des pct_apres sur l'ensemble des surveyResponses
   let pctSum=0, pctN=0;
   scoped.forEach(a => (a.surveyResponses||[]).forEach(r=>{
     const v = +r.pct_apres; if(!isNaN(v)){ pctSum+=v; pctN++; }
   }));
   const objAtteints = pctN ? Math.round(pctSum/pctN) : null;
-  // Score qualité : aligné sur le Tableau de bord — moyenne des moyennes par
-  // action, calculée via _qualScore sur tous les critères du Référentiel Qualité.
+
+  // Score qualité : ALIGNÉ sur le Tableau de bord — même périmètre
+  // (_scopedActionsForQual : scope association uniquement, indépendant des autres filtres)
+  // et même calcul (moyenne des _qualScore par critère, puis moyenne par action, puis moyenne globale).
   let scoreQual = null;
   if(typeof QUALITE_AXES!=='undefined' && typeof _qualScore==='function'){
+    const qActs = (typeof _scopedActionsForQual==='function') ? _scopedActionsForQual() : scoped;
     const allInds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
-    const perAct = scoped.map(a=>{
+    const perAct = qActs.map(a=>{
       const vals = allInds.map(id=>_qualScore(a.id,id)).filter(v=>v!=null);
       return vals.length ? vals.reduce((s,v)=>s+v,0)/vals.length : null;
     }).filter(v=>v!=null);
     if(perAct.length) scoreQual = Math.round(perAct.reduce((s,v)=>s+v,0)/perAct.length);
   }
   const setTxt = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  const assocLbl = (currentAssocId||currentUser?.assocId) ? (typeof getAssocName==='function'?getAssocName(currentAssocId||currentUser?.assocId):'Mon association') : 'Toutes associations';
   setTxt('resTotalActions', totalActions);
-  setTxt('resTotalActionsSub', (aid ? (typeof getAssocName==='function'?getAssocName(aid):'Mon association') : 'Toutes associations') + ' · '+yr);
+  setTxt('resTotalActionsSub', assocLbl + ' · '+yr);
   setTxt('resObjAtteints', objAtteints!=null ? objAtteints+'%' : '—');
+  setTxt('resObjAtteintsSub', pctN ? pctN+' réponse'+(pctN>1?'s':'')+' · '+assocLbl : 'Aucune mesure d\'impact');
   setTxt('resScoreQual', scoreQual!=null ? scoreQual+'%' : '—');
+  setTxt('resScoreQualSub', assocLbl + ' · périmètre Indicateurs Qualité');
 
   // ===== Jauges circulaires : moyenne pct_apres par thématique =====
   const themeAgg = {};
