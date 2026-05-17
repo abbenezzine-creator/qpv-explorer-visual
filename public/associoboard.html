@@ -3545,10 +3545,16 @@ function renderResultatsPage(){
   }
 
   // ===== Montée en compétences : moyenne par axe C1..C10 =====
+  // Aligné sur "Indicateurs Qualité" du Tableau de bord : même périmètre
+  // d'actions (_scopedActionsForQual — scope association uniquement) et
+  // même calcul (moyenne des _qualScore par critère, puis moyenne par axe).
   const axes = (typeof QUALITE_AXES!=='undefined'?QUALITE_AXES:[]);
+  const qualActs = (typeof _scopedActionsForQual==='function')
+    ? _scopedActionsForQual()
+    : scoped;
   const axisData = axes.map(ax=>{
     const vals = [];
-    scoped.forEach(a=>{
+    qualActs.forEach(a=>{
       ax.criteria.forEach(c=>{
         const v = (typeof _qualScore==='function') ? _qualScore(a.id, c.id) : null;
         if(v!=null) vals.push(v);
