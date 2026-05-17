@@ -3512,11 +3512,21 @@ function renderResultatsPage(){
   // par axe en utilisant les valeurs c1..c10 stockées en pourcentage 0..100.
   const _meta = (typeof window!=='undefined' && window.__dashMeta) ? window.__dashMeta : {};
   const _refs = Array.isArray(_meta.refs) ? _meta.refs : [];
-  // Scope strict : association (et année si filtre actif) — comme le tableau de bord.
-  const _scopedQualActs = (typeof _scopedActionsForQual==='function') ? _scopedActionsForQual() : scoped;
-  const _qualActs = _scopedQualActs.filter(a=>!a.annee || a.annee===yr);
-  const _idSet = new Set(_qualActs.map(a=>String(a.id)));
-  const _scopedRefs = _refs.filter(r=>_idSet.has(String(r.action_id)));
+  const _metaActs = Array.isArray(_meta.actions) ? _meta.actions : [];
+  // Scope strict : association (résolue côté UI) + année (filtre global) — exactement
+  // comme le tableau de bord. On filtre les actions Supabase (UUID) pour matcher
+  // les action_id (UUID) présents dans refs.
+  const _scopeAid = (currentUser?.role==='superadmin') ? currentAssocId : currentUser?.assocId;
+  const _scopedMetaActs = _metaActs.filter(a=>{
+    if(_scopeAid && String(a.assoc_id||a.assocId)!==String(_scopeAid)) return false;
+    if(yr && a.annee && Number(a.annee)!==Number(yr)) return false;
+    return true;
+  });
+  const _idSet = new Set(_scopedMetaActs.map(a=>String(a.id)));
+  // Si aucun filtre actif (superadmin sans sélection), on prend toutes les refs.
+  const _scopedRefs = (_scopeAid || _scopedMetaActs.length<_metaActs.length)
+    ? _refs.filter(r=>_idSet.has(String(r.action_id)))
+    : _refs;
   // Score global : moyenne des score_global (ou moyenne(c1..c10)*20 si absent)
   let scoreQual = null;
   {
