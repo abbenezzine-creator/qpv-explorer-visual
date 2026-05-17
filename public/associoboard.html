@@ -1642,6 +1642,7 @@ function onYearChange(){
   document.getElementById('dashYear').textContent=currentYear;
   renderDashboard(); renderCalendar(); renderAllActions(); updateBadge();
   try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
+  try{ if(document.getElementById('page-resultats')?.classList.contains('active')) renderResultatsPage(); }catch(e){}
 }
 
 // ========== AUTH ==========
