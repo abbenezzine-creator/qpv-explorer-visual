@@ -3483,39 +3483,9 @@ function renderResultatsPage(){
   const _meta = (typeof window!=='undefined' && window.__dashMeta) ? window.__dashMeta : {};
   const _metaActs = Array.isArray(_meta.actions) ? _meta.actions : [];
   const _refs = Array.isArray(_meta.refs) ? _meta.refs : [];
-  // Scope strictement identique au Tableau de bord : on réutilise
-  // filteredActions() qui applique les mêmes filtres globaux (association,
-  // année, thématique, sous-thématique, QPV, type) que la page Dashboard.
-  const scoped = (typeof filteredActions==='function')
-    ? filteredActions()
-    : ((typeof ACTIONS!=='undefined'?ACTIONS:[]).filter(a=>{
-        if(aid && a.assocId !== aid) return false;
-        if(a.annee && a.annee !== yr) return false;
-        return true;
-      }));
-
-  // ===== Cards =====
-  // Nombre total d'actions : EXACTEMENT la même valeur que la card "Actions {year}"
-  // du Tableau de bord (renderDashboard) : superadmin sans sélection -> toutes
-  // les actions de l'année ; sinon -> scoped par filteredActions().
-  const isSuperAdmin = currentUser?.role==='superadmin';
-  const allActsYear = (typeof ACTIONS!=='undefined'?ACTIONS:[]).filter(a=>!a.annee||a.annee===yr);
-  const totalActions = isSuperAdmin && !currentAssocId ? allActsYear.length : scoped.length;
-
-  // Objectifs atteints : moyenne des pct_apres sur l'ensemble des surveyResponses
-  let pctSum=0, pctN=0;
-  scoped.forEach(a => (a.surveyResponses||[]).forEach(r=>{
-    const v = +r.pct_apres; if(!isNaN(v)){ pctSum+=v; pctN++; }
-  }));
-  const objAtteints = pctN ? Math.round(pctSum/pctN) : null;
-
-  // Score qualité + axes C1..C10 : EXACTEMENT la même source/calcul que
-  // la card "Indicateurs Qualité" du Tableau de bord (updateQualGlobalScore) :
-  // on lit window.__dashMeta.refs (refs Supabase) et on calcule la moyenne
-  // par axe en utilisant les valeurs c1..c10 stockées en pourcentage 0..100.
-  // Scope strict : association (résolue côté UI) + année (filtre global) — exactement
-  // comme le tableau de bord. On filtre les actions Supabase (UUID) pour matcher
-  // les action_id (UUID) présents dans refs.
+  const _metaEvals = Array.isArray(_meta.evals) ? _meta.evals : [];
+  // Scope strict identique au Tableau de bord : association résolue côté UI
+  // (superadmin -> currentAssocId, sinon assocId de l'utilisateur) + année globale.
   const _scopeAid = (currentUser?.role==='superadmin') ? currentAssocId : currentUser?.assocId;
   const _scopedMetaActs = _metaActs.filter(a=>{
     if(_scopeAid && String(a.assoc_id||a.assocId)!==String(_scopeAid)) return false;
@@ -3523,10 +3493,30 @@ function renderResultatsPage(){
     return true;
   });
   const _idSet = new Set(_scopedMetaActs.map(a=>String(a.id)));
-  // Si aucun filtre actif (superadmin sans sélection), on prend toutes les refs.
-  const _scopedRefs = (_scopeAid || _scopedMetaActs.length<_metaActs.length)
-    ? _refs.filter(r=>_idSet.has(String(r.action_id)))
-    : _refs;
+  // Si aucun filtre actif (superadmin sans sélection), on prend toutes les refs/evals.
+  const _noScope = !_scopeAid && _scopedMetaActs.length===_metaActs.length;
+  const _scopedRefs = _noScope ? _refs : _refs.filter(r=>_idSet.has(String(r.action_id)));
+  const _scopedEvals = _noScope ? _metaEvals : _metaEvals.filter(e=>_idSet.has(String(e.action_id)));
+
+  // ===== Cards =====
+  // Nombre total d'actions : EXACTEMENT la même valeur que la card "Actions {year}"
+  // du Tableau de bord — lue directement depuis la table `actions` Supabase
+  // (window.__dashMeta.actions), avec le même scope (assoc + année).
+  const totalActions = _scopedMetaActs.length;
+
+  // Objectifs atteints : moyenne des pct_apres sur les évaluations bénéficiaires
+  // Supabase (window.__dashMeta.evals) — même périmètre que le Tableau de bord.
+  let pctSum=0, pctN=0;
+  _scopedEvals.forEach(e=>{
+    const v = Number(e.pct_apres);
+    if(!isNaN(v) && e.pct_apres!=null){ pctSum+=v; pctN++; }
+  });
+  const objAtteints = pctN ? Math.round(pctSum/pctN) : null;
+
+  // Score qualité + axes C1..C10 : EXACTEMENT la même source/calcul que
+  // la card "Indicateurs Qualité" du Tableau de bord (updateQualGlobalScore) :
+  // on lit window.__dashMeta.refs (refs Supabase) et on calcule la moyenne
+  // par axe en utilisant les valeurs c1..c10 stockées en pourcentage 0..100.
   // Score global : moyenne des score_global (ou moyenne(c1..c10)*20 si absent)
   let scoreQual = null;
   {
@@ -3552,16 +3542,18 @@ function renderResultatsPage(){
   setTxt('resScoreQualSub', assocLbl + ' · périmètre Indicateurs Qualité');
 
   // ===== Jauges circulaires : moyenne pct_apres par thématique =====
+  // Source : window.__dashMeta.evals (Supabase) — même périmètre que le Tableau de bord.
   const themeAgg = {};
-  scoped.forEach(a => {
-    const th = a.theme || 'Autre';
-    (a.surveyResponses||[]).forEach(r=>{
-      const ap = +r.pct_apres, av = +r.pct_avant;
-      if(isNaN(ap)) return;
-      const t = themeAgg[th] = themeAgg[th] || {apSum:0,apN:0,avSum:0,avN:0};
-      t.apSum+=ap; t.apN++;
-      if(!isNaN(av)){ t.avSum+=av; t.avN++; }
-    });
+  // Map action_id -> thématique (depuis la table actions Supabase) en fallback
+  const _actThemeMap = {};
+  _metaActs.forEach(a=>{ if(a.id) _actThemeMap[String(a.id)] = a.thematique || null; });
+  _scopedEvals.forEach(e=>{
+    const ap = Number(e.pct_apres), av = Number(e.pct_avant);
+    if(isNaN(ap) || e.pct_apres==null) return;
+    const th = e.thematique_label || e.thematique || _actThemeMap[String(e.action_id)] || 'Autre';
+    const t = themeAgg[th] = themeAgg[th] || {apSum:0,apN:0,avSum:0,avN:0};
+    t.apSum+=ap; t.apN++;
+    if(!isNaN(av) && e.pct_avant!=null){ t.avSum+=av; t.avN++; }
   });
   const themePalette = ['oklch(0.52 0.22 285)','oklch(0.76 0.17 75)','oklch(0.62 0.22 340)','oklch(0.6 0.17 240)','oklch(0.52 0.16 150)','oklch(0.6 0.17 60)','oklch(0.55 0.22 25)','oklch(0.45 0.18 200)'];
   const rc=document.getElementById('resultCircles');
@@ -7476,6 +7468,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
       assocs: meta.assocs || [],
       actions: meta.actions || [],
       refs: meta.refs || [],
+      evals: meta.evals || [],
     };
     if(meta.selected){
       window.__dashFilters = {
