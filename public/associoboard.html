@@ -716,12 +716,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <div class="page" id="page-resultats">
       <div class="page-hdr"><div><div class="page-title">Résultats & Impacts</div><div class="page-sub">Synthèse des évaluations</div></div></div>
       <div class="stats-grid" style="margin-bottom:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
-        <div class="stat-card"><div class="stat-blob" style="background:var(--success)"></div><div class="stat-lbl">Nombre total d'actions</div><div class="stat-val" id="resTotalActions" style="color:var(--success)">—</div><div class="stat-trend" id="resTotalActionsSub">Toutes associations</div></div>
-        <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Objectifs atteints</div><div class="stat-val" id="resObjAtteints" style="color:oklch(0.6 0.17 60)">—</div><div class="stat-trend">Mesures d'impact bénéficiaires</div></div>
-        <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Score qualité</div><div class="stat-val" id="resScoreQual" style="color:var(--primary)">—</div><div class="stat-trend">Moyenne référentiel qualité</div></div>
+        <div class="stat-card"><div class="stat-blob" style="background:var(--success)"></div><div class="stat-lbl">Nombre total d'actions</div><div class="stat-val" id="resTotalActions" style="color:var(--success)">—</div><div class="stat-trend" id="resTotalActionsSub">Toutes associations</div><div class="stat-trend" style="font-size:10px;color:var(--muted-fore);margin-top:2px;font-style:italic">Source : page Actions (Tableau de bord)</div></div>
+        <div class="stat-card"><div class="stat-blob" style="background:var(--warning)"></div><div class="stat-lbl">Objectifs atteints</div><div class="stat-val" id="resObjAtteints" style="color:oklch(0.6 0.17 60)">—</div><div class="stat-trend" id="resObjAtteintsSub">Mesures d'impact bénéficiaires</div><div class="stat-trend" style="font-size:10px;color:var(--muted-fore);margin-top:2px;font-style:italic">Source : évaluations bénéficiaires (avant/après)</div></div>
+        <div class="stat-card"><div class="stat-blob" style="background:var(--primary)"></div><div class="stat-lbl">Score qualité</div><div class="stat-val" id="resScoreQual" style="color:var(--primary)">—</div><div class="stat-trend" id="resScoreQualSub">Moyenne référentiel qualité</div><div class="stat-trend" style="font-size:10px;color:var(--muted-fore);margin-top:2px;font-style:italic">Source : Référentiel Qualité (Indicateurs Qualité)</div></div>
       </div>
       <div class="card" style="margin-bottom:18px;border-top:4px solid oklch(0.52 0.22 285)">
-        <div class="card-hdr"><div class="card-title">Montée en compétences des associations</div><span class="badge badge-purple" style="margin-left:8px">Référentiel Qualité</span></div>
+        <div class="card-hdr"><div><div class="card-title">Montée en compétences des associations</div><div style="font-size:10px;color:var(--muted-fore);margin-top:2px;font-style:italic">Source : Indicateurs Qualité — Tableau de bord (Référentiel Qualité)</div></div><span class="badge badge-purple" style="margin-left:8px">Référentiel Qualité</span></div>
         <div class="card-body">
           <div id="competencesCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:22px"></div>
           <div style="display:flex;justify-content:center;align-items:center;padding:10px"><svg id="competencesRadar" viewBox="0 0 520 480" width="520" height="480" style="max-width:100%"></svg></div>
@@ -3492,29 +3492,41 @@ function renderResultatsPage(){
       }));
 
   // ===== Cards =====
-  const totalActions = scoped.length;
+  // Nombre total d'actions : EXACTEMENT la même valeur que la card "Actions {year}"
+  // du Tableau de bord (renderDashboard) : superadmin sans sélection -> toutes
+  // les actions de l'année ; sinon -> scoped par filteredActions().
+  const isSuperAdmin = currentUser?.role==='superadmin';
+  const allActsYear = (typeof ACTIONS!=='undefined'?ACTIONS:[]).filter(a=>!a.annee||a.annee===yr);
+  const totalActions = isSuperAdmin && !currentAssocId ? allActsYear.length : scoped.length;
+
   // Objectifs atteints : moyenne des pct_apres sur l'ensemble des surveyResponses
   let pctSum=0, pctN=0;
   scoped.forEach(a => (a.surveyResponses||[]).forEach(r=>{
     const v = +r.pct_apres; if(!isNaN(v)){ pctSum+=v; pctN++; }
   }));
   const objAtteints = pctN ? Math.round(pctSum/pctN) : null;
-  // Score qualité : aligné sur le Tableau de bord — moyenne des moyennes par
-  // action, calculée via _qualScore sur tous les critères du Référentiel Qualité.
+
+  // Score qualité : ALIGNÉ sur le Tableau de bord — même périmètre
+  // (_scopedActionsForQual : scope association uniquement, indépendant des autres filtres)
+  // et même calcul (moyenne des _qualScore par critère, puis moyenne par action, puis moyenne globale).
   let scoreQual = null;
   if(typeof QUALITE_AXES!=='undefined' && typeof _qualScore==='function'){
+    const qActs = (typeof _scopedActionsForQual==='function') ? _scopedActionsForQual() : scoped;
     const allInds = QUALITE_AXES.flatMap(ax=>ax.criteria.map(c=>c.id));
-    const perAct = scoped.map(a=>{
+    const perAct = qActs.map(a=>{
       const vals = allInds.map(id=>_qualScore(a.id,id)).filter(v=>v!=null);
       return vals.length ? vals.reduce((s,v)=>s+v,0)/vals.length : null;
     }).filter(v=>v!=null);
     if(perAct.length) scoreQual = Math.round(perAct.reduce((s,v)=>s+v,0)/perAct.length);
   }
   const setTxt = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  const assocLbl = (currentAssocId||currentUser?.assocId) ? (typeof getAssocName==='function'?getAssocName(currentAssocId||currentUser?.assocId):'Mon association') : 'Toutes associations';
   setTxt('resTotalActions', totalActions);
-  setTxt('resTotalActionsSub', (aid ? (typeof getAssocName==='function'?getAssocName(aid):'Mon association') : 'Toutes associations') + ' · '+yr);
+  setTxt('resTotalActionsSub', assocLbl + ' · '+yr);
   setTxt('resObjAtteints', objAtteints!=null ? objAtteints+'%' : '—');
+  setTxt('resObjAtteintsSub', pctN ? pctN+' réponse'+(pctN>1?'s':'')+' · '+assocLbl : 'Aucune mesure d\'impact');
   setTxt('resScoreQual', scoreQual!=null ? scoreQual+'%' : '—');
+  setTxt('resScoreQualSub', assocLbl + ' · périmètre Indicateurs Qualité');
 
   // ===== Jauges circulaires : moyenne pct_apres par thématique =====
   const themeAgg = {};
@@ -4621,7 +4633,7 @@ function updateAllSelects(){
   popSel('qualPartnerSel',PARTNERS,'id','nom','Anonyme (par défaut)');
   popSel('qActionSel',filteredActions(),'id','titre','— Sélectionner —');
 }
-function switchAssociation(val){currentAssocId=val?parseInt(val):null;const a=ASSOCS.find(x=>x.id===currentAssocId);document.getElementById('dashAssocName').textContent=a?a.nom:'Administrateur';renderDashboard();renderCalendar();renderAllActions();updateBadge();try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}}
+function switchAssociation(val){currentAssocId=val?parseInt(val):null;const a=ASSOCS.find(x=>x.id===currentAssocId);document.getElementById('dashAssocName').textContent=a?a.nom:'Administrateur';renderDashboard();renderCalendar();renderAllActions();updateBadge();try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}try{ if(document.getElementById('page-resultats')?.classList.contains('active')) renderResultatsPage(); }catch(e){}}
 
 // ===================================================================
 // QPV DIAGNOSTIC DATA + RENDERING
