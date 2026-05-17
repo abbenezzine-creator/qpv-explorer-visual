@@ -3480,6 +3480,9 @@ function renderResultatsPage(){
   const isAdmin = currentUser?.role==='superadmin';
   const aid = isAdmin ? currentAssocId : currentUser?.assocId;
   const yr = (typeof currentYear!=='undefined') ? currentYear : new Date().getFullYear();
+  const _meta = (typeof window!=='undefined' && window.__dashMeta) ? window.__dashMeta : {};
+  const _metaActs = Array.isArray(_meta.actions) ? _meta.actions : [];
+  const _refs = Array.isArray(_meta.refs) ? _meta.refs : [];
   // Scope strictement identique au Tableau de bord : on réutilise
   // filteredActions() qui applique les mêmes filtres globaux (association,
   // année, thématique, sous-thématique, QPV, type) que la page Dashboard.
@@ -3510,9 +3513,6 @@ function renderResultatsPage(){
   // la card "Indicateurs Qualité" du Tableau de bord (updateQualGlobalScore) :
   // on lit window.__dashMeta.refs (refs Supabase) et on calcule la moyenne
   // par axe en utilisant les valeurs c1..c10 stockées en pourcentage 0..100.
-  const _meta = (typeof window!=='undefined' && window.__dashMeta) ? window.__dashMeta : {};
-  const _refs = Array.isArray(_meta.refs) ? _meta.refs : [];
-  const _metaActs = Array.isArray(_meta.actions) ? _meta.actions : [];
   // Scope strict : association (résolue côté UI) + année (filtre global) — exactement
   // comme le tableau de bord. On filtre les actions Supabase (UUID) pour matcher
   // les action_id (UUID) présents dans refs.
