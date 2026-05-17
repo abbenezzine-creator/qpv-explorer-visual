@@ -1642,6 +1642,7 @@ function onYearChange(){
   document.getElementById('dashYear').textContent=currentYear;
   renderDashboard(); renderCalendar(); renderAllActions(); updateBadge();
   try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
+  try{ if(document.getElementById('page-resultats')?.classList.contains('active')) renderResultatsPage(); }catch(e){}
 }
 
 // ========== AUTH ==========
@@ -1812,12 +1813,14 @@ function onGlobalThemeChange(){
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
   try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
   try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
+  try{ if(document.getElementById('page-resultats')?.classList.contains('active')) renderResultatsPage(); }catch(e){}
 }
 function onGlobalSousThemeChange(){
   currentSousTheme=document.getElementById('globalSousThemeSel').value;
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
   try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
   try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
+  try{ if(document.getElementById('page-resultats')?.classList.contains('active')) renderResultatsPage(); }catch(e){}
 }
 
 let globalQpvKey = 'orleans';
@@ -1825,6 +1828,7 @@ function onGlobalQpvChange(){
   try{ globalQpvKey = (document.getElementById('globalQpvSel')||{}).value || ''; }catch(_){ globalQpvKey=''; }
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
   try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
+  try{ if(document.getElementById('page-resultats')?.classList.contains('active')) renderResultatsPage(); }catch(e){}
 }
 function filteredActions(){
   const ft=document.getElementById('filterType')?.value;
@@ -3473,18 +3477,19 @@ function renderRadarChart(data){
 
 // ========== RESULTATS ==========
 function renderResultatsPage(){
-  const acts = (typeof ACTIONS !== 'undefined' ? ACTIONS : []).slice();
   const isAdmin = currentUser?.role==='superadmin';
   const aid = isAdmin ? currentAssocId : currentUser?.assocId;
-  // Scope identique au Tableau de bord : on filtre par association sélectionnée
-  // ET par année courante (currentYear) — aligne "Nombre total d'actions" sur la
-  // carte "Actions <year>" du Tableau de bord.
   const yr = (typeof currentYear!=='undefined') ? currentYear : new Date().getFullYear();
-  const scoped = acts.filter(a => {
-    if(aid && a.assocId !== aid) return false;
-    if(a.annee && a.annee !== yr) return false;
-    return true;
-  });
+  // Scope strictement identique au Tableau de bord : on réutilise
+  // filteredActions() qui applique les mêmes filtres globaux (association,
+  // année, thématique, sous-thématique, QPV, type) que la page Dashboard.
+  const scoped = (typeof filteredActions==='function')
+    ? filteredActions()
+    : ((typeof ACTIONS!=='undefined'?ACTIONS:[]).filter(a=>{
+        if(aid && a.assocId !== aid) return false;
+        if(a.annee && a.annee !== yr) return false;
+        return true;
+      }));
 
   // ===== Cards =====
   const totalActions = scoped.length;
