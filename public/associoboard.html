@@ -7478,6 +7478,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['actionDetailModal
     populate();
     try{ if(document.getElementById('page-qualite')?.classList.contains('active') && typeof window.renderQualite==='function') window.renderQualite(); }catch(e){}
     try{ if(typeof window.updateQualGlobalScore==='function') window.updateQualGlobalScore(); }catch(e){}
+    try{ if(document.getElementById('page-resultats')?.classList.contains('active') && typeof renderResultatsPage==='function') renderResultatsPage(); }catch(e){}
   };
   function syncTopbar(){
     var hash = (location.hash||'').replace('#page=','');
