@@ -1813,12 +1813,14 @@ function onGlobalThemeChange(){
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
   try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
   try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
+  try{ if(document.getElementById('page-resultats')?.classList.contains('active')) renderResultatsPage(); }catch(e){}
 }
 function onGlobalSousThemeChange(){
   currentSousTheme=document.getElementById('globalSousThemeSel').value;
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
   try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
   try{ if(document.getElementById('page-qualite')?.classList.contains('active')) renderQualite(); }catch(e){}
+  try{ if(document.getElementById('page-resultats')?.classList.contains('active')) renderResultatsPage(); }catch(e){}
 }
 
 let globalQpvKey = 'orleans';
@@ -1826,6 +1828,7 @@ function onGlobalQpvChange(){
   try{ globalQpvKey = (document.getElementById('globalQpvSel')||{}).value || ''; }catch(_){ globalQpvKey=''; }
   try{ renderDashboard(); renderCalendar(); renderAllActions(); }catch(e){}
   try{ if(typeof renderImpactsBeneficiaires==='function') renderImpactsBeneficiaires(); }catch(e){}
+  try{ if(document.getElementById('page-resultats')?.classList.contains('active')) renderResultatsPage(); }catch(e){}
 }
 function filteredActions(){
   const ft=document.getElementById('filterType')?.value;
