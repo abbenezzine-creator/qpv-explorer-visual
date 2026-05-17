@@ -30,6 +30,8 @@ type EvalBenef = {
   action_id: string;
   satisfaction: number | null;
   created_at: string;
+  phase?: string | null;
+  reponses?: Record<string, unknown> | null;
 };
 
 type RefQualite = {
