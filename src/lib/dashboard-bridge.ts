@@ -526,6 +526,18 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
     c1: r.c1, c2: r.c2, c3: r.c3, c4: r.c4, c5: r.c5,
     c6: r.c6, c7: r.c7, c8: r.c8, c9: r.c9, c10: r.c10,
   }));
+  const evalsMeta = data.evals.map(e => {
+    const rep = (e.reponses ?? {}) as Record<string, unknown>;
+    return {
+      action_id: e.action_id,
+      phase: e.phase ?? null,
+      satisfaction: e.satisfaction,
+      pct_avant: typeof rep.pct_avant === "number" ? rep.pct_avant : (rep.pct_avant != null ? Number(rep.pct_avant) : null),
+      pct_apres: typeof rep.pct_apres === "number" ? rep.pct_apres : (rep.pct_apres != null ? Number(rep.pct_apres) : null),
+      thematique: typeof rep.thematique === "string" ? rep.thematique : null,
+      thematique_label: typeof rep.thematique_label === "string" ? rep.thematique_label : null,
+    };
+  });
   return {
     type: "ab-supabase-dashboard" as const,
     html: {
@@ -535,6 +547,6 @@ export function buildDashboardPayload(data: DashboardData, filters: DashboardFil
       timeline: timelineHtml(data, filters),
       qualite: qualiteHtml(data, filters),
     },
-    meta: { years, themes, assocs, actions: actionsMeta, refs: refsMeta, selected: { year: filters.year ?? null, assocId: filters.assocId ?? null, thematique: filters.thematique ?? null, actionId: filters.actionId ?? null } },
+    meta: { years, themes, assocs, actions: actionsMeta, refs: refsMeta, evals: evalsMeta, selected: { year: filters.year ?? null, assocId: filters.assocId ?? null, thematique: filters.thematique ?? null, actionId: filters.actionId ?? null } },
   };
 }
