@@ -62,7 +62,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   const [actionsRes, assocsRes, evalsRes, refsRes] = await Promise.all([
     supabase.from("actions").select("id, assoc_id, titre, statut, thematique, axis_key, qpv_key, quartiers, tranches_age, annee, date_debut, heure_debut, nb_beneficiaires_prevu, nb_beneficiaires_reel, budget, created_at, updated_at"),
     supabase.from("associations").select("id, nom"),
-    supabase.from("evaluations_beneficiaires").select("id, action_id, satisfaction, created_at"),
+    supabase.from("evaluations_beneficiaires").select("id, action_id, satisfaction, created_at, phase, reponses"),
     supabase.from("referentiel_qualite").select("id, action_id, assoc_id, score_global, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, created_at"),
   ]);
   return {
