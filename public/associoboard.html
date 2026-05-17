@@ -3595,7 +3595,9 @@ function renderResultatsPage(){
   // Radar (large) — 10 axes
   const svg = document.getElementById('competencesRadar');
   if(svg){
-    const cx=260, cy=240, r=170;
+    svg.setAttribute('viewBox','0 0 760 520');
+    svg.setAttribute('width','760'); svg.setAttribute('height','520');
+    const cx=380, cy=260, r=150;
     const N = axisData.length;
     const angles = axisData.map((_,i)=> (-Math.PI/2) + i*2*Math.PI/N);
     let h='';
